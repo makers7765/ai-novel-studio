@@ -1,4 +1,9 @@
-const MODEL = "@cf/zai-org/glm-4.7-flash";
+const DEFAULT_MODEL = "@cf/zai-org/glm-4.7-flash";
+const ALLOWED_MODELS = new Set([
+  "@cf/zai-org/glm-4.7-flash",
+  "@cf/google/gemma-4-26b-a4b-it",
+  "@cf/nvidia/nemotron-3-120b"
+]);
 const MAX_PROMPT_CHARS = 12000;
 const MAX_CONTEXT_CHARS = 24000;
 const MAX_OUTPUT_TOKENS = 2048;
@@ -38,7 +43,7 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "请求格式无效。" }, { status: 400 });
   }
 
-  const { task, prompt, context = "" } = body || {};
+  const { task, prompt, context = "", model } = body || {};\n  const selectedModel = typeof model === "string" && ALLOWED_MODELS.has(model) ? model : DEFAULT_MODEL;
   if (typeof prompt !== "string" || !prompt.trim() || prompt.length > MAX_PROMPT_CHARS) {
     return Response.json({ error: "创作要求不能为空，且最多 12000 个字符。" }, { status: 400 });
   }
@@ -54,7 +59,7 @@ export async function onRequestPost({ request, env }) {
   ].join("\n\n");
 
   try {
-    const result = await env.AI.run(MODEL, {
+    const result = await env.AI.run(selectedModel, {
       messages: [
         { role: "system", content: instructions },
         { role: "user", content: userContent }
@@ -73,7 +78,7 @@ export async function onRequestPost({ request, env }) {
         error: "模型已响应，但返回格式中没有识别到正文。返回字段：" + (shape || "空")
       }, { status: 502 });
     }
-    return Response.json({ text: generated, model: MODEL });
+    return Response.json({ text: generated, model: selectedModel });
   } catch (error) {
     const message = String(error?.message || "");
     if (/quota|limit|neuron|billing|payment|exceed/i.test(message)) {
