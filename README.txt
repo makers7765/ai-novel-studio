@@ -1,39 +1,50 @@
-AI 小说工作室｜Cloudflare Pages 版本
-=====================================
+AI 小说工作室｜Cloudflare Pages 部署包
+======================================
 
-当前版本功能
-------------
-- AI 创作：灵感、大纲、章节、续写、人物/世界观设定、润色、剧情审查。
-- AI 后端：Cloudflare Workers AI，当前模型为 @cf/zai-org/glm-4.7-flash。
-- 人物档案：添加、查看、编辑、删除；完整字段会随创作上下文传给模型。
-- 世界观、小说简介、补充资料：自动保存并在生成时带入。
-- 章节管理：新建、编辑、删除、续写上下文。
-- 自动保存：资料保存在当前浏览器的 localStorage；清除浏览器数据或换设备前请先导出 JSON 备份。
-- 导出：JSON 完整备份、TXT 正文、Word 可打开的 DOC 文档；支持导入 JSON 备份。
+重要：这是根据你原来的 AI 小说工作室 v2 项目整理的 Cloudflare Pages 兼容版本。
+当前默认是【零成本模式】：没有 API Key、没有预充值、不会主动调用任何模型 API。
+网页部署成功后可打开界面；点击 AI 生成时会提示尚未配置 API，而不是产生费用。
 
-部署信息
---------
-GitHub 仓库：makers7765/ai-novel-studio
-Cloudflare Pages 项目：ai-novel-studio
-生产网站：https://ai-novel-studio-1ma.pages.dev
+一、用手机部署（需要 Cloudflare 和 GitHub 账号）
 
-修改 public/index.html 或 functions/ 下文件并提交到 main 后，Cloudflare Pages 会按项目配置自动部署。部署完成后用 Ctrl+F5 强制刷新。
+为什么需要 GitHub？
+本项目带有 functions/api/ 后端接口。Cloudflare 官方说明：Pages 仪表盘的拖拽直传不支持部署 /functions；要使用后端函数，建议连接 GitHub 仓库自动部署，或使用 Wrangler 命令行。
 
-AI 服务和费用提醒
------------------
-当前只接入 Cloudflare Workers AI 的 GLM-4.7-Flash。
-DeepSeek、豆包、WorkBuddy 尚未接入；它们不能仅靠当前 Workers AI 绑定自动使用。后续接入前需要分别核实服务商的 API/OAuth 接入方式、免费额度和价格。
-Workers AI 的免费额度、计费方式和账户限制可能变化。成功调用不等于永久免费，也不代表绝不会产生费用。请在 Cloudflare 账单/用量页面核对当前额度；不要升级 Workers Paid，不要添加付款方式或外部 API Key，除非你明确决定启用。
-本项目不会在网页端公开 API Key；目前生成请求只发往本项目的 /api/generate 后端。
+步骤：
+1. 在浏览器打开 https://github.com/new ，登录或注册 GitHub。
+2. Repository name 填：ai-novel-studio ，选择 Public 或 Private 均可。
+3. 点击 Create repository。
+4. 在新仓库页面选择 Add file → Upload files。
+5. 将本压缩包解压后，把里面的 public 文件夹、functions 文件夹、README_部署说明.txt 上传到仓库根目录并提交（Commit changes）。
+   注意：不要只上传 ZIP 文件；要上传解压后的文件和文件夹结构。
+6. 打开 https://dash.cloudflare.com/ ，登录 Cloudflare。
+7. 进入 Workers & Pages → Create application → Pages → Connect to Git。
+8. 连接 GitHub，选择 ai-novel-studio 仓库。
+9. 构建设置：
+   - Framework preset：None
+   - Production branch：main
+   - Build command：exit 0
+   - Build output directory：public
+10. 点击 Save and Deploy。成功后 Cloudflare 会给你一个 https://项目名.pages.dev 网址。
 
-数据安全
---------
-小说资料目前保存在本机浏览器，不会自动同步到其他设备或其他浏览器。
-请定期点击网页顶部“导出备份”，保存 JSON 文件。更换设备时，在新设备打开网站后点击“导入备份”。
-TXT 适合纯文本阅读；DOC 文件可用 Microsoft Word 或兼容软件打开；JSON 用于完整恢复工作室资料。
+二、零成本安全状态
+- 不要添加 OPENAI_API_KEY。
+- 不要添加任何服务商 API Key。
+- 不要开启付费 Worker、AI Gateway 或其他付费附加服务。
+- Cloudflare 免费计划/额度和政策可能变化，请以账户页面显示为准；不要选择付费升级。
+- 不配置 API Key 时，网站不会向 OpenAI 发起模型请求。
 
-项目结构
---------
-public/index.html       前端界面与本地资料管理
-functions/api/health.js AI 服务状态检查
-functions/api/generate.js 服务端模型调用
+三、以后如要启用模型（必须先由你明确同意）
+当前函数只实现原项目的 OpenAI Responses API 调用，不代表 DeepSeek、豆包、WorkBuddy 已接入。
+启用前先确认服务商价格、免费额度和预算；再在 Cloudflare 项目 Settings → Variables and Secrets 添加加密 Secret：OPENAI_API_KEY，并添加普通变量 OPENAI_MODEL（填你账号确实有权限使用的模型 ID）。保存前请再次核对计费规则。
+不要把 Key 发给任何人，也不要把 Key 放在网页代码、GitHub 文件或聊天消息中。
+
+四、项目结构
+public/index.html       网页前端
+functions/api/health.js 服务状态接口
+functions/api/generate.js 安全的服务端模型调用接口
+
+参考 Cloudflare 官方文档：
+Pages Functions：https://developers.cloudflare.com/pages/functions/get-started/
+Git 集成/静态 HTML：https://developers.cloudflare.com/pages/framework-guides/deploy-anything/
+环境变量与加密 Secret：https://developers.cloudflare.com/pages/functions/bindings/
