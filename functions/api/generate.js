@@ -43,7 +43,8 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "请求格式无效。" }, { status: 400 });
   }
 
-  const { task, prompt, context = "", model } = body || {};\n  const selectedModel = typeof model === "string" && ALLOWED_MODELS.has(model) ? model : DEFAULT_MODEL;
+  const { task, prompt, context = "", model } = body || {};
+  const selectedModel = typeof model === "string" && ALLOWED_MODELS.has(model) ? model : DEFAULT_MODEL;
   if (typeof prompt !== "string" || !prompt.trim() || prompt.length > MAX_PROMPT_CHARS) {
     return Response.json({ error: "创作要求不能为空，且最多 12000 个字符。" }, { status: 400 });
   }
