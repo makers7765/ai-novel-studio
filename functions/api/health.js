@@ -1,8 +1,8 @@
-export function onRequest({ env }) {
-  const configured = Boolean(env.OPENAI_API_KEY);
+export async function onRequestGet({ env }) {
   return Response.json({
-    ok: true,
-    configured,
-    model: configured ? (env.OPENAI_MODEL || "请在 Cloudflare 环境变量中设置 OPENAI_MODEL") : "零成本模式：尚未启用付费 API"
+    configured: Boolean(env.OPENAI_API_KEY && env.OPENAI_MODEL),
+    keyConfigured: Boolean(env.OPENAI_API_KEY),
+    modelConfigured: Boolean(env.OPENAI_MODEL),
+    model: env.OPENAI_MODEL || null
   });
 }

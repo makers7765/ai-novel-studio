@@ -1,34 +1,38 @@
+const TASK_RULES = {
+  "灵感生成": "只负责从用户给出的种子扩展出 3-5 个有差异的故事灵感。每个灵感包含核心设定、主角/核心人物、主要冲突、故事卖点和可发展的悬念。不要直接写完整章节，不要输出人物档案表或剧情审查报告。",
+  "故事大纲": "只负责设计故事大纲。按作品定位、核心主题、主角目标、主要人物关系、核心冲突、起承转合、关键转折、高潮与结局、分卷/章节安排组织。写清因果链。不要写成小说正文，不要做剧情审查。",
+  "章节创作": "只负责创作小说正文。直接从场景切入，写出具体环境、动作、对话、心理和情绪变化；保持叙事视角和人物设定一致。不要只输出大纲、分析或写作建议。",
+  "续写": "只负责承接已提供的章节或前文，从最后一个有效情节之后自然续写。保持人物、时间线、视角、语气和因果连续；不得复述或重写前文，不得另起新故事，不要输出大纲。",
+  "人物设定": "只负责建立人物档案。按姓名/称谓、年龄、身份、外貌、性格、背景经历、目标动机、能力与限制、弱点、秘密、人物关系、成长弧光组织。资料不足时可标注待补充，不要擅自生成整部故事大纲或章节正文。",
+  "世界观设定": "只负责建立世界观资料。按时代背景、地理环境、社会结构、势力组织、历史沿革、规则/力量体系、资源与限制、文化习俗、核心矛盾组织。明确规则边界，不要写人物档案或章节正文。",
+  "润色改写": "只负责对用户提供的原文进行润色改写。保留原文事实、人物关系、事件顺序和剧情结果，不擅自增删关键情节；改善语言、节奏、画面感和对话。直接给出改写后的正文，不要另写大纲或点评。",
+  "剧情审查": "只负责审查用户提供的剧情、章节或大纲。按问题位置、问题类型、具体原因、可能后果、修改建议逐项列出，重点检查逻辑漏洞、人物动机、时间线、设定冲突、伏笔回收和节奏。不要续写正文，不要重新生成故事大纲。"
+};
+
 export async function onRequestPost({ request, env }) {
   if (!env.OPENAI_API_KEY) {
-    return Response.json({ error: "当前处于零成本模式：尚未配置 AI API。网页可正常访问；启用模型 API 前请先确认服务商价格和预算。" }, { status: 503 });
+    return Response.json({ error: "AI 服务尚未配置 API Key。网页和资料库可以使用，但暂时不能调用模型生成内容。" }, { status: 503 });
+  }
+  if (!env.OPENAI_MODEL) {
+    return Response.json({ error: "已配置 API Key，但尚未设置 OPENAI_MODEL。请先在 Cloudflare Pages 环境变量中配置模型名称。" }, { status: 503 });
   }
   let body;
   try { body = await request.json(); } catch {
-    return Response.json({ error: "请求格式无效。" }, { status: 400 });
+    return Response.json({ error: "请求格式无效，请刷新页面后重试。" }, { status: 400 });
   }
   const { task, prompt, context = "" } = body || {};
+  if (typeof task !== "string" || !Object.prototype.hasOwnProperty.call(TASK_RULES, task)) {
+    return Response.json({ error: "任务类型无效。请从创作台上方选择一个任务后重试。" }, { status: 400 });
+  }
   if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 30000) {
     return Response.json({ error: "请输入有效创作要求（最多 30000 字符）。" }, { status: 400 });
   }
   if (typeof context !== "string" || context.length > 60000) {
     return Response.json({ error: "小说上下文过长，请精简后重试。" }, { status: 400 });
   }
-  if (!env.OPENAI_MODEL) {
-    return Response.json({ error: "已配置 API Key，但尚未设置 OPENAI_MODEL。为避免调用错误模型，系统已停止请求。" }, { status: 503 });
-  }
-  const taskRules = {
-    "灵感生成": "只负责从用户给出的种子扩展出多个有差异的故事灵感、核心冲突和卖点；不要直接写完整章节。",
-    "故事大纲": "只负责设计故事总纲、主线因果、阶段转折、高潮结局及章节安排；不要把结果写成剧情审查报告。",
-    "章节创作": "根据已有设定直接创作小说正文，包含场景、动作、对话和情绪变化；不要只给大纲。",
-    "续写": "严格承接用户提供的前文，从最后一个情节自然继续写正文；不得重写前文或另起新故事。",
-    "人物设定": "建立人物档案，包含身份、外貌、性格、经历、目标、动机、弱点、秘密、人物弧光及关系；不要生成故事总纲。",
-    "世界观设定": "建立世界规则、地理势力、历史背景、社会结构、力量体系及限制；不要写人物档案或章节正文。",
-    "润色改写": "对用户提供的原文进行润色改写，保留事实、剧情和人物关系，改善语言、节奏和表现力；不要另写大纲。",
-    "剧情审查": "对用户提供的剧情/章节进行审查，逐项指出逻辑漏洞、人物动机问题、时间线冲突、伏笔回收和节奏问题，并给出可执行修正建议；不要生成故事大纲或续写正文。"
-  };
-  const selectedTask = typeof task === "string" && taskRules[task] ? task : "灵感生成";
-  const instructions = `你是一位专业中文小说主编、类型小说作家和连续性编辑。请使用中文回答。严格尊重用户提供的世界观、人物设定和既有剧情，不擅自推翻已确定设定。当前任务必须严格执行：${selectedTask}。任务专属要求：${taskRules[selectedTask]}不得擅自改成其他任务，不得沿用上一次任务的输出类型。创作要求：情节有因果、人物动机可信、场景具体、避免空洞总结和重复表达。如果上下文与本次要求冲突，指出冲突并优先遵循用户本次明确指令。`;
-  const input = `【当前任务类型（必须遵守）】${selectedTask}\n\n【小说资料与上下文】\n${context || "暂无"}\n\n【本次要求】\n${prompt}`;
+  const taskInstruction = TASK_RULES[task];
+  const instructions = `你是一位专业中文小说主编、类型小说作家和连续性编辑。请始终使用中文回答。当前任务类型是【${task}】，这是不可更改的任务边界。你必须只执行该任务。\n\n【本任务专属规则】\n${taskInstruction}\n\n【通用规则】\n严格尊重用户提供的世界观、人物设定和既有剧情，不擅自推翻已确定设定。情节有因果，人物动机可信，避免空洞总结和重复表达。资料不足时明确标注缺失信息，不要自行编造与已知设定冲突的内容。严禁把本任务转换成其他任务类型。`;
+  const input = `【当前任务：${task}】\n${taskInstruction}\n\n【小说资料与上下文】\n${context || "暂无"}\n\n【用户本次具体要求】\n${prompt}`;
   try {
     const upstream = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -41,7 +45,7 @@ export async function onRequestPost({ request, env }) {
       return Response.json({ error: msg }, { status: upstream.status >= 400 && upstream.status < 600 ? upstream.status : 502 });
     }
     const text = (data.output || []).flatMap(item => item.content || []).filter(part => part.type === "output_text").map(part => part.text).join("\n");
-    return Response.json({ text: text || "模型没有返回文本，请重试。" });
+    return Response.json({ text: text || "模型没有返回文本，请重试。", task });
   } catch {
     return Response.json({ error: "暂时无法连接模型服务，请稍后重试。" }, { status: 502 });
   }
