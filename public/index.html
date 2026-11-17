@@ -28,8 +28,6 @@ main{padding:26px;max-width:1500px;width:100%;margin:auto}.topline{display:flex;
 <div class="panel"><h2>选择创作任务</h2><div class="taskgrid" id="tasks">
 <button class="task" data-task="灵感生成"><strong>💡 灵感生成</strong><small>从一句话扩展故事</small></button>
 <button class="task" data-task="故事大纲"><strong>🧭 故事大纲</strong><small>搭建主线与章节结构</small></button>
-<button class="task" data-task="章节创作"><strong>✍️ 章节创作</strong><small>生成完整小说正文</small></button>
-<button class="task" data-task="续写"><strong>⤴️ 智能续写</strong><small>承接已有章节继续写</small></button>
 <button class="task" data-task="人物设定"><strong>♙ 人物设定</strong><small>背景、动机、弧光</small></button>
 <button class="task" data-task="世界观设定"><strong>🌌 世界观设定</strong><small>规则、地理、历史</small></button>
 <button class="task" data-task="润色改写"><strong>✧ 润色改写</strong><small>优化文风与节奏</small></button>
@@ -39,7 +37,7 @@ main{padding:26px;max-width:1500px;width:100%;margin:auto}.topline{display:flex;
 <div class="panel"><div class="row"><h2>AI 生成结果</h2><button id="copyBtn" style="flex:0 0 auto">复制结果</button></div><div id="result" class="output">生成内容会显示在这里。你可以复制，或保存到章节管理。</div><div class="actions" style="margin-top:12px"><button id="saveChapter" class="primary">确认保存到对应区域</button><button id="replacePrompt">将结果作为下一轮上下文</button></div></div></div>
 <div class="notice">提示：AI 会优先参考“小说资料”中填写的设定。长篇创作建议按大纲分章生成，并把已确定的剧情摘要放入上下文，保持连续性。</div>
 </section>
-<section id="page-chapters" class="hidden"><div class="topline"><div><h1>章节管理</h1><div class="muted">编辑、保存和管理小说正文。</div></div><button class="primary" id="newChapter">＋ 新建章节</button></div><div class="grid"><div class="panel"><h2>章节列表</h2><div id="chapterList"></div></div><div class="panel"><h2>章节编辑器</h2><input id="chapterTitle" placeholder="章节标题"><textarea id="chapterBody" class="chapter" placeholder="在这里写作，或从 AI 创作台保存生成内容。"></textarea><div class="actions"><button class="primary" id="saveChapterEdit">保存章节</button><button id="deleteChapter">删除章节</button><button id="sendChapter">发送到 AI 创作台</button></div></div></div></section>
+<section id="page-chapters" class="hidden"><div class="topline"><div><h1>章节管理</h1><div class="muted">编辑、保存和管理小说正文。</div></div><button class="primary" id="newChapter">＋ 新建章节</button></div><div class="grid"><div class="panel"><h2>章节列表</h2><div id="chapterList"></div></div><div class="panel"><h2>章节编辑器</h2><input id="chapterTitle" placeholder="章节标题"><textarea id="chapterBody" class="chapter" placeholder="在这里写作、编辑或查看生成的章节正文。"></textarea><div class="actions"><button class="primary" id="saveChapterEdit">保存章节</button><button id="deleteChapter">删除章节</button><button id="sendChapter">发送到其他工作台</button></div></div></div><div class="panel" id="chapterWorkbench"><h2>章节创作工作台</h2><p class="muted">章节的生成、续写、扩写和章节检查统一在这里完成；AI 创作台只处理辅助创作任务。</p><div class="field"><label>章节任务</label><select id="chapterTask"><option>新章节创作</option><option>续写当前章节</option><option>扩写当前章节</option><option>重写当前章节</option><option>章节逻辑审查</option><option>章节摘要</option></select></div><div id="chapterTaskFields" class="formgrid"></div><div class="field"><label>补充要求（可选）</label><textarea id="chapterTaskPrompt" placeholder="写明本次章节任务的特殊要求……"></textarea></div><div class="row"><div class="field"><label>篇幅要求</label><select id="chapterLength"><option>适中，约 800-1200 字</option><option>短篇，约 300-500 字</option><option>详细，约 1500-2500 字</option><option>长篇，尽可能充分展开</option></select></div><div class="field"><label>文风偏好</label><input id="chapterStyle" placeholder="例如：悬疑、克制、电影感"></div></div><div class="actions"><button class="primary" id="chapterGenerate">✦ 执行章节任务</button><button id="chapterUseEditor">载入当前编辑章节</button></div><p class="muted" id="chapterProgress"></p><div class="field"><label>任务结果</label><textarea id="chapterResult" style="min-height:260px" placeholder="章节生成、续写或审查结果会显示在这里。"></textarea></div><div class="actions"><button class="primary" id="chapterSaveResult">保存结果</button><button id="chapterSendOther">把结果发送到其他工作台</button></div></div></section>
 <section id="page-characters" class="hidden"><div class="topline"><div><h1>人物档案</h1><div class="muted">记录角色身份、目标、秘密与成长弧光。</div></div><button class="primary" id="addCharacter">＋ 添加人物</button></div><div class="panel"><div id="characterList"></div></div></section>
 <div id="characterDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="characterDialogTitle"><div class="dialog"><div class="topline"><div><h2 id="characterDialogTitle">添加人物档案</h2><div class="muted">一次填写完整资料；不需要的栏目可以留空。</div></div><button type="button" id="closeCharacterDialog">✕</button></div><form id="characterForm"><div class="formgrid"><div class="field"><label for="charName">人物姓名 *</label><input id="charName" required maxlength="60" placeholder="例如：林牧"></div><div class="field"><label for="charAge">年龄</label><input id="charAge" maxlength="30" placeholder="例如：17岁"></div><div class="field"><label for="charGender">性别 / 称谓</label><input id="charGender" maxlength="30" placeholder="可选"></div><div class="field"><label for="charRole">人物身份 / 角色定位</label><input id="charRole" maxlength="100" placeholder="主角、反派、导师……"></div><div class="field wide"><label for="charAppearance">外貌与显著特征</label><textarea id="charAppearance" placeholder="外貌、衣着、声音、习惯动作等"></textarea></div><div class="field"><label for="charPersonality">性格特点</label><textarea id="charPersonality" placeholder="性格、优点、缺点、行为习惯"></textarea></div><div class="field"><label for="charBackground">身世 / 背景经历</label><textarea id="charBackground" placeholder="出身、成长经历、重要往事"></textarea></div><div class="field"><label for="charAbilities">能力 / 技能及限制</label><textarea id="charAbilities" placeholder="能力、专长、弱点或使用代价"></textarea></div><div class="field"><label for="charGoal">外在目标 / 内在需求</label><textarea id="charGoal" placeholder="最想得到什么？内心真正需要什么？"></textarea></div><div class="field"><label for="charFear">恐惧 / 弱点</label><textarea id="charFear" placeholder="最害怕什么？有什么软肋？"></textarea></div><div class="field"><label for="charSecret">秘密 / 隐藏动机</label><textarea id="charSecret" placeholder="尚未公开的秘密或真实目的"></textarea></div><div class="field"><label for="charArc">人物成长路线</label><textarea id="charArc" placeholder="从故事开始到结局会发生怎样的变化？"></textarea></div><div class="field wide"><label for="charNotes">补充说明</label><textarea id="charNotes" placeholder="人物关系、口头禅、禁忌、剧情作用等"></textarea></div></div><div class="dialog-actions"><button type="button" id="cancelCharacter">取消</button><button type="submit" class="primary">保存人物档案</button></div></form></div></div>
 <section id="page-world" class="hidden"><div class="topline"><div><h1>世界观设定</h1><div class="muted">集中管理规则、地理、历史、势力与关键设定。</div></div></div><div class="panel"><textarea id="worldText" style="min-height:380px" placeholder="写下世界规则、时代背景、地理、力量体系、势力关系、历史事件等。"></textarea><button class="primary" id="saveWorld" style="margin-top:10px">保存世界观</button></div></section>
@@ -47,6 +45,76 @@ main{padding:26px;max-width:1500px;width:100%;margin:auto}.topline{display:flex;
 <section id="page-project" class="hidden"><div class="topline"><div><h1>小说资料</h1><div class="muted">把既有资料整理在这里，AI 创作时会自动带入。</div></div></div><div class="panel"><div class="field"><label>小说简介 / 核心设定</label><textarea id="synopsis" style="min-height:180px" placeholder="题材、主题、核心冲突、主角目标、故事终点……"></textarea></div><div class="field"><label>人物关系、势力地图、伏笔清单、剧情摘要等补充资料</label><textarea id="notes" style="min-height:260px" placeholder="把你已有的设定、人物关系、时间线、伏笔记录在这里。"></textarea></div><button class="primary" id="saveProject">保存小说资料</button></div><div class="notice">原有 WorkBuddy 分享链接暂时不会自动读取内容。请把分享页面中的资料复制到对应栏目，后续可继续扩展导入功能。</div></section>
 </main></div>
 <script>
+
+/* 多工作台任务面板：各工作台使用独立任务模板、上下文和归档目标 */
+const WORKBENCH_TASKS = {
+ characters: {
+  title:"人物档案专属工作台", intro:"围绕人物塑造开展生成、补全和关系分析，结果可保存为人物档案或归档。",
+  tasks:{
+   "创建人物档案":[["人物姓名 / 称谓","text","例如：林牧","yes"],["人物身份与定位","text","主角、反派、导师……","yes"],["性格、背景与动机","textarea","经历、欲望、恐惧、秘密","no"],["成长路线与人物关系","textarea","人物变化、关键关系","no"]],
+   "完善现有人物":[["选择人物 / 人物姓名","text","填写要完善的人物","yes"],["目前已知资料","textarea","粘贴现有档案或关键设定","yes"],["希望补全的方面","textarea","性格、能力限制、秘密、弧光等","no"]],
+   "人物关系分析":[["涉及人物","textarea","列出人物姓名及已知关系","yes"],["关系背景 / 关键事件","textarea","粘贴相关剧情或事件","yes"],["分析重点","text","冲突、信任、利益、情感变化","no"]]
+  }
+ },
+ world:{
+  title:"世界观专属工作台",intro:"专门处理世界规则、地点、历史和势力设定，避免设定互相矛盾。",
+  tasks:{
+   "创建世界规则":[["规则主题","text","例如：灵力体系、科技限制、社会制度","yes"],["核心概念","textarea","这条规则是什么？","yes"],["限制、代价与例外","textarea","边界、成本、不能做到的事","no"]],
+   "创建地点 / 势力":[["名称与类型","text","地点、国家、组织、门派等","yes"],["地理 / 组织结构","textarea","位置、成员、资源、权力结构","yes"],["历史、目标与冲突","textarea","来历、利益、敌对关系","no"]],
+   "历史事件与时间线":[["事件名称 / 时间","text","例如：旧王朝覆灭，纪元 312 年","yes"],["事件经过","textarea","起因、过程、结果","yes"],["对当前剧情的影响","textarea","遗留问题、伏笔、人物影响","no"]],
+   "设定一致性审查":[["待检查设定 / 剧情","textarea","粘贴需要核对的内容","yes"],["不可更改的既定规则","textarea","列出已确认的设定","no"]]
+  }
+ },
+ project:{
+  title:"小说资料专属工作台",intro:"负责故事定位、大纲、简介、结构规划与资料整理；不直接写章节正文。",
+  tasks:{
+   "故事大纲规划":[["题材与目标读者","text","例如：东方奇幻，成人向","yes"],["主角、目标与核心冲突","textarea","主角想得到什么？阻碍是什么？","yes"],["计划卷数 / 章节数","text","例如：3卷，每卷20章","no"],["已确定结局 / 必须保留情节","textarea","可留空","no"]],
+   "小说简介生成":[["题材与核心卖点","textarea","故事题材、独特设定、主要看点","yes"],["主角与核心矛盾","textarea","主角是谁，面临什么困境","yes"],["简介用途","text","平台简介、投稿简介、宣传文案","no"]],
+   "全书结构审查":[["大纲 / 剧情摘要","textarea","粘贴全书大纲或分卷梗概","yes"],["审查重点","text","节奏、主线、高潮、支线、结局","no"]]
+  }
+ },
+ library:{
+  title:"创作归档与资料整理工作台",intro:"对已保存的创作内容做摘要、提取、归纳和检索提示，不负责生成章节。",
+  tasks:{
+   "资料摘要":[["资料名称","text","例如：第一卷剧情资料","no"],["需要摘要的资料","textarea","粘贴资料正文","yes"],["摘要用途 / 长度","text","给 AI 续写参考、给读者介绍等","no"]],
+   "人物与设定提取":[["待提取资料","textarea","粘贴章节或设定内容","yes"],["提取范围","text","人物、地点、物品、规则、组织","no"]],
+   "伏笔清单整理":[["待分析正文 / 剧情","textarea","粘贴章节或剧情摘要","yes"],["已有伏笔台账（可选）","textarea","用于比对与追踪回收","no"]],
+   "剧情时间线整理":[["待整理资料","textarea","粘贴事件、章节摘要或剧情记录","yes"],["已知时间锚点","textarea","明确日期、季节、年龄、先后顺序","no"]]
+  }
+ }
+};
+function mountWorkbenchPanel(pageId,key){
+ const section=document.getElementById("page-"+pageId);if(!section||section.querySelector("[data-workbench-key='"+key+"']"))return;
+ const cfg=WORKBENCH_TASKS[key];const panel=document.createElement("div");panel.className="panel";panel.dataset.workbenchKey=key;
+ panel.innerHTML='<h2>'+esc(cfg.title)+'</h2><p class="muted">'+esc(cfg.intro)+'</p><div class="field"><label>本工作台任务</label><select data-wb-task></select></div><div class="formgrid" data-wb-fields></div><div class="field"><label>补充要求（可选）</label><textarea data-wb-prompt placeholder="结合当前任务补充要求……"></textarea></div><div class="row"><div class="field"><label>篇幅要求</label><select data-wb-length><option>适中，约 800-1200 字</option><option>短篇，约 300-500 字</option><option>详细，约 1500-2500 字</option><option>长篇，尽可能充分展开</option></select></div><div class="field"><label>文风偏好</label><input data-wb-style placeholder="例如：严谨、克制、悬疑、古风"></div></div><div class="actions"><button class="primary" data-wb-run>✦ 执行任务</button><button data-wb-clear>清空本次输入</button></div><p class="muted" data-wb-status></p><div class="field"><label>任务结果</label><textarea data-wb-result style="min-height:220px" placeholder="本工作台的结果会显示在这里。"></textarea></div><div class="actions"><button class="primary" data-wb-save>保存到本工作台</button><button data-wb-send>发送结果到其他工作台</button></div>';
+ section.appendChild(panel);
+ const sel=panel.querySelector("[data-wb-task]");Object.keys(cfg.tasks).forEach(t=>sel.add(new Option(t,t)));
+ const fields=panel.querySelector("[data-wb-fields]");
+ function draw(){fields.innerHTML="";(cfg.tasks[sel.value]||[]).forEach((f,i)=>{const wrap=document.createElement("div");wrap.className="field"+(f[1]==="textarea"?" wide":"");const label=document.createElement("label");label.textContent=f[0]+(f[3]==="yes"?" *":"");const el=document.createElement(f[1]==="textarea"?"textarea":"input");el.dataset.wbField=f[0];el.dataset.required=f[3];el.placeholder=f[2];if(f[1]==="textarea")el.style.minHeight="88px";wrap.append(label,el);fields.appendChild(wrap);});}
+ sel.onchange=draw;draw();
+ panel.querySelector("[data-wb-clear]").onclick=()=>{fields.querySelectorAll("input,textarea").forEach(x=>x.value="");panel.querySelector("[data-wb-prompt]").value="";panel.querySelector("[data-wb-result]").value="";};
+ panel.querySelector("[data-wb-run]").onclick=async()=>{const inputs=[...fields.querySelectorAll("[data-wb-field]")];const missing=inputs.find(x=>x.dataset.required==="yes"&&!x.value.trim());if(missing){panel.querySelector("[data-wb-status]").textContent="请先填写："+missing.dataset.wbField;missing.focus();return;}const details=inputs.map(x=>x.dataset.wbField+"："+x.value.trim()).filter(x=>!x.endsWith("：")).join("\n");if(!details.trim()){panel.querySelector("[data-wb-status]").textContent="请先填写本任务资料。";return;}const btn=panel.querySelector("[data-wb-run]");btn.disabled=true;btn.textContent="正在执行…";panel.querySelector("[data-wb-status]").textContent="正在连接 AI…";try{const prompt="【工作台】"+cfg.title+"\n【具体任务】"+sel.value+"\n【任务专属资料】\n"+details+"\n【补充要求】"+panel.querySelector("[data-wb-prompt]").value+"\n篇幅："+panel.querySelector("[data-wb-length]").value+"\n文风："+panel.querySelector("[data-wb-style]").value+"\n请只完成当前工作台职责，不要擅自生成小说章节正文。";const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:sel.value,prompt,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");panel.querySelector("[data-wb-result]").value=j.text||"";panel.querySelector("[data-wb-status]").textContent="已完成 · "+(j.provider||"AI 服务")+" · "+(j.model||"");}catch(e){panel.querySelector("[data-wb-status]").textContent="执行失败："+e.message;}finally{btn.disabled=false;btn.textContent="✦ 执行任务";}};
+ panel.querySelector("[data-wb-save]").onclick=()=>{const result=panel.querySelector("[data-wb-result]").value.trim();if(!result)return alert("请先生成结果");const task=sel.value;const stamp=new Date().toISOString();if(key==="characters"&&task==="创建人物档案"){data.characters.push({name:(result.match(/(?:姓名|人物姓名)[:：]\s*([^\n]+)/)||[])[1]||"AI生成人物",role:"AI生成",notes:result});persist();renderCharacters();}else if(key==="world"){data.world=(data.world?data.world+"\n\n":"")+"【"+task+"】\n"+result;$("worldText").value=data.world;persist();}else if(key==="project"){data.notes=(data.notes?data.notes+"\n\n":"")+"【"+task+"】\n"+result;$("notes").value=data.notes;persist();}else{data.archives.push({category:cfg.title,title:task+" · "+new Date().toLocaleString(),content:result,createdAt:stamp});persist();renderArchives();}panel.querySelector("[data-wb-status]").textContent="已保存到对应资料区域。";};
+ panel.querySelector("[data-wb-send]").onclick=()=>{const result=panel.querySelector("[data-wb-result]").value.trim();if(!result)return alert("请先生成结果");const choice=prompt("发送到哪个工作台？\n1 AI 创作台（辅助任务）\n2 章节管理（作为章节任务参考）\n3 人物档案\n4 世界观设定\n5 小说资料\n6 创作归档","1");if(!choice)return;const map={"1":"studio","2":"chapters","3":"characters","4":"world","5":"project","6":"library"};const dest=map[choice];if(!dest)return alert("选项无效");if(dest==="studio"){$("extra").value=result;document.querySelector('[data-page="studio"]').click();}else if(dest==="chapters"){$("chapterTaskPrompt").value="请参考以下资料完成章节任务：\n"+result;document.querySelector('[data-page="chapters"]').click();}else{const nav=document.querySelector('[data-page="'+dest+'"]');nav.click();const target=document.querySelector('#page-'+dest+' [data-workbench-key] [data-wb-prompt]');if(target)target.value="请参考以下资料：\n"+result;}};
+}
+function setupChapterWorkbench(){
+ const task=$("chapterTask"),host=$("chapterTaskFields");if(!task||task.dataset.ready)return;task.dataset.ready="1";
+ const defs={
+ "新章节创作":[["章节序号 / 标题","text","例如：第6章 雨夜来客","yes"],["本章目标与关键事件","textarea","本章发生什么？人物要做出什么选择？","yes"],["开场场景 / 结尾钩子","textarea","地点、时间、氛围及希望如何收尾","no"],["必须出现 / 避免的内容","textarea","必须保留的情节，不能发生的事","no"]],
+ "续写当前章节":[["续写起点","text","从当前章节末尾接续","yes"],["上一段正文 / 当前章节内容","textarea","粘贴当前章节末尾内容","yes"],["下一步剧情方向","textarea","人物行动、冲突变化、结尾目标","no"]],
+ "扩写当前章节":[["需要扩写的章节内容","textarea","粘贴需要扩写的正文","yes"],["扩写重点","textarea","场景、心理、动作、对话、细节等","no"]],
+ "重写当前章节":[["原章节正文","textarea","粘贴需要重写的正文","yes"],["重写目标","textarea","保留哪些情节？调整哪些问题？","yes"]],
+ "章节逻辑审查":[["待审查章节正文","textarea","粘贴章节正文","yes"],["重点检查","text","人物动机、时间线、因果、伏笔等","no"]],
+ "章节摘要":[["待总结章节正文","textarea","粘贴章节正文","yes"],["摘要用途","text","给下一章续写、全书大纲、人物变化记录","no"]]
+ };
+ function draw(){host.innerHTML="";(defs[task.value]||[]).forEach(f=>{const w=document.createElement("div");w.className="field"+(f[1]==="textarea"?" wide":"");const l=document.createElement("label");l.textContent=f[0]+(f[3]==="yes"?" *":"");const e=document.createElement(f[1]==="textarea"?"textarea":"input");e.dataset.chapterField=f[0];e.dataset.required=f[3];e.placeholder=f[2];if(f[1]==="textarea")e.style.minHeight="90px";w.append(l,e);host.append(w);});}
+ task.onchange=draw;draw();
+ $("chapterUseEditor").onclick=()=>{const title=$("chapterTitle").value.trim(),body=$("chapterBody").value.trim();const fields=host.querySelectorAll("[data-chapter-field]");fields.forEach((f,i)=>{if(i===0&&f.tagName==="INPUT"&&!f.value)f.value=title;if(f.tagName==="TEXTAREA"&&!f.value&&body)f.value=body;});};
+ $("chapterGenerate").onclick=async()=>{const fields=[...host.querySelectorAll("[data-chapter-field]")];const missing=fields.find(f=>f.dataset.required==="yes"&&!f.value.trim());if(missing){missing.focus();$("chapterProgress").textContent="请填写："+missing.dataset.chapterField;return;}const details=fields.map(f=>f.dataset.chapterField+"："+f.value.trim()).join("\n");const btn=$("chapterGenerate");btn.disabled=true;btn.textContent="正在执行…";$("chapterProgress").textContent="正在连接 AI…";try{const prompt="【章节管理工作台】\n【任务】"+task.value+"\n【专属要求】\n"+details+"\n【补充要求】"+$("chapterTaskPrompt").value+"\n篇幅："+$("chapterLength").value+"\n文风："+$("chapterStyle").value+"\n请严格完成章节任务。若任务是审查或摘要，不要改写成新章节。";const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:task.value,prompt,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");$("chapterResult").value=j.text||"";$("chapterProgress").textContent="完成 · "+(j.provider||"AI 服务")+" · "+(j.model||"");}catch(e){$("chapterProgress").textContent="执行失败："+e.message;}finally{btn.disabled=false;btn.textContent="✦ 执行章节任务";}};
+ $("chapterSaveResult").onclick=()=>{const result=$("chapterResult").value.trim();if(!result)return alert("请先生成结果");if(["章节逻辑审查","章节摘要"].includes(task.value)){data.archives.push({category:task.value,title:($("chapterTitle").value||task.value)+" · "+new Date().toLocaleString(),content:result,createdAt:new Date().toISOString()});persist();renderArchives();alert("已保存到创作归档。");return;}const title=$("chapterTitle").value.trim()||"第"+(data.chapters.length+1)+"章";if(activeChapter!==null&&data.chapters[activeChapter]&&confirm("覆盖当前选中的章节内容？选择“取消”则另存为新章节。")){data.chapters[activeChapter]={...data.chapters[activeChapter],title,body:result};}else{data.chapters.push({title,body:result,createdAt:new Date().toISOString()});activeChapter=data.chapters.length-1;}persist();renderChapters();$("chapterTitle").value=title;$("chapterBody").value=result;alert("章节已保存到章节管理。");};
+ $("chapterSendOther").onclick=()=>{const result=$("chapterResult").value.trim()||$("chapterBody").value.trim();if(!result)return alert("没有可发送的内容");const choice=prompt("把内容发送到哪个工作台？\n1 AI 创作台：润色 / 剧情审查 / 灵感提取\n2 人物档案：提取人物信息\n3 世界观设定：提取规则、地点、势力\n4 小说资料：整理摘要和大纲\n5 创作归档：保存原始资料","1");if(!choice)return;const map={"1":"studio","2":"characters","3":"world","4":"project","5":"library"};const dest=map[choice];if(!dest)return alert("选项无效");if(dest==="studio"){$("taskName").value="剧情审查";currentTask="剧情审查";renderTaskFields();$("prompt").value="请审查以下章节内容，指出逻辑、人物动机、节奏和伏笔问题，不要续写章节。";$("extra").value=result;document.querySelector('[data-page="studio"]').click();}else{document.querySelector('[data-page="'+dest+'"]').click();const key=dest==="characters"?"characters":dest==="world"?"world":dest==="project"?"project":"library";const panel=document.querySelector('#page-'+dest+' [data-workbench-key="'+key+'"]');if(panel){const first=panel.querySelector("[data-wb-fields] textarea, [data-wb-fields] input");if(first)first.value=result;}}};
+}
+
 const $=id=>document.getElementById(id);
 const STORAGE_KEY="novelStudioV2";
 const defaultData={title:"",synopsis:"",notes:"",world:"",chapters:[],characters:[],archives:[]};
@@ -70,8 +138,6 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.quer
 const TASK_FIELDS={
 "灵感生成":[["题材 / 类型","text","例如：悬疑、仙侠、科幻、都市","yes"],["一句话创意 / 核心种子","textarea","例如：一名能听见旧物记忆的修复师，发现一桩失踪案……","yes"],["希望的故事气质","text","例如：黑暗、轻松、热血、温情","no"]],
 "故事大纲":[["题材与目标读者","text","例如：东方玄幻，偏成人向","yes"],["主角与核心冲突","textarea","主角是谁？想达成什么？最大阻碍是什么？","yes"],["计划卷数 / 章节数","text","例如：3卷，每卷20章；或总共30章","no"],["已确定的结局或关键情节","textarea","可留空；写下必须保留的剧情","no"]],
-"章节创作":[["章节序号 / 标题","text","例如：第1章 雨夜来客","yes"],["本章目标与关键事件","textarea","本章要发生什么？人物要做出什么选择？","yes"],["开场场景 / 结尾钩子","textarea","地点、时间、氛围，以及希望如何收尾","no"]],
-"续写":[["从哪里开始续写","text","例如：第3章最后一段之后","yes"],["上一段正文（必须提供）","textarea","粘贴需要接续的正文，尤其是最后几段","yes"],["续写方向","textarea","下一步剧情、人物行动或需要避免的内容","no"]],
 "人物设定":[["人物姓名 / 称谓","text","例如：林牧","yes"],["身份与故事定位","text","例如：主角、流亡皇子、底层修士","yes"],["性格、背景与核心动机","textarea","人物经历、优缺点、欲望、恐惧和秘密","no"],["人物成长方向 / 人物关系","textarea","希望人物如何变化？与谁有重要关系？","no"]],
 "世界观设定":[["题材 / 时代背景","text","例如：架空古代、末日废土、星际文明","yes"],["世界核心概念","textarea","这个世界最特别的规则、现象或矛盾是什么？","yes"],["地理 / 势力 / 社会结构","textarea","国家、门派、组织、阶层、重要地点等","no"],["力量 / 科技规则与代价","textarea","能力如何获得、如何使用、有哪些限制？","no"]],
 "润色改写":[["需要处理的原文（必须提供）","textarea","粘贴需要润色或改写的原文","yes"],["改写幅度","text","例如：轻度润色 / 深度改写 / 保留原意重写","no"],["重点优化方向","text","例如：节奏、对话、画面感、情绪、逻辑","no"]],
@@ -80,8 +146,6 @@ const TASK_FIELDS={
 const TASK_HINTS={
 "灵感生成":"写下一个创意种子，AI 将扩展成多个可选故事方向。",
 "故事大纲":"提供主角、冲突和篇幅规划，AI 将搭建故事结构与分章大纲。",
-"章节创作":"描述本章目标和关键事件，AI 将直接写出章节正文。",
-"续写":"请粘贴上一段正文；续写会从正文末尾接上，不会重新开篇。",
 "人物设定":"填写人物身份与动机，AI 将生成完整人物档案。",
 "世界观设定":"描述世界核心概念，AI 将构建自洽的世界规则与社会体系。",
 "润色改写":"必须粘贴原文，AI 会在保留情节的前提下进行润色。",
@@ -131,5 +195,5 @@ $("exportWordBtn").onclick=()=>{const body=data.chapters.map((c,i)=>"<h1>"+esc(c
 $("importBtn").onclick=()=>$("importFile").click();
 $("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const parsed=JSON.parse(await file.text());if(!parsed||typeof parsed!=="object"||!Array.isArray(parsed.chapters)||!Array.isArray(parsed.characters))throw new Error("文件格式不正确，不是本工作室的 JSON 备份");if(!confirm("导入备份会替换当前浏览器中的小说资料。建议先点击“导出备份”。确定继续吗？"))return;data={...defaultData,...parsed};persist();load();alert("备份导入成功");}catch(err){alert("导入失败："+err.message);}finally{$("importFile").value="";}};
 async function check(){try{const r=await fetch("/api/health");const j=await r.json();$("apiStatus").textContent=j.configured?"● AI 已连接 · "+j.model:"● 服务已启动，AI 尚未配置";$("apiStatus").style.color=j.configured?"var(--accent2)":"#f0c477";}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
-renderTaskFields();load();check();
+renderTaskFields();load();check();mountWorkbenchPanel("characters","characters");mountWorkbenchPanel("world","world");mountWorkbenchPanel("project","project");mountWorkbenchPanel("library","library");setupChapterWorkbench();
 </script></body></html>
