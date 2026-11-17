@@ -129,5 +129,5 @@ $("exportWordBtn").onclick=()=>{const body=data.chapters.map((c,i)=>"<h1>"+esc(c
 $("importBtn").onclick=()=>$("importFile").click();
 $("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const parsed=JSON.parse(await file.text());if(!parsed||typeof parsed!=="object"||!Array.isArray(parsed.chapters)||!Array.isArray(parsed.characters))throw new Error("文件格式不正确，不是本工作室的 JSON 备份");if(!confirm("导入备份会替换当前浏览器中的小说资料。建议先点击“导出备份”。确定继续吗？"))return;data={...defaultData,...parsed};persist();load();alert("备份导入成功");}catch(err){alert("导入失败："+err.message);}finally{$("importFile").value="";}};
 async function check(){try{const r=await fetch("/api/health");const j=await r.json();$("apiStatus").textContent=j.configured?"● AI 已连接 · "+j.model:"● 服务已启动，AI 尚未配置";$("apiStatus").style.color=j.configured?"var(--accent2)":"#f0c477";}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
-load();check();
+renderTaskFields();load();check();
 </script></body></html>
