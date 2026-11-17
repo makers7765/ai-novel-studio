@@ -1,5 +1,28 @@
 const MODEL = "@cf/zai-org/glm-4.7-flash";
 
+// Workers AI 不同模型/版本可能使用不同的文本返回结构。
+// 只沿着常见的文本字段读取，避免把 token 用量等元数据当成正文。
+function extractText(value, depth = 0) {
+  if (depth > 8 || value == null) return "";
+  if (typeof value === "string") return value.trim();
+  if (Array.isArray(value)) {
+    return value.map(item => extractText(item, depth + 1)).filter(Boolean).join("\n").trim();
+  }
+  if (typeof value !== "object") return "";
+
+  const keys = [
+    "response", "output_text", "generated_text", "completion", "answer",
+    "text", "content", "message", "choices", "output", "result", "data"
+  ];
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      const found = extractText(value[key], depth + 1);
+      if (found) return found;
+    }
+  }
+  return "";
+}
+
 export async function onRequestPost({ request, env }) {
   if (!env.AI || typeof env.AI.run !== "function") {
     return Response.json({
@@ -40,14 +63,13 @@ ${prompt}`;
       temperature: 0.7
     });
 
-    const text =
-      (typeof result?.response === "string" && result.response) ||
-      result?.choices?.[0]?.message?.content ||
-      result?.result?.response ||
-      "";
-
+    const text = extractText(result);
     if (!text) {
-      return Response.json({ error: "模型已响应，但没有返回可读取的文本。请稍后重试。" }, { status: 502 });
+      // 不返回模型原始对象，避免泄露内部信息；只提供结构线索便于排查。
+      const keys = result && typeof result === "object" ? Object.keys(result).slice(0, 12).join(", ") : typeof result;
+      return Response.json({
+        error: `模型已响应，但返回结构中未找到正文文本（返回类型：${keys || "空"}）。请稍后重试。`
+      }, { status: 502 });
     }
     return Response.json({ text, model: MODEL, provider: "Cloudflare Workers AI" });
   } catch (error) {
