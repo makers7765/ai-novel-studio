@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 小说工作室 · V2</title>
+<style>
+:root{--bg:#10131b;--panel:#191e29;--panel2:#202737;--line:#30394b;--text:#edf1f8;--muted:#9aa6ba;--accent:#9b8cff;--accent2:#6fcbba;--danger:#ff8f9b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 13px;border-radius:10px}button.primary{background:var(--accent);color:#151323;border:0;font-weight:700}button:disabled{opacity:.5;cursor:wait}
+header{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--line);background:#141923;position:sticky;top:0;z-index:5}
+.brand{font-weight:800;font-size:18px}.brand span{color:var(--accent)}.status{font-size:12px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 68px)}aside{border-right:1px solid var(--line);padding:18px 12px;background:#141923}
+.nav{display:flex;flex-direction:column;gap:6px}.nav button{text-align:left;background:transparent;border-color:transparent;color:var(--muted)}.nav button.active,.nav button:hover{background:var(--panel2);color:var(--text);border-color:var(--line)}
+main{padding:26px;max-width:1500px;width:100%;margin:auto}.topline{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}h1{font-size:25px;margin:0 0 4px}h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}.field label{font-size:13px;color:var(--muted)}input,textarea,select{width:100%;background:#111722;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;outline:none}textarea{min-height:120px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}.taskgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.task{padding:13px;text-align:left;min-height:72px}.task strong{display:block}.task small{color:var(--muted)}.output{white-space:pre-wrap;min-height:180px;max-height:650px;overflow:auto;background:#111722;border:1px solid var(--line);border-radius:12px;padding:16px;line-height:1.85}
+.item{padding:12px;border:1px solid var(--line);border-radius:10px;margin:8px 0;background:#151b26}.item strong{display:block}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.hidden{display:none!important}.notice{padding:10px 12px;border-radius:10px;background:#28253a;color:#d8d1ff;font-size:13px}.error{color:var(--danger)}.chapter{min-height:300px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line);padding:8px}.nav{flex-direction:row;overflow:auto}.nav button{white-space:nowrap}main{padding:16px}.taskgrid{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}header{padding:0 14px}}
+</style></head>
+<body>
+<header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="exportBtn">导出备份</button></div></header>
+<div class="layout"><aside><div class="nav" id="nav">
+<button class="active" data-page="studio">✦ AI 创作台</button><button data-page="chapters">▤ 章节管理</button><button data-page="characters">♙ 人物档案</button><button data-page="world">◈ 世界观设定</button><button data-page="project">⚙ 小说资料</button>
+</div><div class="panel" style="margin-top:20px;padding:12px"><div class="muted" style="font-size:12px">当前作品</div><input id="bookTitle" placeholder="给小说起个名字" style="margin-top:7px"></div><div class="muted" style="font-size:12px;padding:8px">资料保存在本机浏览器</div></aside>
+<main>
+<section id="page-studio">
+<div class="topline"><div><h1>AI 创作台</h1><div class="muted">选择任务，描述你的想法，让 AI 直接参与创作。</div></div></div>
+<div class="panel"><h2>选择创作任务</h2><div class="taskgrid" id="tasks">
+<button class="task" data-task="灵感生成"><strong>💡 灵感生成</strong><small>从一句话扩展故事</small></button>
+<button class="task" data-task="故事大纲"><strong>🧭 故事大纲</strong><small>搭建主线与章节结构</small></button>
+<button class="task" data-task="章节创作"><strong>✍️ 章节创作</strong><small>生成完整小说正文</small></button>
+<button class="task" data-task="续写"><strong>⤴️ 智能续写</strong><small>承接已有章节继续写</small></button>
+<button class="task" data-task="人物设定"><strong>♙ 人物设定</strong><small>背景、动机、弧光</small></button>
+<button class="task" data-task="世界观设定"><strong>🌌 世界观设定</strong><small>规则、地理、历史</small></button>
+<button class="task" data-task="润色改写"><strong>✧ 润色改写</strong><small>优化文风与节奏</small></button>
+<button class="task" data-task="剧情审查"><strong>🔎 剧情审查</strong><small>查找伏笔与逻辑问题</small></button>
+</div></div>
+<div class="grid"><div class="panel"><h2>创作要求</h2><div class="field"><label>当前任务</label><input id="taskName" value="灵感生成"></div><div class="field"><label>你的想法 / 具体要求</label><textarea id="prompt" placeholder="例如：主角是一个被逐出宗门的少年，在一次押镖途中发现自己的身世秘密……"></textarea></div><div class="field"><label>篇幅要求</label><select id="length"><option>适中，约 800-1200 字</option><option>短篇，约 300-500 字</option><option>详细，约 1500-2500 字</option><option>长篇，尽可能充分展开</option></select></div><div class="field"><label>文风偏好（可选）</label><input id="style" placeholder="例如：悬疑、克制、电影感、古风"></div><div class="field"><label>补充上下文（可选）</label><textarea id="extra" placeholder="粘贴前文、设定、剧情摘要；AI 会参考这些资料。"></textarea></div><div class="actions"><button class="primary" id="generateBtn">✦ 立即生成</button><button id="clearPrompt">清空输入</button></div><p class="muted" id="progress" style="font-size:13px"></p></div>
+<div class="panel"><div class="row"><h2>AI 生成结果</h2><button id="copyBtn" style="flex:0 0 auto">复制结果</button></div><div id="result" class="output">生成内容会显示在这里。你可以复制，或保存到章节管理。</div><div class="actions" style="margin-top:12px"><button id="saveChapter" class="primary">保存为新章节</button><button id="replacePrompt">将结果作为下一轮上下文</button></div></div></div>
+<div class="notice">提示：AI 会优先参考“小说资料”中填写的设定。长篇创作建议按大纲分章生成，并把已确定的剧情摘要放入上下文，保持连续性。</div>
+</section>
+<section id="page-chapters" class="hidden"><div class="topline"><div><h1>章节管理</h1><div class="muted">编辑、保存和管理小说正文。</div></div><button class="primary" id="newChapter">＋ 新建章节</button></div><div class="grid"><div class="panel"><h2>章节列表</h2><div id="chapterList"></div></div><div class="panel"><h2>章节编辑器</h2><input id="chapterTitle" placeholder="章节标题"><textarea id="chapterBody" class="chapter" placeholder="在这里写作，或从 AI 创作台保存生成内容。"></textarea><div class="actions"><button class="primary" id="saveChapterEdit">保存章节</button><button id="deleteChapter">删除章节</button><button id="sendChapter">发送到 AI 创作台</button></div></div></div></section>
+<section id="page-characters" class="hidden"><div class="topline"><div><h1>人物档案</h1><div class="muted">记录角色身份、目标、秘密与成长弧光。</div></div><button class="primary" id="addCharacter">＋ 添加人物</button></div><div class="panel"><div id="characterList"></div></div></section>
+<section id="page-world" class="hidden"><div class="topline"><div><h1>世界观设定</h1><div class="muted">集中管理规则、地理、历史、势力与关键设定。</div></div></div><div class="panel"><textarea id="worldText" style="min-height:380px" placeholder="写下世界规则、时代背景、地理、力量体系、势力关系、历史事件等。"></textarea><button class="primary" id="saveWorld" style="margin-top:10px">保存世界观</button></div></section>
+<section id="page-project" class="hidden"><div class="topline"><div><h1>小说资料</h1><div class="muted">把既有资料整理在这里，AI 创作时会自动带入。</div></div></div><div class="panel"><div class="field"><label>小说简介 / 核心设定</label><textarea id="synopsis" style="min-height:180px" placeholder="题材、主题、核心冲突、主角目标、故事终点……"></textarea></div><div class="field"><label>人物关系、势力地图、伏笔清单、剧情摘要等补充资料</label><textarea id="notes" style="min-height:260px" placeholder="把你已有的设定、人物关系、时间线、伏笔记录在这里。"></textarea></div><button class="primary" id="saveProject">保存小说资料</button></div><div class="notice">原有 WorkBuddy 分享链接暂时不会自动读取内容。请把分享页面中的资料复制到对应栏目，后续可继续扩展导入功能。</div></section>
+</main></div>
+<script>
+const $=id=>document.getElementById(id);
+const defaultData={title:"",synopsis:"",notes:"",world:"",chapters:[],characters:[]};
+let data={...defaultData,...JSON.parse(localStorage.getItem("novelStudioV2")||"{}")};
+let activeChapter=null,lastResult="",currentTask="灵感生成";
+function persist(){localStorage.setItem("novelStudioV2",JSON.stringify(data));}
+function load(){ $("bookTitle").value=data.title||"";$("synopsis").value=data.synopsis||"";$("notes").value=data.notes||"";$("worldText").value=data.world||"";renderChapters();renderCharacters();}
+function contextText(){return `作品名：${data.title||"未命名"}\\n作品简介：${data.synopsis||"暂无"}\\n世界观：${data.world||"暂无"}\\n人物档案：${data.characters.map(c=>`${c.name}：${c.info}`).join("\\n")||"暂无"}\\n其他资料：${data.notes||"暂无"}\\n已有章节摘要/正文：${data.chapters.slice(-3).map(c=>c.title+"\\n"+c.body.slice(0,2500)).join("\\n\\n")||"暂无"}`;}
+function renderChapters(){const box=$("chapterList");box.innerHTML="";if(!data.chapters.length){box.innerHTML='<p class="muted">还没有章节，点击“新建章节”或从 AI 创作台保存。</p>';return;}data.chapters.forEach((c,i)=>{const el=document.createElement("div");el.className="item";el.innerHTML=`<strong>${i+1}. ${esc(c.title)}</strong><span class="muted">${c.body.length} 字</span>`;el.onclick=()=>{activeChapter=i;$("chapterTitle").value=c.title;$("chapterBody").value=c.body;};box.appendChild(el);});}
+function renderCharacters(){const box=$("characterList");box.innerHTML="";if(!data.characters.length){box.innerHTML='<p class="muted">暂无人物档案。</p>';return;}data.characters.forEach((c,i)=>{const el=document.createElement("div");el.className="item";el.innerHTML=`<div class="row"><strong>${esc(c.name)}</strong><button style="flex:0 0 auto">删除</button></div><div>${esc(c.info)}</div>`;el.querySelector("button").onclick=()=>{data.characters.splice(i,1);persist();renderCharacters();};box.appendChild(el);});}
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+$("bookTitle").onchange=()=>{data.title=$("bookTitle").value;persist();};
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));$("page-"+b.dataset.page).classList.remove("hidden");});
+document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{currentTask=b.dataset.task;$("taskName").value=currentTask;document.querySelectorAll(".task").forEach(x=>x.style.borderColor=x===b?"var(--accent)":"var(--line)");});
+$("generateBtn").onclick=async()=>{const prompt=$("prompt").value.trim();if(!prompt){$("progress").textContent="请先填写创作要求。";return;}const btn=$("generateBtn");btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在连接 AI，请稍候…";$("result").textContent="AI 正在创作中…";
+const fullPrompt=`${prompt}\\n\\n篇幅：${$("length").value}\\n文风：${$("style").value||"自然流畅，符合题材"}\\n请直接给出成果。`;
+try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:$("taskName").value,prompt:fullPrompt,context:contextText()+"\\n\\n补充上下文："+$("extra").value})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");lastResult=j.text;$("result").textContent=lastResult;$("progress").textContent="生成完成。请检查内容并保存。";}catch(e){$("result").textContent="生成失败："+e.message;$("progress").textContent="请检查服务状态和 API 配置。";}finally{btn.disabled=false;btn.textContent="✦ 立即生成";}};
+$("copyBtn").onclick=()=>{if(lastResult)navigator.clipboard.writeText(lastResult);};
+$("saveChapter").onclick=()=>{if(!lastResult)return alert("当前没有可保存的生成结果");data.chapters.push({title:`第${data.chapters.length+1}章`,body:lastResult});persist();renderChapters();alert("已保存到章节管理");};
+$("replacePrompt").onclick=()=>{$("extra").value=lastResult;};
+$("clearPrompt").onclick=()=>{$("prompt").value="";$("extra").value="";};
+$("newChapter").onclick=()=>{activeChapter=null;$("chapterTitle").value=`第${data.chapters.length+1}章`;$("chapterBody").value="";};
+$("saveChapterEdit").onclick=()=>{const c={title:$("chapterTitle").value||"未命名章节",body:$("chapterBody").value};if(activeChapter===null)data.chapters.push(c);else data.chapters[activeChapter]=c;persist();renderChapters();};
+$("deleteChapter").onclick=()=>{if(activeChapter===null)return;if(confirm("确定删除当前章节？")){data.chapters.splice(activeChapter,1);activeChapter=null;persist();renderChapters();$("chapterTitle").value="";$("chapterBody").value="";}};
+$("sendChapter").onclick=()=>{ $("extra").value=$("chapterBody").value; $("prompt").value="请基于以上章节内容续写下一段，保持人物性格、叙事视角和情节连续。";document.querySelector('[data-page="studio"]').click();};
+$("addCharacter").onclick=()=>{const name=prompt("人物姓名？");if(!name)return;const info=prompt("人物设定（身份、性格、目标、秘密等）：")||"";data.characters.push({name,info});persist();renderCharacters();};
+$("saveWorld").onclick=()=>{data.world=$("worldText").value;persist();alert("世界观已保存");};
+$("saveProject").onclick=()=>{data.synopsis=$("synopsis").value;data.notes=$("notes").value;persist();alert("小说资料已保存");};
+$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="小说工作室备份.json";a.click();URL.revokeObjectURL(a.href);};
+async function check(){try{const r=await fetch("/api/health");const j=await r.json();$("apiStatus").textContent=j.configured?`● AI 服务已配置 · ${j.model}`:"● 服务已启动，等待配置 API Key";$("apiStatus").style.color=j.configured?"var(--accent2)":"#f0c477";}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
+load();check();
+</script></body></html>
