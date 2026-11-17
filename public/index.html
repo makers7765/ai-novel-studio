@@ -24,7 +24,11 @@ main{padding:26px;max-width:1500px;width:100%;margin:auto}.topline{display:flex;
 .workbench-picker-head h2{font-size:21px;margin:0 0 5px}
 .workbench-picker-head p{margin:0;color:var(--muted);font-size:13px}
 .workbench-picker-close{width:38px;height:38px;padding:0;flex:0 0 38px;font-size:20px}
-.workbench-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.workbench-options{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.workbench-option{width:100%;min-height:76px;display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) 20px;align-items:center;column-gap:14px;padding:12px 16px}
+.workbench-option .wb-top{margin:0;min-width:0}
+.workbench-option small{font-size:13px}
+.workbench-option .wb-check{right:16px;top:50%;transform:translateY(-50%)}
 .workbench-option{position:relative;text-align:left;min-height:112px;padding:15px 16px;background:#151c29;border:1px solid #354158;border-radius:15px;transition:border-color .16s,background .16s,transform .16s}
 .workbench-option:hover{border-color:#8f83f5;background:#20283a;transform:translateY(-2px)}
 .workbench-option.selected{border:2px solid var(--accent);background:#292541;box-shadow:0 0 0 3px #9b8cff20}
@@ -37,7 +41,7 @@ main{padding:26px;max-width:1500px;width:100%;margin:auto}.topline{display:flex;
 .workbench-picker-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:15px;border-top:1px solid #354158}
 .workbench-picker-foot span{font-size:12px;color:var(--muted)}
 .workbench-picker-actions{display:flex;gap:9px}
-@media(max-width:560px){.workbench-picker{padding:10px}.workbench-picker-card{padding:17px;border-radius:17px}.workbench-options{grid-template-columns:1fr;gap:9px}.workbench-option{min-height:88px}.workbench-picker-foot{align-items:flex-start;flex-direction:column}.workbench-picker-actions{width:100%}.workbench-picker-actions button{flex:1}}
+@media(max-width:560px){.workbench-picker{padding:10px}.workbench-picker-card{padding:17px;border-radius:17px}.workbench-option{grid-template-columns:minmax(0,1fr) 20px;row-gap:6px}.workbench-option .wb-top{grid-column:1}.workbench-option small{grid-column:1/-1}.workbench-option .wb-check{grid-column:2;grid-row:1}.workbench-options{grid-template-columns:1fr;gap:9px}.workbench-option{min-height:88px}.workbench-picker-foot{align-items:flex-start;flex-direction:column}.workbench-picker-actions{width:100%}.workbench-picker-actions button{flex:1}}
 </style></head>
 <body>
 <header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="exportBtn">导出备份</button><button id="exportTxtBtn">导出 TXT</button><button id="exportWordBtn">导出 Word</button><button id="importBtn">导入备份</button><input id="importFile" type="file" accept=".json,application/json" hidden></div></header>
