@@ -1,8 +1,12 @@
+const MODEL = "@cf/zai-org/glm-4.7-flash";
+
 export function onRequest({ env }) {
-  const configured = Boolean(env.OPENAI_API_KEY);
+  const configured = Boolean(env.AI && typeof env.AI.run === "function");
   return Response.json({
     ok: true,
     configured,
-    model: configured ? (env.OPENAI_MODEL || "请在 Cloudflare 环境变量中设置 OPENAI_MODEL") : "零成本模式：尚未启用付费 API"
+    model: configured ? MODEL : "尚未添加 Cloudflare Workers AI 绑定（AI）",
+    mode: "free-first",
+    paidFallback: false
   });
 }
