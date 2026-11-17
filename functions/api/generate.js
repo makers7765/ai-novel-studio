@@ -1,86 +1,145 @@
+
 const MODEL = "@cf/zai-org/glm-4.7-flash";
 
-// Workers AI 不同模型/版本可能使用不同的文本返回结构。
-// 只沿着常见的文本字段读取，避免把 token 用量等元数据当成正文。
-function extractText(value, depth = 0) {
-  if (depth > 8 || value == null) return "";
-  if (typeof value === "string") return value.trim();
-  if (Array.isArray(value)) {
-    return value.map(item => extractText(item, depth + 1)).filter(Boolean).join("\n").trim();
-  }
-  if (typeof value !== "object") return "";
+// 专门读取模型正文，不把 usage 等统计信息当成正文。
+function extractText(result) {
+  if (!result) return "";
 
-  const keys = [
-    "response", "output_text", "generated_text", "completion", "answer",
-    "text", "content", "message", "choices", "output", "result", "data"
-  ];
-  for (const key of keys) {
-    if (Object.prototype.hasOwnProperty.call(value, key)) {
-      const found = extractText(value[key], depth + 1);
-      if (found) return found;
+  // 常见 Workers AI 返回格式
+  if (typeof result.response === "string") {
+    return result.response.trim();
+  }
+
+  // OpenAI 兼容格式
+  const choice = result.choices?.[0];
+
+  if (typeof choice?.message?.content === "string") {
+    return choice.message.content.trim();
+  }
+
+  if (Array.isArray(choice?.message?.content)) {
+    return choice.message.content
+      .map(item => item?.text || "")
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+  }
+
+  if (typeof choice?.text === "string") {
+    return choice.text.trim();
+  }
+
+  // 其他常见格式
+  for (const key of ["output_text", "generated_text", "text"]) {
+    if (typeof result[key] === "string" && result[key].trim()) {
+      return result[key].trim();
     }
   }
+
   return "";
 }
 
 export async function onRequestPost({ request, env }) {
   if (!env.AI || typeof env.AI.run !== "function") {
     return Response.json({
-      error: "尚未连接 Cloudflare Workers AI。请在 Pages 项目设置中添加 Workers AI 绑定，变量名称填写 AI，然后重新部署。"
+      error: "尚未连接 Workers AI，请检查 AI 绑定。"
     }, { status: 503 });
   }
 
   let body;
-  try { body = await request.json(); } catch {
-    return Response.json({ error: "请求格式无效。" }, { status: 400 });
+
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({
+      error: "请求格式无效。"
+    }, { status: 400 });
   }
 
   const { task, prompt, context = "" } = body || {};
-  if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 12000) {
-    return Response.json({ error: "请输入有效创作要求（最多 12000 字符）。" }, { status: 400 });
-  }
-  if (typeof context !== "string" || context.length > 20000) {
-    return Response.json({ error: "小说上下文过长，请精简后重试（最多 20000 字符）。" }, { status: 400 });
+
+  if (
+    typeof prompt !== "string" ||
+    !prompt.trim() ||
+    prompt.length > 12000
+  ) {
+    return Response.json({
+      error: "请输入有效创作要求（最多 12000 字符）。"
+    }, { status: 400 });
   }
 
-  const instructions = "你是一位专业中文小说主编、类型小说作家和连续性编辑。请使用中文回答。严格尊重用户提供的世界观、人物设定和既有剧情，不擅自推翻已确定设定。创作要求：情节有因果、人物动机可信、场景具体、避免空洞总结和重复表达。如果用户要求小说正文，直接输出可用正文，不要先解释写作思路；如果用户要求分析，则用清晰的小标题和可执行修改建议。如果上下文与本次要求冲突，指出冲突并优先遵循用户本次明确指令。";
+  if (
+    typeof context !== "string" ||
+    context.length > 20000
+  ) {
+    return Response.json({
+      error: "小说上下文过长，请精简后重试。"
+    }, { status: 400 });
+  }
 
-  const userMessage = `【任务类型】${String(task || "自由创作").slice(0, 80)}
+  const instructions =
+    "你是一位专业中文小说作家和小说主编。" +
+    "请使用中文回答，尊重人物设定和既有剧情。" +
+    "如果用户要求小说正文，直接输出正文，不要解释写作思路。" +
+    "情节要有因果，人物动机可信，语言自然，避免重复。";
+
+  const userMessage = `
+【任务类型】
+${String(task || "自由创作").slice(0, 80)}
 
 【小说资料与上下文】
 ${context || "暂无"}
 
 【本次要求】
-${prompt}`;
+${prompt}
+`;
 
   try {
     const result = await env.AI.run(MODEL, {
       messages: [
-        { role: "system", content: instructions },
-        { role: "user", content: userMessage }
+        {
+          role: "system",
+          content: instructions
+        },
+        {
+          role: "user",
+          content: userMessage
+        }
       ],
       max_completion_tokens: 1800,
-      temperature: 0.7
+      temperature: 0.7,
+
+      // 关闭思考模式，优先获得可读取的正文
+      chat_template_kwargs: {
+        enable_thinking: false
+      }
     });
 
     const text = extractText(result);
+
     if (!text) {
-      // 不返回模型原始对象，避免泄露内部信息；只提供结构线索便于排查。
-      const keys = result && typeof result === "object" ? Object.keys(result).slice(0, 12).join(", ") : typeof result;
       return Response.json({
-        error: `模型已响应，但返回结构中未找到正文文本（返回类型：${keys || "空"}）。请稍后重试。`
+        error: "模型已经响应，但没有返回可读取的正文。请稍后重试。"
       }, { status: 502 });
     }
-    return Response.json({ text, model: MODEL, provider: "Cloudflare Workers AI" });
+
+    return Response.json({
+      text,
+      model: MODEL,
+      provider: "Cloudflare Workers AI"
+    });
+
   } catch (error) {
     const message = String(error?.message || "");
+
     if (/limit|quota|neuron|billing|payment|upgrade/i.test(message)) {
       return Response.json({
-        error: "Cloudflare Workers AI 免费额度可能已用完，或当前账户/模型需要付费权限。系统已停止请求；不要升级付费套餐。"
+        error: "模型额度或账户权限可能不足，系统已停止本次请求。请先检查用量，不要升级付费套餐。"
       }, { status: 429 });
     }
+
     return Response.json({
-      error: "Cloudflare Workers AI 调用失败。请确认 AI 绑定名称是 AI、模型在免费计划可用，并查看 Cloudflare 日志。"
+      error: "Workers AI 调用失败，请检查 Cloudflare 日志和 AI 绑定。"
     }, { status: 502 });
   }
 }
