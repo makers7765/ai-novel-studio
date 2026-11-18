@@ -182,7 +182,7 @@ function renderTaskFields(task){
  });
 }
 document.addEventListener("click",e=>{if(!e.target.closest("#taskFields .picker"))document.querySelectorAll("#taskFields .picker.open").forEach(x=>x.classList.remove("open"));});
-function taskInputText(task){const vals={};document.querySelectorAll("#taskFields [data-task-field]").forEach(el=>vals[el.dataset.taskField]=el.value.trim());taskDrafts[task]=vals;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}return Object.entries(vals).map(([k,v])=>v?k+"："+v:"").filter(Boolean).join("\n");}
+function taskInputText(task){const vals={...(taskDrafts[task]||{})};document.querySelectorAll("#taskFields [data-field-key]").forEach(el=>{const key=el.dataset.fieldKey;if(key)vals[key]=String(vals[key]??"").trim();});taskDrafts[task]=vals;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}return Object.entries(vals).map(([k,v])=>v?k+"："+v:"").filter(Boolean).join("\n");}
 function taskInstruction(task){
  return {
  "灵感生成":"你是创意策划。请提供至少5个彼此有明显差异的故事灵感，每个包含核心设定、主角目标、主要冲突、独特卖点和可持续发展的悬念。不要直接写章节正文。",
@@ -204,7 +204,7 @@ document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{
 });
 $("generateBtn").onclick=async()=>{
  const taskAtStart=currentTask;const prompt=$("prompt").value.trim();const specific=taskInputText(taskAtStart);
- if(!prompt&&!specific){$("progress").textContent="请填写当前任务的专属内容。";return;}
+ if(!prompt&&!specific){$("progress").textContent="请先填写当前任务的内容：点击下方任意字段打开填写窗口，或填写“补充要求”。";$("result").textContent="尚未填写创作内容。";return;}
  const seq=++generationSeq,btn=$("generateBtn");btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在执行【"+taskAtStart+"】…";$("result").textContent="AI 正在执行【"+taskAtStart+"】…";
  const fullPrompt="【任务类型】"+taskAtStart+"\n【任务专属要求】\n"+taskInstruction(taskAtStart)+"\n\n【专属输入】\n"+specific+"\n\n【补充要求】"+prompt+"\n\n只执行当前任务，不得改做其他任务。";
  try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");if(seq!==generationSeq||taskAtStart!==currentTask)return;lastResult=j.text;$("result").textContent=lastResult;$("progress").textContent="【"+taskAtStart+"】生成完成，请检查后保存。";}
