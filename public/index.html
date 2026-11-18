@@ -16,6 +16,10 @@ main{padding:26px;max-width:none;width:100%;margin:0}.topline{display:flex;justi
 .item{padding:12px;border:1px solid var(--line);border-radius:10px;margin:8px 0;background:#151b26}.item strong{display:block}.character-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.character-form .field{margin:4px 0}.character-form .wide{grid-column:1/-1}.character-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}@media(max-width:650px){.character-form{grid-template-columns:1fr}.character-form .wide{grid-column:auto}}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.hidden{display:none!important}.notice{padding:10px 12px;border-radius:10px;background:#28253a;color:#d8d1ff;font-size:13px}.error{color:var(--danger)}.chapter{min-height:300px}.collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}.collection-card{cursor:pointer;transition:.15s}.collection-card:hover{border-color:var(--accent);transform:translateY(-1px)}.collection-card .card-title{font-weight:700;margin-bottom:5px}.collection-card .card-preview{color:var(--muted);font-size:12px;white-space:pre-wrap;max-height:70px;overflow:hidden}.card-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}.modal-backdrop{position:fixed;inset:0;background:rgba(4,7,12,.72);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#171d29;border:1px solid #46506a;border-radius:14px;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
 @media(max-width:1100px){.grid{grid-template-columns:1fr}}
 @media(max-width:850px){.layout{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line);padding:8px}.nav{flex-direction:row;overflow:auto}.nav button{white-space:nowrap}main{padding:16px}.taskgrid{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}header{padding:0 14px}}
+
+/* AI 创作台表单优化：核心输入常驻，选项弹出，层次更清晰 */
+.task-core-field{margin:14px 0 16px}.task-core-field label{font-size:13px;color:#d5dced;font-weight:650}.task-core-field textarea{min-height:132px;line-height:1.7}.task-core-field:first-child textarea{min-height:150px}.task-core-field input{min-height:44px}.task-field-optional{color:var(--muted);font-weight:400}.task-fields-heading{font-size:13px;color:var(--muted);font-weight:650;margin:16px 0 6px;padding-top:12px;border-top:1px solid var(--line)}.custom-prompt-toggle{background:transparent;border:1px dashed #59627a;color:#c9c2ff;padding:8px 11px}.custom-prompt-wrap{margin-top:8px}.custom-prompt-wrap textarea{min-height:100px}.studio-progress{min-height:24px;margin:12px 0 0;font-size:13px}.studio-progress[data-state="error"]{color:var(--danger)}.studio-progress[data-state="success"]{color:var(--accent2)}.studio-progress[data-state="running"]{color:#d7cfff}
+@media(min-width:1101px){.grid:has(#taskFields){grid-template-columns:minmax(340px,.92fr) minmax(0,1.08fr)}}
 </style></head>
 <body>
 <header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="exportBtn">导出备份</button></div></header>
@@ -45,7 +49,7 @@ main{padding:26px;max-width:none;width:100%;margin:0}.topline{display:flex;justi
 <button class="task" data-task="润色改写"><strong>✧ 润色改写</strong><small>优化文风与节奏</small></button>
 <button class="task" data-task="剧情审查"><strong>🔎 剧情审查</strong><small>查找伏笔与逻辑问题</small></button>
 </div></div>
-<div class="grid"><div class="panel"><h2>创作要求</h2><div class="field"><label>当前任务（由上方任务卡片决定）</label><input id="taskName" value="灵感生成" readonly aria-readonly="true" title="由上方所选任务自动决定"></div><div class="field"><label>补充要求（可选）</label><textarea id="prompt" placeholder="补充你对本次生成的特别要求；主要内容请填写下方当前任务的专属字段。"></textarea></div><div id="taskFields"></div><div class="actions"><button class="primary" id="generateBtn">✦ 立即生成</button><button id="clearPrompt">清空输入</button></div><p class="muted" id="progress" style="font-size:13px"></p></div>
+<div class="grid"><div class="panel"><h2>创作要求</h2><div class="field"><label>当前任务（由上方任务卡片决定）</label><input id="taskName" value="灵感生成" readonly aria-readonly="true" title="由上方所选任务自动决定"></div><div id="taskFields"></div><button type="button" id="toggleCustomPrompt" class="custom-prompt-toggle">＋ 自定义要求（选填）</button><div id="customPromptWrap" class="field custom-prompt-wrap hidden"><label for="prompt">自定义要求</label><textarea id="prompt" placeholder="补充风格、限制条件或其他特别要求；不填写也可以生成。"></textarea></div><div class="actions" style="margin-top:16px"><button class="primary" id="generateBtn">✦ 立即生成</button><button id="clearPrompt">清空当前任务输入</button></div><p class="muted studio-progress" id="progress" data-state="idle">填写当前任务的核心内容后，即可开始生成；其他选项均可留空。</p></div>
 <div class="panel"><div class="row"><h2>AI 生成结果</h2><button id="copyBtn" style="flex:0 0 auto">复制结果</button></div><div id="result" class="output" contenteditable="true" role="textbox" aria-label="AI生成结果，可直接编辑" aria-multiline="true" spellcheck="true" style="min-height:420px;max-height:70vh;overflow:auto;white-space:pre-wrap;outline:none;cursor:text" data-placeholder="AI生成内容会显示在这里。你可以直接点击文本修改、补充或删除内容，再确认保存。">生成内容会显示在这里。你可以直接点击这里修改、补充或删除内容。</div><p class="muted" style="font-size:12px">提示：生成结果可直接编辑。保存、复制或作为下一轮上下文时，都会使用你修改后的内容。</p><div class="actions" style="margin-top:12px"><button id="saveChapter" class="primary">确认保存到对应资料库</button><button id="replacePrompt">将结果作为下一轮上下文</button></div></div></div>
 <div class="notice">提示：AI 会优先参考“小说资料”中填写的设定。长篇创作建议按大纲分章生成，并把已确定的剧情摘要放入上下文，保持连续性。</div>
 </section>
@@ -165,54 +169,67 @@ function renderTaskFields(task){
  const host=$("taskFields");host.innerHTML="";
  const fields=taskFields[task]||[];
  const saved=taskDrafts[task]||{};
- fields.forEach(([key,label,type,placeholder],i)=>{
+ const requiredKeys={
+  "灵感生成":["seed"],"故事大纲":["premise"],"章节创作":["chapterGoal"],
+  "续写":["sourceText"],"人物设定":["personSeed"],"世界观设定":["worldSeed"],
+  "润色改写":["sourceText"],"剧情审查":["reviewText"]
+ }[task]||[];
+ const choiceFields=[];
+ fields.forEach(([key,label,type,placeholder])=>{
+  const required=requiredKeys.includes(key);
+  if(type==="choice"){
+   choiceFields.push([key,label,placeholder]);
+   return;
+  }
+  const wrap=document.createElement("div");wrap.className="field task-core-field";wrap.dataset.fieldKey=key;
+  const lab=document.createElement("label");lab.textContent=label+(required?" *":(label.includes("可选")||label.includes("选填")?"":"（选填）"));wrap.appendChild(lab);
+  const editor=type==="textarea"?document.createElement("textarea"):document.createElement("input");
+  if(type==="textarea"){editor.rows=key==="seed"||key==="premise"||key==="chapterGoal"||key==="personSeed"||key==="worldSeed"?5:4;}
+  else editor.type="text";
+  editor.placeholder=placeholder||"点击填写";
+  editor.value=saved[key]||"";
+  editor.dataset.fieldKey=key;
+  editor.setAttribute("aria-label",label);
+  if(required)editor.setAttribute("aria-required","true");
+  editor.oninput=()=>{saved[key]=editor.value;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}};
+  wrap.appendChild(editor);host.appendChild(wrap);
+ });
+ if(choiceFields.length){
+  const heading=document.createElement("div");heading.className="task-fields-heading";heading.textContent="更多选项（全部选填，可弹出选择或手动填写）";host.appendChild(heading);
+ }
+ choiceFields.forEach(([key,label,optionsText])=>{
   const wrap=document.createElement("div");wrap.className="field picker";wrap.dataset.fieldKey=key;
-  const lab=document.createElement("label");lab.textContent=label;wrap.appendChild(lab);
+  const lab=document.createElement("label");lab.textContent=label+"（选填）";wrap.appendChild(lab);
   const trigger=document.createElement("button");trigger.type="button";trigger.className="picker-trigger";
   const valueSpan=document.createElement("span");valueSpan.className="picker-value";trigger.appendChild(valueSpan);wrap.appendChild(trigger);
   const pop=document.createElement("div");pop.className="picker-popover";
   const closeOthers=()=>document.querySelectorAll("#taskFields .picker.open").forEach(x=>{if(x!==wrap)x.classList.remove("open");});
   trigger.onclick=e=>{e.stopPropagation();closeOthers();wrap.classList.toggle("open");};
-  const setValue=v=>{saved[key]=v;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{};valueSpan.textContent=v||"点击填写";valueSpan.className=v?"picker-value":"picker-value picker-placeholder";};
-  if(type==="choice"){
-   const selected=()=>String(saved[key]||"").split("、").map(x=>x.trim()).filter(Boolean);
-   const options=placeholder.split("|").filter(Boolean);
-   const search=document.createElement("input");search.className="picker-search";search.placeholder="搜索选项…";pop.appendChild(search);
-   const optBox=document.createElement("div");optBox.className="picker-options";
-   options.forEach(v=>{
-    const row=document.createElement("label");row.className="picker-option";row.dataset.option=v;
-    const cb=document.createElement("input");cb.type="checkbox";cb.value=v;cb.checked=selected().includes(v);
-    const text=document.createElement("span");text.textContent=v;row.append(cb,text);optBox.appendChild(row);
-    cb.onchange=()=>{const vals=[...optBox.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);setValue(vals.join("、"));};
-   });
-   pop.appendChild(optBox);
-   search.oninput=()=>{const q=search.value.trim().toLowerCase();optBox.querySelectorAll(".picker-option").forEach(x=>x.style.display=(!q||x.dataset.option.toLowerCase().includes(q))?"flex":"none");};
-   const custom=document.createElement("div");custom.className="picker-custom";
-   const customInput=document.createElement("input");customInput.placeholder="输入自定义选项，回车添加";
-   const add=document.createElement("button");add.type="button";add.textContent="添加";
-   const addCustom=()=>{const v=customInput.value.trim();if(!v)return;const vals=selected();if(!vals.includes(v))vals.push(v);setValue(vals.join("、"));customInput.value="";};
-   add.onclick=addCustom;customInput.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addCustom();}};
-   custom.append(customInput,add);pop.appendChild(custom);
-   const actions=document.createElement("div");actions.className="picker-actions";
-   const clear=document.createElement("button");clear.type="button";clear.textContent="清空选择";clear.onclick=()=>{optBox.querySelectorAll('input[type="checkbox"]').forEach(x=>x.checked=false);setValue("");};
-   const done=document.createElement("button");done.type="button";done.className="primary";done.textContent="完成";done.onclick=()=>wrap.classList.remove("open");
-   actions.append(clear,done);pop.appendChild(actions);
-   const note=document.createElement("div");note.className="picker-single-note";note.textContent="可多选热门选项，也可以自己输入；不需要的可以不选。";pop.appendChild(note);
-   setValue(saved[key]||"");
-  }else{
-   const editor=type==="textarea"?document.createElement("textarea"):document.createElement("input");
-   editor.className=type==="textarea"?"picker-textarea":"";
-   editor.placeholder=placeholder||"点击填写";
-   editor.value=saved[key]||"";
-   editor.oninput=()=>setValue(editor.value);
-   pop.appendChild(editor);
-   const actions=document.createElement("div");actions.className="picker-actions";
-   const clear=document.createElement("button");clear.type="button";clear.textContent="清空";clear.onclick=()=>{editor.value="";setValue("");};
-   const done=document.createElement("button");done.type="button";done.className="primary";done.textContent="完成";done.onclick=()=>wrap.classList.remove("open");
-   actions.append(clear,done);pop.appendChild(actions);
-   setValue(saved[key]||"");
-  }
-  wrap.appendChild(pop);host.appendChild(wrap);
+  const setValue=v=>{saved[key]=v;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{};valueSpan.textContent=v||"选择选项（也可自定义）";valueSpan.className=v?"picker-value":"picker-value picker-placeholder";};
+  const selected=()=>String(saved[key]||"").split("、").map(x=>x.trim()).filter(Boolean);
+  const options=optionsText.split("|").filter(Boolean);
+  const search=document.createElement("input");search.className="picker-search";search.placeholder="搜索热门选项…";pop.appendChild(search);
+  const optBox=document.createElement("div");optBox.className="picker-options";
+  options.forEach(v=>{
+   const row=document.createElement("label");row.className="picker-option";row.dataset.option=v;
+   const cb=document.createElement("input");cb.type="checkbox";cb.value=v;cb.checked=selected().includes(v);
+   const text=document.createElement("span");text.textContent=v;row.append(cb,text);optBox.appendChild(row);
+   cb.onchange=()=>{const vals=[...optBox.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);setValue(vals.join("、"));};
+  });
+  pop.appendChild(optBox);
+  search.oninput=()=>{const q=search.value.trim().toLowerCase();optBox.querySelectorAll(".picker-option").forEach(x=>x.style.display=(!q||x.dataset.option.toLowerCase().includes(q))?"flex":"none");};
+  const custom=document.createElement("div");custom.className="picker-custom";
+  const customInput=document.createElement("input");customInput.placeholder="输入自定义内容，回车添加";
+  const add=document.createElement("button");add.type="button";add.textContent="添加";
+  const addCustom=()=>{const v=customInput.value.trim();if(!v)return;const vals=selected();if(!vals.includes(v))vals.push(v);setValue(vals.join("、"));customInput.value="";};
+  add.onclick=addCustom;customInput.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addCustom();}};
+  custom.append(customInput,add);pop.appendChild(custom);
+  const actions=document.createElement("div");actions.className="picker-actions";
+  const clear=document.createElement("button");clear.type="button";clear.textContent="清空选择";clear.onclick=()=>{optBox.querySelectorAll('input[type="checkbox"]').forEach(x=>x.checked=false);setValue("");};
+  const done=document.createElement("button");done.type="button";done.className="primary";done.textContent="完成";done.onclick=()=>wrap.classList.remove("open");
+  actions.append(clear,done);pop.appendChild(actions);
+  const note=document.createElement("div");note.className="picker-single-note";note.textContent="可多选热门选项，也可输入自定义内容；不需要的可以留空。";pop.appendChild(note);
+  setValue(saved[key]||"");wrap.appendChild(pop);host.appendChild(wrap);
  });
 }
 document.addEventListener("click",e=>{if(!e.target.closest("#taskFields .picker"))document.querySelectorAll("#taskFields .picker.open").forEach(x=>x.classList.remove("open"));});
@@ -229,11 +246,19 @@ function taskInstruction(task){
  "剧情审查":"你是严谨的小说逻辑编辑。只审查所提供的内容，按严重程度列出问题位置、问题类型、具体原因、对剧情的影响和可执行修复方案；分别检查因果、人物动机、信息差、时间线、世界规则和伏笔回收。没有证据的问题不要臆测，不要把审查写成故事大纲。"
  }[task]||"严格执行指定任务。";
 }
+function saveCurrentTaskDraft(){taskDrafts[currentTask]=taskDrafts[currentTask]||{};taskDrafts[currentTask]._custom=$("prompt").value;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}}
+$("prompt").addEventListener("input",saveCurrentTaskDraft);
+$("toggleCustomPrompt").onclick=()=>{const wrap=$("customPromptWrap");const opening=wrap.classList.contains("hidden");wrap.classList.toggle("hidden");$("toggleCustomPrompt").textContent=opening?"− 收起自定义要求":"＋ 自定义要求（选填）";if(opening)$("prompt").focus();};
 document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{
+ saveCurrentTaskDraft();
  currentTask=b.dataset.task;$("taskName").value=currentTask;renderTaskFields(currentTask);
+ $("prompt").value=(taskDrafts[currentTask]||{})._custom||"";
+ $("customPromptWrap").classList.toggle("hidden",!$("prompt").value);
+ $("toggleCustomPrompt").textContent=$("prompt").value?"− 收起自定义要求":"＋ 自定义要求（选填）";
  $("saveChapter").textContent=(currentTask==="章节创作"||currentTask==="续写")?"确认保存为新章节":"确认保存到对应资料库";
- lastResult=taskJobs[currentTask]?.result||"";const running=taskJobs[currentTask]?.status==="running";$("generateBtn").disabled=false;$("generateBtn").textContent=running?"后台生成中…":"✦ 立即生成";
- $("result").textContent=lastResult||`已切换到【${currentTask}】专属工作区。请填写对应内容后生成。`;$("progress").textContent="";
+ lastResult=taskJobs[currentTask]?.result||"";const running=taskJobs[currentTask]?.status==="running";$("generateBtn").disabled=running;$("generateBtn").textContent=running?"后台生成中…":"✦ 立即生成";
+ $("result").textContent=lastResult||("已切换到【"+currentTask+"】专属工作区。请填写核心内容后生成。");
+ $("progress").textContent=running?"该任务正在生成，请稍候。":"填写当前任务的核心内容后，即可开始生成；其他选项均可留空。";$("progress").dataset.state=running?"running":"idle";
  document.querySelectorAll(".task").forEach(x=>{x.style.borderColor=x===b?"var(--accent)":"var(--line)";x.setAttribute("aria-pressed",x===b?"true":"false");});
 });
 document.querySelectorAll("[data-workflow-task]").forEach(b=>b.onclick=()=>{
@@ -247,19 +272,41 @@ document.querySelectorAll(".task").forEach(b=>b.addEventListener("click",()=>{
 }));
 $("generateBtn").onclick=async()=>{
  const taskAtStart=currentTask;const prompt=$("prompt").value.trim();const specific=taskInputText(taskAtStart);
- if(!prompt&&!specific){$("progress").textContent="请先填写当前任务的内容：点击下方任意字段打开填写窗口，或填写“补充要求”。";$("result").textContent="尚未填写创作内容。";return;}
- const seq=++generationSeq,btn=$("generateBtn");taskJobs[taskAtStart]={status:"running",result:""};btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在后台执行【"+taskAtStart+"】，你可以切换到其他任务继续生成。";$("result").textContent="AI 正在执行【"+taskAtStart+"】…";
+ const requiredKeys={"灵感生成":"seed","故事大纲":"premise","章节创作":"chapterGoal","续写":"sourceText","人物设定":"personSeed","世界观设定":"worldSeed","润色改写":"sourceText","剧情审查":"reviewText"};
+ const requiredKey=requiredKeys[taskAtStart];const requiredValue=(taskDrafts[taskAtStart]||{})[requiredKey];
+ if(!String(requiredValue||"").trim()){
+  $("progress").textContent="请先填写“"+({seed:"一句话创意 / 灵感种子",premise:"故事核心梗概",chapterGoal:"本章剧情目标",sourceText:taskAtStart==="续写"?"需要续写的原文":"需要润色 / 改写的原文",personSeed:"人物初始构想",worldSeed:"已有设定与限制",reviewText:"需要审查的剧情 / 正文"}[requiredKey]||"核心内容")+"”，其他选项均可留空。";
+  $("progress").dataset.state="error";
+  const core=document.querySelector('#taskFields [data-field-key="'+requiredKey+'"]');if(core)core.focus();
+  return;
+ }
+ const seq=++generationSeq,btn=$("generateBtn");taskJobs[taskAtStart]={status:"running",result:"",seq};btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在生成【"+taskAtStart+"】。请稍候，生成期间可以切换其他任务。";$("progress").dataset.state="running";$("result").textContent="AI 正在执行【"+taskAtStart+"】，请稍候…";
  const fullPrompt="【任务类型】"+taskAtStart+"\n【任务专属要求】\n"+taskInstruction(taskAtStart)+"\n\n【专属输入】\n"+specific+"\n\n【补充要求】"+prompt+"\n\n只执行当前任务，不得改做其他任务。";
- try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");taskJobs[taskAtStart]={status:"done",result:j.text};if(taskAtStart===currentTask){lastResult=j.text;$("result").textContent=lastResult;$("progress").textContent="【"+taskAtStart+"】生成完成，请检查后保存。";}}
- catch(e){taskJobs[taskAtStart]={status:"error",result:"",error:e.message};if(taskAtStart===currentTask){$("result").textContent="生成失败："+e.message;$("progress").textContent="请检查 AI 服务配置后重试。";}}
- finally{if(taskAtStart===currentTask){btn.disabled=false;btn.textContent="✦ 立即生成";}}
+ try{
+  const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()})});
+  let j;try{j=await r.json();}catch{throw new Error("服务器返回内容无法识别（HTTP "+r.status+"），请稍后重试。");}
+  if(!r.ok)throw new Error(j.error||("服务器请求失败（HTTP "+r.status+"）"));
+  if(taskJobs[taskAtStart]?.seq===seq){
+   taskJobs[taskAtStart]={status:"done",result:j.text||"",seq};
+   if(taskAtStart===currentTask){lastResult=j.text||"";$("result").textContent=lastResult||"接口已响应，但没有返回正文，请检查模型响应。";$("progress").textContent="【"+taskAtStart+"】生成完成，请检查结果，满意后再确认保存。";$("progress").dataset.state="success";}
+  }
+ }catch(e){
+  const raw=String(e&&e.message||e);
+  const friendly=/Failed to fetch|NetworkError|Load failed/i.test(raw)?"网页没有成功收到生成接口的响应（网络请求失败）。请确认当前网页是最新部署版本，并检查网络后重试。":raw;
+  if(taskJobs[taskAtStart]?.seq===seq){
+   taskJobs[taskAtStart]={status:"error",result:"",error:friendly,seq};
+   if(taskAtStart===currentTask){$("result").textContent="生成失败："+friendly;$("progress").textContent="本次生成未完成；你的输入和其他任务草稿不会被清除。";$("progress").dataset.state="error";}
+  }
+ }finally{
+  if(taskAtStart===currentTask&&taskJobs[taskAtStart]?.seq===seq){btn.disabled=false;btn.textContent="✦ 立即生成";}
+ }
 };
 $("result").addEventListener("input",()=>{lastResult=$("result").innerText??$("result").textContent;const job=taskJobs[currentTask]||{};taskJobs[currentTask]={...job,result:lastResult};});
 function syncEditedResult(){lastResult=$("result").innerText??$("result").textContent;const job=taskJobs[currentTask]||{};taskJobs[currentTask]={...job,result:lastResult};return lastResult;}
 $("copyBtn").onclick=()=>{const edited=syncEditedResult();if(edited)navigator.clipboard.writeText(edited);};
 $("saveChapter").onclick=()=>{syncEditedResult();if(!lastResult.trim())return alert("当前没有可保存的生成结果");const title=resultTitle(currentTask);let destination="创作归档";if(currentTask==="章节创作"||currentTask==="续写"){data.chapters.push({title:`第${data.chapters.length+1}章 · ${title}`,body:lastResult});renderChapters();destination="章节管理";}else if(currentTask==="人物设定"){const nameMatch=lastResult.match(/(?:姓名|人物姓名|角色名)\s*[：:]\s*([^\n，,。]+)/);const name=(nameMatch&&nameMatch[1].trim())||title||`AI人物${data.characters.length+1}`;data.characters.push({name,role:"AI生成档案",info:lastResult});renderCharacters();destination="人物档案";}else if(currentTask==="世界观设定"){data.worldEntries.push({id:"w-"+Date.now(),title:resultTitle("AI世界观设定"),content:lastResult});data.world=data.worldEntries.map(w=>w.title+"："+w.content).join("\n\n");destination="世界观设定";renderWorld();}else if(currentTask==="故事大纲"){data.synopsis=appendText(data.synopsis,lastResult);$("synopsis").value=data.synopsis;destination="小说资料（核心设定/大纲）";}else if(currentTask==="灵感生成"){archiveRecord("灵感生成",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="润色改写"){archiveRecord("润色改写",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="剧情审查"){archiveRecord("剧情审查",title,lastResult);renderArchive();destination="创作归档";}else{archiveRecord(currentTask,title,lastResult);renderArchive();}persist();alert(`已确认保存到：${destination}`);};
 $("replacePrompt").onclick=()=>{if(!lastResult)return alert("当前没有生成结果");const key=currentTask==="续写"?"sourceText":currentTask==="润色改写"?"sourceText":currentTask==="剧情审查"?"reviewText":currentTask==="人物设定"?"personSeed":currentTask==="世界观设定"?"worldSeed":currentTask==="故事大纲"?"premise":currentTask==="章节创作"?"chapterGoal":"seed";taskDrafts[currentTask]=taskDrafts[currentTask]||{};taskDrafts[currentTask][key]=lastResult;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}renderTaskFields(currentTask);alert("已放入当前任务对应输入框。");};
-$("clearPrompt").onclick=()=>{$("prompt").value="";taskDrafts[currentTask]={};try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}renderTaskFields(currentTask);$("progress").textContent="当前任务输入已清空，其他任务草稿保留。";};
+$("clearPrompt").onclick=()=>{if(!confirm("只清空当前任务的输入和自定义要求，其他任务及小说资料不会改变。确定继续？"))return;taskDrafts[currentTask]={};try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}$("prompt").value="";$("customPromptWrap").classList.add("hidden");$("toggleCustomPrompt").textContent="＋ 自定义要求（选填）";renderTaskFields(currentTask);$("progress").textContent="当前任务输入已清空，其他任务和已保存的小说资料均保留。";$("progress").dataset.state="idle";};
 $("newChapter").onclick=()=>{activeChapter=null;$("chapterTitle").value=`第${data.chapters.length+1}章`;$("chapterBody").value="";$("chapterAppend").value="";};
 $("saveChapterEdit").onclick=()=>{const c={title:$("chapterTitle").value||"未命名章节",body:$("chapterBody").value};if(activeChapter===null)data.chapters.push(c);else data.chapters[activeChapter]=c;persist();renderChapters();alert("章节已保存");};$("appendChapter").onclick=()=>{if(activeChapter===null)return alert("请先选择已有章节");const add=$("chapterAppend").value.trim();if(!add)return alert("请填写要追加的内容");data.chapters[activeChapter].body=appendText(data.chapters[activeChapter].body,add);$("chapterBody").value=data.chapters[activeChapter].body;$("chapterAppend").value="";persist();renderChapters();alert("内容已追加到本章末尾");};
 $("aiAppendChapter").onclick=async()=>{if(activeChapter===null)return alert("请先选择已有章节");const base=$("chapterBody").value.trim();if(!base)return alert("当前章节还没有正文");const req=prompt("告诉 AI 这次要追加什么内容，例如：\n“让主角发现门后的秘密，并自然衔接下一段”","继续本章剧情，自然衔接当前情节");if(!req)return;const btn=$("aiAppendChapter");btn.disabled=true;btn.textContent="AI生成中…";$("progress")&&($("progress").textContent="AI 正在为当前章节生成追加内容…");try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:"续写",prompt:req+"\n\n请只输出可以直接接在下面章节正文末尾的小说正文，不要解释，不要标题。\n\n当前章节：\n"+base,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");$("chapterAppend").value=j.text||"";$("progress")&&($("progress").textContent="AI 追加内容已生成，可先修改，再点击“追加到本章”。");$("chapterAppend").focus();}catch(e){alert("AI生成追加失败："+e.message);}finally{btn.disabled=false;btn.textContent="AI生成追加";}};
