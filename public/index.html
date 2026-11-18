@@ -210,18 +210,18 @@ function taskInstruction(task){
 document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{
  currentTask=b.dataset.task;$("taskName").value=currentTask;renderTaskFields(currentTask);
  $("saveChapter").textContent=(currentTask==="章节创作"||currentTask==="续写")?"确认保存为新章节":"确认保存到对应资料库";
- generationSeq++;$("generateBtn").disabled=false;$("generateBtn").textContent="✦ 立即生成";lastResult="";
+ lastResult=taskJobs[currentTask]?.result||"";const running=taskJobs[currentTask]?.status==="running";$("generateBtn").disabled=false;$("generateBtn").textContent=running?"后台生成中…":"✦ 立即生成";
  $("result").textContent=`已切换到【${currentTask}】专属工作区。请填写对应内容后生成。`;$("progress").textContent="";
  document.querySelectorAll(".task").forEach(x=>{x.style.borderColor=x===b?"var(--accent)":"var(--line)";x.setAttribute("aria-pressed",x===b?"true":"false");});
 });
 $("generateBtn").onclick=async()=>{
  const taskAtStart=currentTask;const prompt=$("prompt").value.trim();const specific=taskInputText(taskAtStart);
  if(!prompt&&!specific){$("progress").textContent="请先填写当前任务的内容：点击下方任意字段打开填写窗口，或填写“补充要求”。";$("result").textContent="尚未填写创作内容。";return;}
- const seq=++generationSeq,btn=$("generateBtn");btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在执行【"+taskAtStart+"】…";$("result").textContent="AI 正在执行【"+taskAtStart+"】…";
+ const seq=++generationSeq,btn=$("generateBtn");taskJobs[taskAtStart]={status:"running",result:""};btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在后台执行【"+taskAtStart+"】，你可以切换到其他任务继续生成。";$("result").textContent="AI 正在执行【"+taskAtStart+"】…";
  const fullPrompt="【任务类型】"+taskAtStart+"\n【任务专属要求】\n"+taskInstruction(taskAtStart)+"\n\n【专属输入】\n"+specific+"\n\n【补充要求】"+prompt+"\n\n只执行当前任务，不得改做其他任务。";
- try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");if(seq!==generationSeq||taskAtStart!==currentTask)return;lastResult=j.text;$("result").textContent=lastResult;$("progress").textContent="【"+taskAtStart+"】生成完成，请检查后保存。";}
- catch(e){if(seq===generationSeq){$("result").textContent="生成失败："+e.message;$("progress").textContent="请检查 AI 服务配置后重试。";}}
- finally{if(seq===generationSeq){btn.disabled=false;btn.textContent="✦ 立即生成";}}
+ try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");taskJobs[taskAtStart]={status:"done",result:j.text};if(taskAtStart===currentTask){lastResult=j.text;$("result").textContent=lastResult;$("progress").textContent="【"+taskAtStart+"】生成完成，请检查后保存。";}}
+ catch(e){taskJobs[taskAtStart]={status:"error",result:"",error:e.message};if(taskAtStart===currentTask){$("result").textContent="生成失败："+e.message;$("progress").textContent="请检查 AI 服务配置后重试。";}}
+ finally{if(taskAtStart===currentTask){btn.disabled=false;btn.textContent="✦ 立即生成";}}
 };
 $("copyBtn").onclick=()=>{if(lastResult)navigator.clipboard.writeText(lastResult);};
 $("saveChapter").onclick=()=>{if(!lastResult)return alert("当前没有可保存的生成结果");const title=resultTitle(currentTask);let destination="创作归档";if(currentTask==="章节创作"||currentTask==="续写"){data.chapters.push({title:`第${data.chapters.length+1}章 · ${title}`,body:lastResult});renderChapters();destination="章节管理";}else if(currentTask==="人物设定"){const nameMatch=lastResult.match(/(?:姓名|人物姓名|角色名)\s*[：:]\s*([^\n，,。]+)/);const name=(nameMatch&&nameMatch[1].trim())||title||`AI人物${data.characters.length+1}`;data.characters.push({name,role:"AI生成档案",info:lastResult});renderCharacters();destination="人物档案";}else if(currentTask==="世界观设定"){data.worldEntries.push({id:"w-"+Date.now(),title:resultTitle("AI世界观设定"),content:lastResult});data.world=data.worldEntries.map(w=>w.title+"："+w.content).join("\n\n");destination="世界观设定";renderWorld();}else if(currentTask==="故事大纲"){data.synopsis=appendText(data.synopsis,lastResult);$("synopsis").value=data.synopsis;destination="小说资料（核心设定/大纲）";}else if(currentTask==="灵感生成"){archiveRecord("灵感生成",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="润色改写"){archiveRecord("润色改写",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="剧情审查"){archiveRecord("剧情审查",title,lastResult);renderArchive();destination="创作归档";}else{archiveRecord(currentTask,title,lastResult);renderArchive();}persist();alert(`已确认保存到：${destination}`);};
