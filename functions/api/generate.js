@@ -10,11 +10,10 @@ const TASK_RULES = {
 };
 
 export async function onRequestPost({ request, env }) {
-  if (!env.OPENAI_API_KEY) {
-    return Response.json({ error: "AI 服务尚未配置 API Key。网页和资料库可以使用，但暂时不能调用模型生成内容。" }, { status: 503 });
-  }
-  if (!env.OPENAI_MODEL) {
-    return Response.json({ error: "已配置 API Key，但尚未设置 OPENAI_MODEL。请先在 Cloudflare Pages 环境变量中配置模型名称。" }, { status: 503 });
+  const hasWorkersAI = Boolean(env.AI && typeof env.AI.run === "function");
+  const hasOpenAI = Boolean(env.OPENAI_API_KEY && env.OPENAI_MODEL);
+  if (!hasWorkersAI && !hasOpenAI) {
+    return Response.json({ error: "未检测到可用 AI 服务。请确认 Workers AI 绑定变量名为 AI，或配置 OpenAI API Key 与模型名称。" }, { status: 503 });
   }
   let body;
   try { body = await request.json(); } catch {
@@ -34,6 +33,21 @@ export async function onRequestPost({ request, env }) {
   const instructions = `你是一位专业中文小说主编、类型小说作家和连续性编辑。请始终使用中文回答。当前任务类型是【${task}】，这是不可更改的任务边界。你必须只执行该任务。\n\n【本任务专属规则】\n${taskInstruction}\n\n【通用规则】\n严格尊重用户提供的世界观、人物设定和既有剧情，不擅自推翻已确定设定。情节有因果，人物动机可信，避免空洞总结和重复表达。资料不足时明确标注缺失信息，不要自行编造与已知设定冲突的内容。严禁把本任务转换成其他任务类型。`;
   const input = `【当前任务：${task}】\n${taskInstruction}\n\n【小说资料与上下文】\n${context || "暂无"}\n\n【用户本次具体要求】\n${prompt}`;
   try {
+    if (hasWorkersAI) {
+      const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+        messages: [
+          { role: "system", content: instructions },
+          { role: "user", content: input }
+        ]
+      });
+      const generated = typeof result === "string" ? result :
+        (result?.response || result?.output_text || result?.text ||
+        (Array.isArray(result?.choices) ? result.choices[0]?.message?.content : ""));
+      if (typeof generated !== "string" || !generated.trim()) {
+        return Response.json({ error: "Workers AI 已调用，但模型返回内容为空或格式无法识别。请检查模型名称和部署日志。" }, { status: 502 });
+      }
+      return Response.json({ text: generated, task, provider: "Cloudflare Workers AI", model: "@cf/zai-org/glm-4.7-flash" });
+    }
     const upstream = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
@@ -44,9 +58,8 @@ export async function onRequestPost({ request, env }) {
       const msg = upstream.status === 401 ? "API Key 无效或无权限。" : upstream.status === 429 ? "服务商额度不足或请求过于频繁，请检查账单与限额。" : (data.error?.message || `模型服务返回错误（${upstream.status}）。`);
       return Response.json({ error: msg }, { status: upstream.status >= 400 && upstream.status < 600 ? upstream.status : 502 });
     }
-    const text = (data.output || []).flatMap(item => item.content || []).filter(part => part.type === "output_text").map(part => part.text).join("\n");
-    return Response.json({ text: text || "模型没有返回文本，请重试。", task });
-  } catch {
-    return Response.json({ error: "暂时无法连接模型服务，请稍后重试。" }, { status: 502 });
-  }
-}
+    const text = (data.output || []).flatMap(item => item.content || []).filter(part => part.type === "output_text").map(part => part.text).join("\\n");
+    return Response.json({ text: text || "模型没有返回文本，请重试。", task, provider: "OpenAI", model: env.OPENAI_MODEL });
+  } catch (error) {
+    return Response.json({ error: `AI 调用失败：${error?.message || "请检查 Workers AI 绑定、模型权限与部署日志。"}` }, { status: 502 });
+  }}
