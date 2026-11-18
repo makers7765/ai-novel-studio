@@ -35,7 +35,7 @@ main{padding:26px;max-width:none;width:100%;margin:0}.topline{display:flex;justi
 <button class="task" data-task="润色改写"><strong>✧ 润色改写</strong><small>优化文风与节奏</small></button>
 <button class="task" data-task="剧情审查"><strong>🔎 剧情审查</strong><small>查找伏笔与逻辑问题</small></button>
 </div></div>
-<div class="grid"><div class="panel"><h2>创作要求</h2><div class="field"><label>当前任务（由上方任务卡片决定）</label><input id="taskName" value="灵感生成" readonly aria-readonly="true" title="由上方所选任务自动决定"></div><div class="field"><label>你的想法 / 具体要求</label><textarea id="prompt" placeholder="例如：主角是一个被逐出宗门的少年，在一次押镖途中发现自己的身世秘密……"></textarea></div><div class="field"><label>篇幅要求</label><select id="length"><option>适中，约 800-1200 字</option><option>短篇，约 300-500 字</option><option>详细，约 1500-2500 字</option><option>长篇，尽可能充分展开</option></select></div><div class="field"><label>文风偏好（可选）</label><input id="style" placeholder="例如：悬疑、克制、电影感、古风"></div><div class="field"><label>补充上下文（可选）</label><textarea id="extra" placeholder="粘贴前文、设定、剧情摘要；AI 会参考这些资料。"></textarea></div><div class="actions"><button class="primary" id="generateBtn">✦ 立即生成</button><button id="clearPrompt">清空输入</button></div><p class="muted" id="progress" style="font-size:13px"></p></div>
+<div class="grid"><div class="panel"><h2>创作要求</h2><div class="field"><label>当前任务（由上方任务卡片决定）</label><input id="taskName" value="灵感生成" readonly aria-readonly="true" title="由上方所选任务自动决定"></div><div id="taskFields"></div><div class="field"><label>篇幅要求（可选）</label><select id="length"><option>适中，约 800-1200 字</option><option>短篇，约 300-500 字</option><option>详细，约 1500-2500 字</option><option>长篇，尽可能充分展开</option></select></div><div class="field"><label>文风偏好（可选）</label><input id="style" placeholder="例如：悬疑、克制、电影感、古风"></div><div class="field"><label>补充上下文（可选）</label><textarea id="extra" placeholder="粘贴前文、设定、剧情摘要；AI 会参考这些资料。"></textarea></div><div class="actions"><button class="primary" id="generateBtn">✦ 立即生成</button><button id="clearPrompt">清空输入</button></div><p class="muted" id="progress" style="font-size:13px"></p></div>
 <div class="panel"><div class="row"><h2>AI 生成结果</h2><button id="copyBtn" style="flex:0 0 auto">复制结果</button></div><div id="result" class="output">生成内容会显示在这里。检查无误后，点击“确认保存到对应资料库”，系统会按当前任务自动归档。</div><div class="actions" style="margin-top:12px"><button id="saveChapter" class="primary">确认保存到对应资料库</button><button id="replacePrompt">将结果作为下一轮上下文</button></div></div></div>
 <div class="notice">提示：AI 会优先参考“小说资料”中填写的设定。长篇创作建议按大纲分章生成，并把已确定的剧情摘要放入上下文，保持连续性。</div>
 </section>
@@ -77,9 +77,58 @@ function appendText(oldText,addition){return oldText?oldText+"\n\n"+addition:add
 function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 $("bookTitle").onchange=()=>{data.title=$("bookTitle").value;persist();};
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));$("page-"+b.dataset.page).classList.remove("hidden");});
-document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{currentTask=b.dataset.task;$("taskName").value=currentTask;$("saveChapter").textContent=(currentTask==="章节创作"||currentTask==="续写")?"确认保存为新章节":"确认保存到对应资料库";generationSeq++;$("generateBtn").disabled=false;$("generateBtn").textContent="✦ 立即生成";lastResult="";$("result").textContent=`已切换到【${currentTask}】。请填写本任务要求后点击“立即生成”。`;$("progress").textContent="";document.querySelectorAll(".task").forEach(x=>{x.style.borderColor=x===b?"var(--accent)":"var(--line)";x.setAttribute("aria-pressed",x===b?"true":"false");});});
+const taskFields={
+"灵感生成":[["seed","一句话创意 / 灵感种子","textarea","例如：一个失去记忆的守夜人，每晚都收到来自未来的信件"],["genre","题材与类型","text","例如：东方玄幻、悬疑、科幻"],["hook","希望突出什么吸引点","text","例如：反转、爽点、情感张力、独特设定"]],
+"故事大纲":[["premise","故事核心 premise / 故事梗概","textarea","主角是谁？想要什么？最大的阻碍是什么？"],["structure","结构方式","select","三幕式|起承转合|升级流|悬疑解谜|群像多线"],["ending","结局方向","text","例如：圆满、悲剧、开放式、反转"]],
+"章节创作":[["chapterNo","章节序号与标题","text","例如：第 1 章·雨夜来客"],["chapterGoal","本章剧情目标","textarea","本章要发生什么？推动哪条主线？"],["beats","关键情节点","textarea","按顺序写出本章必须出现的事件、冲突或转折"]],
+"续写":[["sourceText","需要续写的原文（必填）","textarea","粘贴章节末尾或需要接续的正文"],["continuity","续写要求","textarea","从哪里接续？人物状态、视角、情绪和未完成事件有哪些？"],["direction","后续剧情方向","text","例如：主角发现线索，但暂时不要揭晓真相"]],
+"人物设定":[["personName","人物姓名 / 暂定名","text","例如：沈夜"],["personRole","身份与故事定位","text","主角、反派、导师、盟友等"],["personSeed","人物初始构想","textarea","身世、性格、能力、缺陷、欲望、秘密、关系和成长变化"]],
+"世界观设定":[["worldType","世界类型 / 时代背景","text","例如：架空王朝、末日都市、星际文明"],["worldScope","本次设定范围","select","整体世界|地理与区域|力量 / 技术体系|历史与时间线|社会制度|势力与组织"],["worldSeed","已有设定与限制","textarea","写明必须遵守的规则、已有设定及不能改变的内容"]],
+"润色改写":[["sourceText","需要润色 / 改写的原文（必填）","textarea","粘贴要处理的正文"],["polishGoal","修改目标","select","语言润色|增强画面感|强化情绪|优化节奏|精简冗余|深度改写"],["keepRules","必须保留的内容","textarea","人物设定、剧情事实、叙述视角、专有名词等"]],
+"剧情审查":[["reviewText","需要审查的剧情 / 正文（必填）","textarea","粘贴待审查章节、剧情梗概或大纲"],["reviewScope","审查重点","select","全面审查|因果逻辑|人物动机|时间线|世界观一致性|伏笔与线索"],["reviewRules","已确定且不可违反的设定","textarea","列出人物已知信息、世界规则、时间地点和前文事实"]]
+};
+let taskDrafts={};
+function renderTaskFields(task){
+ const host=$("taskFields");host.innerHTML="";
+ (taskFields[task]||[]).forEach(([key,label,type,placeholder])=>{
+  const wrap=document.createElement("div");wrap.className="field";
+  const lab=document.createElement("label");lab.textContent=label;wrap.appendChild(lab);
+  let el;
+  if(type==="select"){el=document.createElement("select");placeholder.split("|").forEach(v=>{const o=document.createElement("option");o.textContent=v;el.appendChild(o);});}
+  else if(type==="textarea"){el=document.createElement("textarea");el.style.minHeight="105px";el.placeholder=placeholder;}
+  else{el=document.createElement("input");el.placeholder=placeholder;}
+  el.dataset.taskField=key;el.value=(taskDrafts[task]||{})[key]||"";
+  el.oninput=()=>{taskDrafts[task]=taskDrafts[task]||{};taskDrafts[task][key]=el.value;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}};
+  wrap.appendChild(el);host.appendChild(wrap);
+ });
+}
+function taskInputText(task){
+ const vals={};document.querySelectorAll("#taskFields [data-task-field]").forEach(el=>vals[el.dataset.taskField]=el.value.trim());
+ taskDrafts[task]=vals;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}
+ return Object.entries(vals).map(([k,v])=>v? k+"："+v:"").filter(Boolean).join("\n");
+}
+try{taskDrafts=JSON.parse(localStorage.getItem("novelStudioV2TaskDrafts")||"{}")||{};}catch{taskDrafts={};}
+function taskInstruction(task){
+ return {
+ "灵感生成":"你是创意策划。请提供至少5个彼此有明显差异的故事灵感，每个包含核心设定、主角目标、主要冲突、独特卖点和可持续发展的悬念。不要直接写章节正文。",
+ "故事大纲":"你是长篇小说总编剧。输出作品定位、主题、核心冲突、主线与支线、主要人物弧光、分卷/分幕结构、关键转折、高潮和结局。按可执行的章节规划组织，不要写成正文。",
+ "章节创作":"你是职业小说作家。依据本章目标和情节点写出完整章节正文，重视场景、动作、对话、冲突和章末钩子。不要输出大纲或分析。",
+ "续写":"你是原作者的续写助手。必须从提供的原文最后一句之后自然接续，不得重复原文，不得擅自改变人物、视角、事实和既定设定，直接输出续写正文。",
+ "人物设定":"你是角色设计师。输出结构化人物档案：姓名、身份、外貌、性格优缺点、背景、能力及限制、核心欲望、恐惧、秘密、人际关系、说话方式、人物弧光。资料不足处可提出合理方案并标注待确认。",
+ "世界观设定":"你是世界观架构师。按所选范围输出结构化设定，说明规则、边界、运行机制、历史来源、社会影响及与剧情的关联；检查与已有设定是否冲突，不擅自覆盖已确认规则。",
+ "润色改写":"你是资深文学编辑。按指定目标处理原文，保留剧情事实、人物关系、叙述视角和专有名词。先给出改写后的完整文本，再简要列出主要修改点；不要续写新剧情。",
+ "剧情审查":"你是严谨的小说逻辑编辑。只审查所提供的内容，按严重程度列出问题位置、问题类型、具体原因、对剧情的影响和可执行修复方案；分别检查因果、人物动机、信息差、时间线、世界规则和伏笔回收。没有证据的问题不要臆测，不要把审查写成故事大纲。"
+ }[task]||"严格执行指定任务。";
+}
+document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{
+ currentTask=b.dataset.task;$("taskName").value=currentTask;renderTaskFields(currentTask);
+ $("saveChapter").textContent=(currentTask==="章节创作"||currentTask==="续写")?"确认保存为新章节":"确认保存到对应资料库";
+ generationSeq++;$("generateBtn").disabled=false;$("generateBtn").textContent="✦ 立即生成";lastResult="";
+ $("result").textContent=`已切换到【${currentTask}】专属工作区。请填写对应内容后生成。`;$("progress").textContent="";
+ document.querySelectorAll(".task").forEach(x=>{x.style.borderColor=x===b?"var(--accent)":"var(--line)";x.setAttribute("aria-pressed",x===b?"true":"false");});
+});
 $("generateBtn").onclick=async()=>{const prompt=$("prompt").value.trim();if(!prompt){$("progress").textContent="请先填写创作要求。";return;}const taskAtStart=currentTask;const seq=++generationSeq;const btn=$("generateBtn");btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent=`正在执行【${taskAtStart}】，请稍候…`;$("result").textContent=`AI 正在执行【${taskAtStart}】…`;
-const fullPrompt=`${prompt}\n\n篇幅：${$("length").value}\n文风：${$("style").value||"自然流畅，符合题材"}\n请严格完成“${taskAtStart}”任务，不要改成其他任务。`;
+const specific=taskInputText(taskAtStart);const fullPrompt=`【任务类型】${taskAtStart}\n【任务专属要求】\n${taskInstruction(taskAtStart)}\n\n【专属输入】\n${specific||prompt}\n\n【补充要求】${prompt}\n【篇幅】${$("length").value}\n【文风】${$("style").value||"自然流畅，符合题材"}\n\n请严格执行本任务的专属要求。只输出与任务类型匹配的结果，不得改做其他任务。`;
 try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()+"\n\n补充上下文："+$("extra").value})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");if(seq!==generationSeq||taskAtStart!==currentTask)return;lastResult=j.text;$("result").textContent=lastResult;$("progress").textContent=`【${taskAtStart}】生成完成。请检查内容并保存。`;}catch(e){if(seq===generationSeq){$("result").textContent="生成失败："+e.message;$("progress").textContent="请检查服务状态和 API 配置。";}}finally{if(seq===generationSeq){btn.disabled=false;btn.textContent="✦ 立即生成";}}};
 $("copyBtn").onclick=()=>{if(lastResult)navigator.clipboard.writeText(lastResult);};
 $("saveChapter").onclick=()=>{if(!lastResult)return alert("当前没有可保存的生成结果");const title=resultTitle(currentTask);let destination="创作归档";if(currentTask==="章节创作"||currentTask==="续写"){data.chapters.push({title:`第${data.chapters.length+1}章 · ${title}`,body:lastResult});renderChapters();destination="章节管理";}else if(currentTask==="人物设定"){const nameMatch=lastResult.match(/(?:姓名|人物姓名|角色名)\s*[：:]\s*([^\n，,。]+)/);const name=(nameMatch&&nameMatch[1].trim())||title||`AI人物${data.characters.length+1}`;data.characters.push({name,role:"AI生成档案",info:lastResult});renderCharacters();destination="人物档案";}else if(currentTask==="世界观设定"){data.world=appendText(data.world,lastResult);$("worldText").value=data.world;destination="世界观设定";}else if(currentTask==="故事大纲"){data.synopsis=appendText(data.synopsis,lastResult);$("synopsis").value=data.synopsis;destination="小说资料（核心设定/大纲）";}else if(currentTask==="灵感生成"){archiveRecord("灵感生成",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="润色改写"){archiveRecord("润色改写",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="剧情审查"){archiveRecord("剧情审查",title,lastResult);renderArchive();destination="创作归档";}else{archiveRecord(currentTask,title,lastResult);renderArchive();}persist();alert(`已确认保存到：${destination}`);};
@@ -100,5 +149,5 @@ $("saveWorld").onclick=()=>{data.world=$("worldText").value;persist();alert("世
 $("saveProject").onclick=()=>{data.synopsis=$("synopsis").value;data.notes=$("notes").value;persist();alert("小说资料已保存");};
 $("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="小说工作室备份.json";a.click();URL.revokeObjectURL(a.href);};
 async function check(){try{const r=await fetch("/api/health");const j=await r.json();if(j.configured){$("apiStatus").textContent=`● AI 服务已配置 · ${j.model}`;$("apiStatus").style.color="var(--accent2)";}else if(!j.keyConfigured){$("apiStatus").textContent="● 服务已启动，等待配置 API Key";$("apiStatus").style.color="#f0c477";}else{$("apiStatus").textContent="● API Key 已配置，等待配置模型名称";$("apiStatus").style.color="#f0c477";}}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
-$("saveChapter").textContent="确认保存到对应资料库";document.querySelector('[data-task="灵感生成"]').style.borderColor="var(--accent)";document.querySelector('[data-task="灵感生成"]').setAttribute("aria-pressed","true");load();check();
+$("saveChapter").textContent="确认保存到对应资料库";renderTaskFields(currentTask);document.querySelector('[data-task="灵感生成"]').style.borderColor="var(--accent)";document.querySelector('[data-task="灵感生成"]').setAttribute("aria-pressed","true");load();check();
 </script></body></html>
