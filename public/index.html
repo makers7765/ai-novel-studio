@@ -11,7 +11,7 @@ header{height:68px;display:flex;align-items:center;justify-content:space-between
 .brand{font-weight:800;font-size:18px}.brand span{color:var(--accent)}.status{font-size:12px;color:var(--muted)}
 .layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 68px)}aside{border-right:1px solid var(--line);padding:18px 12px;background:#141923}
 .nav{display:flex;flex-direction:column;gap:6px}.nav button{text-align:left;background:transparent;border-color:transparent;color:var(--muted)}.nav button.active,.nav button:hover{background:var(--panel2);color:var(--text);border-color:var(--line)}
-main{padding:26px;max-width:none;width:100%;margin:0}.topline{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}h1{font-size:25px;margin:0 0 4px}h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}.field label{font-size:13px;color:var(--muted)}input,textarea,select{width:100%;background:#111722;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;outline:none}textarea{min-height:120px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+main{padding:26px;max-width:none;width:100%;margin:0}.topline{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}h1{font-size:25px;margin:0 0 4px}h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}.field label{font-size:13px;color:var(--muted)}input,textarea,select{width:100%;background:#111722;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;outline:none}textarea{min-height:120px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--accent)}.picker{position:relative}.picker-trigger{width:100%;text-align:left;min-height:44px;background:#111722;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px}.picker-trigger:hover,.picker.open .picker-trigger{border-color:var(--accent)}.picker-value{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}.picker-placeholder{color:#77839a}.picker-popover{position:absolute;left:0;right:0;top:calc(100% + 7px);z-index:30;background:#171d29;border:1px solid #46506a;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.45);padding:12px;display:none}.picker.open .picker-popover{display:block}.picker-search{margin-bottom:9px}.picker-options{max-height:220px;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.picker-option{display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid transparent;border-radius:8px;background:#111722;color:var(--text);cursor:pointer;font-size:13px}.picker-option:hover{border-color:var(--line);background:#202737}.picker-option input{width:auto;flex:0 0 auto;padding:0}.picker-custom{display:flex;gap:7px;margin-top:9px}.picker-custom input{min-width:0}.picker-actions{display:flex;justify-content:space-between;gap:8px;margin-top:10px}.picker-actions button{flex:1}.picker-single-note{font-size:12px;color:var(--muted);margin-top:7px}.picker-textarea{min-height:160px!important;resize:vertical}.picker-popover textarea,.picker-popover input{background:#111722}.picker.required .picker-trigger{border-color:#4b425e}@media(max-width:650px){.picker-options{grid-template-columns:1fr}}
 .actions{display:flex;flex-wrap:wrap;gap:8px}.taskgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.task{padding:13px;text-align:left;min-height:72px}.task strong{display:block}.task small{color:var(--muted)}.output{white-space:pre-wrap;min-height:620px;max-height:76vh;overflow:auto;background:#111722;border:1px solid var(--line);border-radius:12px;padding:16px;line-height:1.85}
 .item{padding:12px;border:1px solid var(--line);border-radius:10px;margin:8px 0;background:#151b26}.item strong{display:block}.character-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.character-form .field{margin:4px 0}.character-form .wide{grid-column:1/-1}.character-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}@media(max-width:650px){.character-form{grid-template-columns:1fr}.character-form .wide{grid-column:auto}}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.hidden{display:none!important}.notice{padding:10px 12px;border-radius:10px;background:#28253a;color:#d8d1ff;font-size:13px}.error{color:var(--danger)}.chapter{min-height:300px}
 @media(max-width:1100px){.grid{grid-template-columns:1fr}}
@@ -129,14 +129,59 @@ const taskFields={
 let taskDrafts={};try{taskDrafts=JSON.parse(localStorage.getItem("novelStudioV2TaskDrafts")||"{}")||{};}catch{taskDrafts={};}
 function renderTaskFields(task){
  const host=$("taskFields");host.innerHTML="";
- (taskFields[task]||[]).forEach(([key,label,type,placeholder],i)=>{
-  const wrap=document.createElement("div");wrap.className="field";const lab=document.createElement("label");lab.textContent=label;wrap.appendChild(lab);let el;
-  if(type==="choice"){el=document.createElement("input");el.setAttribute("list","choices_"+task+"_"+i);el.placeholder="点击选择或直接输入（可留空）";const dl=document.createElement("datalist");dl.id="choices_"+task+"_"+i;placeholder.split("|").forEach(v=>{const o=document.createElement("option");o.value=v;dl.appendChild(o);});wrap.appendChild(dl);}
-  else if(type==="textarea"){el=document.createElement("textarea");el.style.minHeight="105px";el.placeholder=placeholder;}
-  else{el=document.createElement("input");el.placeholder=placeholder;}
-  el.dataset.taskField=key;el.value=(taskDrafts[task]||{})[key]||"";el.oninput=()=>{taskDrafts[task]=taskDrafts[task]||{};taskDrafts[task][key]=el.value;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}};wrap.appendChild(el);host.appendChild(wrap);
+ const fields=taskFields[task]||[];
+ const saved=taskDrafts[task]||{};
+ fields.forEach(([key,label,type,placeholder],i)=>{
+  const wrap=document.createElement("div");wrap.className="field picker";wrap.dataset.fieldKey=key;
+  const lab=document.createElement("label");lab.textContent=label;wrap.appendChild(lab);
+  const trigger=document.createElement("button");trigger.type="button";trigger.className="picker-trigger";
+  const valueSpan=document.createElement("span");valueSpan.className="picker-value";trigger.appendChild(valueSpan);wrap.appendChild(trigger);
+  const pop=document.createElement("div");pop.className="picker-popover";
+  const closeOthers=()=>document.querySelectorAll("#taskFields .picker.open").forEach(x=>{if(x!==wrap)x.classList.remove("open");});
+  trigger.onclick=e=>{e.stopPropagation();closeOthers();wrap.classList.toggle("open");};
+  const setValue=v=>{saved[key]=v;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{};valueSpan.textContent=v||"点击填写";valueSpan.className=v?"picker-value":"picker-value picker-placeholder";};
+  if(type==="choice"){
+   const selected=()=>String(saved[key]||"").split("、").map(x=>x.trim()).filter(Boolean);
+   const options=placeholder.split("|").filter(Boolean);
+   const search=document.createElement("input");search.className="picker-search";search.placeholder="搜索选项…";pop.appendChild(search);
+   const optBox=document.createElement("div");optBox.className="picker-options";
+   options.forEach(v=>{
+    const row=document.createElement("label");row.className="picker-option";row.dataset.option=v;
+    const cb=document.createElement("input");cb.type="checkbox";cb.value=v;cb.checked=selected().includes(v);
+    const text=document.createElement("span");text.textContent=v;row.append(cb,text);optBox.appendChild(row);
+    cb.onchange=()=>{const vals=[...optBox.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);setValue(vals.join("、"));};
+   });
+   pop.appendChild(optBox);
+   search.oninput=()=>{const q=search.value.trim().toLowerCase();optBox.querySelectorAll(".picker-option").forEach(x=>x.style.display=(!q||x.dataset.option.toLowerCase().includes(q))?"flex":"none");};
+   const custom=document.createElement("div");custom.className="picker-custom";
+   const customInput=document.createElement("input");customInput.placeholder="输入自定义选项，回车添加";
+   const add=document.createElement("button");add.type="button";add.textContent="添加";
+   const addCustom=()=>{const v=customInput.value.trim();if(!v)return;const vals=selected();if(!vals.includes(v))vals.push(v);setValue(vals.join("、"));customInput.value="";};
+   add.onclick=addCustom;customInput.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addCustom();}};
+   custom.append(customInput,add);pop.appendChild(custom);
+   const actions=document.createElement("div");actions.className="picker-actions";
+   const clear=document.createElement("button");clear.type="button";clear.textContent="清空选择";clear.onclick=()=>{optBox.querySelectorAll('input[type="checkbox"]').forEach(x=>x.checked=false);setValue("");};
+   const done=document.createElement("button");done.type="button";done.className="primary";done.textContent="完成";done.onclick=()=>wrap.classList.remove("open");
+   actions.append(clear,done);pop.appendChild(actions);
+   const note=document.createElement("div");note.className="picker-single-note";note.textContent="可多选热门选项，也可以自己输入；不需要的可以不选。";pop.appendChild(note);
+   setValue(saved[key]||"");
+  }else{
+   const editor=type==="textarea"?document.createElement("textarea"):document.createElement("input");
+   editor.className=type==="textarea"?"picker-textarea":"";
+   editor.placeholder=placeholder||"点击填写";
+   editor.value=saved[key]||"";
+   editor.oninput=()=>setValue(editor.value);
+   pop.appendChild(editor);
+   const actions=document.createElement("div");actions.className="picker-actions";
+   const clear=document.createElement("button");clear.type="button";clear.textContent="清空";clear.onclick=()=>{editor.value="";setValue("");};
+   const done=document.createElement("button");done.type="button";done.className="primary";done.textContent="完成";done.onclick=()=>wrap.classList.remove("open");
+   actions.append(clear,done);pop.appendChild(actions);
+   setValue(saved[key]||"");
+  }
+  wrap.appendChild(pop);host.appendChild(wrap);
  });
 }
+document.addEventListener("click",e=>{if(!e.target.closest("#taskFields .picker"))document.querySelectorAll("#taskFields .picker.open").forEach(x=>x.classList.remove("open"));});
 function taskInputText(task){const vals={};document.querySelectorAll("#taskFields [data-task-field]").forEach(el=>vals[el.dataset.taskField]=el.value.trim());taskDrafts[task]=vals;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}return Object.entries(vals).map(([k,v])=>v?k+"："+v:"").filter(Boolean).join("\n");}
 function taskInstruction(task){
  return {
