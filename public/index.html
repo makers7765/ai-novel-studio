@@ -270,7 +270,7 @@ function renderTaskFields(task){
   editor.dataset.fieldKey=key;
   editor.setAttribute("aria-label",label);
   if(required)editor.setAttribute("aria-required","true");
-  editor.oninput=()=>{saved[key]=editor.value;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}};
+  editor.oninput=()=>{saved[key]=editor.value;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));$("draftStatus").textContent="草稿已自动保存 · "+new Date().toLocaleTimeString();$("saveStatus").textContent="任务草稿已保存到本机浏览器";}catch{$("draftStatus").textContent="自动保存失败，请导出备份。";}};
   wrap.appendChild(editor);host.appendChild(wrap);
  });
  if(choiceFields.length){
@@ -325,7 +325,7 @@ function taskInstruction(task){
  "剧情审查":"你是严谨的小说逻辑编辑。只审查所提供的内容，按严重程度列出问题位置、问题类型、具体原因、对剧情的影响和可执行修复方案；分别检查因果、人物动机、信息差、时间线、世界规则和伏笔回收。没有证据的问题不要臆测，不要把审查写成故事大纲。"
  }[task]||"严格执行指定任务。";
 }
-function saveCurrentTaskDraft(){taskDrafts[currentTask]=taskDrafts[currentTask]||{};taskDrafts[currentTask]._custom=$("prompt").value;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}}
+function saveCurrentTaskDraft(){taskDrafts[currentTask]=taskDrafts[currentTask]||{};taskDrafts[currentTask]._custom=$("prompt").value;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));$("draftStatus").textContent="草稿已自动保存 · "+new Date().toLocaleTimeString();}catch{$("draftStatus").textContent="自动保存失败，请导出备份。";}}
 $("prompt").addEventListener("input",saveCurrentTaskDraft);
 $("toggleCustomPrompt").onclick=()=>{const wrap=$("customPromptWrap");const opening=wrap.classList.contains("hidden");wrap.classList.toggle("hidden");$("toggleCustomPrompt").textContent=opening?"− 收起自定义要求":"＋ 自定义要求（选填）";if(opening)$("prompt").focus();};
 document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{
