@@ -1,0 +1,36 @@
+name: Playwright UI Checks
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BASE_URL: https://feature-studio-responsive-context-versions-20261118.ai-novel-studio-1ma.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install --no-save @playwright/test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run safe UI checks
+        run: npx playwright test
+      - name: Upload test report and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-ui-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
