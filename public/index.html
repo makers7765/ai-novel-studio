@@ -20,6 +20,67 @@ main{padding:26px;max-width:none;width:100%;margin:0}.topline{display:flex;justi
 /* AI 创作台表单优化：核心输入常驻，选项弹出，层次更清晰 */
 .task-core-field{margin:14px 0 16px}.task-core-field label{font-size:13px;color:#d5dced;font-weight:650}.task-core-field textarea{min-height:132px;line-height:1.7}.task-core-field:first-child textarea{min-height:150px}.task-core-field input{min-height:44px}.task-field-optional{color:var(--muted);font-weight:400}.task-fields-heading{font-size:13px;color:var(--muted);font-weight:650;margin:16px 0 6px;padding-top:12px;border-top:1px solid var(--line)}.custom-prompt-toggle{background:transparent;border:1px dashed #59627a;color:#c9c2ff;padding:8px 11px}.custom-prompt-wrap{margin-top:8px}.custom-prompt-wrap textarea{min-height:100px}.studio-progress{min-height:24px;margin:12px 0 0;font-size:13px}.studio-progress[data-state="error"]{color:var(--danger)}.studio-progress[data-state="success"]{color:var(--accent2)}.studio-progress[data-state="running"]{color:#d7cfff}
 @media(min-width:1101px){.grid:has(#taskFields){grid-template-columns:minmax(340px,.92fr) minmax(0,1.08fr)}}
+
+/* 窄窗口适配：避免横向溢出，保证导航、弹层和操作按钮可用 */
+html,body{max-width:100%;overflow-x:hidden}
+body{min-width:0}
+img,video,canvas,svg{max-width:100%}
+input,textarea,select,button{max-width:100%;min-width:0}
+main,.layout,aside,.panel,.grid,.row,.field,.taskgrid,.workflow-wrap,.studio-reference{min-width:0;max-width:100%}
+.workflow-steps button,.task,.nav button{min-width:0;max-width:100%}
+.workflow-steps button span{white-space:normal;overflow-wrap:anywhere}
+.output,.item,.collection-card,.notice,.muted,.panel{overflow-wrap:anywhere;word-break:break-word}
+.picker-popover{max-width:calc(100vw - 24px);max-height:min(72dvh,560px);overflow-y:auto;overscroll-behavior:contain}
+.picker-option,.picker-option span{min-width:0;overflow-wrap:anywhere;white-space:normal}
+.picker-actions{position:sticky;bottom:-12px;z-index:2;background:#171d29;padding:10px 0 2px}
+.modal-backdrop{padding:clamp(8px,2vw,20px);overflow-y:auto}
+.modal{width:min(760px,calc(100vw - 16px));max-width:100%;max-height:calc(100dvh - 16px);overflow:auto;overscroll-behavior:contain}
+.modal button{white-space:normal;overflow-wrap:anywhere}
+.actions{min-width:0;flex-wrap:wrap}
+.actions button{flex:0 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere}
+#generateBtn,#clearPrompt{flex:1 1 140px}
+@media(max-width:850px){
+  header{height:auto;min-height:60px;padding:10px 12px;gap:8px;flex-wrap:wrap}
+  header>.row{max-width:100%!important;width:100%;flex:1 1 100%;flex-wrap:wrap}
+  .layout{grid-template-columns:minmax(0,1fr);min-height:0}
+  aside{width:100%;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
+  .nav{width:100%;display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding-bottom:5px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .nav button{flex:0 0 auto;white-space:nowrap}
+  aside>.panel{margin-top:8px!important}
+  main{width:100%;padding:clamp(10px,3vw,16px)}
+  .grid{grid-template-columns:minmax(0,1fr)!important}
+  .taskgrid{grid-template-columns:minmax(0,1fr)}
+  .workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .character-form{grid-template-columns:minmax(0,1fr)}
+  .character-form .wide{grid-column:auto}
+  .row{flex-wrap:wrap}
+  .row>*{flex:1 1 100%;min-width:0}
+  .topline{align-items:flex-start;flex-wrap:wrap}
+  .output{min-height:260px!important;max-height:55dvh!important}
+  .studio-reference .row>*{flex:1 1 100%}
+}
+@media(max-width:520px){
+  .brand{font-size:16px}
+  .status{flex:1 1 100%;white-space:normal}
+  h1{font-size:21px}
+  .panel{padding:13px;border-radius:13px}
+  .workflow-steps{grid-template-columns:minmax(0,1fr)}
+  .workflow-heading{align-items:flex-start;flex-direction:column;gap:3px}
+  .picker-options{grid-template-columns:minmax(0,1fr)}
+  .picker.open .picker-popover{position:fixed;left:12px;right:12px;top:50%;bottom:auto;transform:translateY(-50%);width:auto;max-width:520px;max-height:78dvh;margin:0 auto;overflow-y:auto;z-index:120}
+  .picker-actions{position:sticky;bottom:-12px}
+  .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .actions button{width:100%;min-height:42px}
+  #generateBtn,#clearPrompt{grid-column:span 1;min-width:0}
+  .modal-backdrop{align-items:flex-start}
+  .modal{padding:13px}
+}
+@media(max-width:360px){
+  .actions{grid-template-columns:minmax(0,1fr)}
+  #generateBtn,#clearPrompt{grid-column:auto}
+  .workflow-steps{grid-template-columns:minmax(0,1fr)}
+}
+
 </style></head>
 <body>
 <header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="exportBtn">导出备份</button></div></header>
