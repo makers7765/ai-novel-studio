@@ -233,7 +233,7 @@ function renderTaskFields(task){
  });
 }
 document.addEventListener("click",e=>{if(!e.target.closest("#taskFields .picker"))document.querySelectorAll("#taskFields .picker.open").forEach(x=>x.classList.remove("open"));});
-function taskInputText(task){const vals={...(taskDrafts[task]||{})};document.querySelectorAll("#taskFields [data-field-key]").forEach(el=>{const key=el.dataset.fieldKey;if(key)vals[key]=String(vals[key]??"").trim();});taskDrafts[task]=vals;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}return Object.entries(vals).map(([k,v])=>v?k+"："+v:"").filter(Boolean).join("\n");}
+function taskInputText(task){const vals={...(taskDrafts[task]||{})};delete vals._custom;document.querySelectorAll("#taskFields [data-field-key]").forEach(el=>{const key=el.dataset.fieldKey;if(key)vals[key]=String(vals[key]??"").trim();});taskDrafts[task]=vals;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}return Object.entries(vals).map(([k,v])=>v?k+"："+v:"").filter(Boolean).join("\n");}
 function taskInstruction(task){
  return {
  "灵感生成":"你是创意策划。请提供至少5个彼此有明显差异的故事灵感，每个包含核心设定、主角目标、主要冲突、独特卖点和可持续发展的悬念。不要直接写章节正文。",
