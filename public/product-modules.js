@@ -29,6 +29,8 @@
    try{localStorage.setItem("novelStudioV2",JSON.stringify(data));if(active.taskDrafts){localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(active.taskDrafts));if(typeof taskDrafts!=="undefined")taskDrafts={...active.taskDrafts};}}catch{}
  }
  const activeProject=()=>workspace.projects.find(p=>p.id===workspace.activeId)||workspace.projects[0];
+ window.exportWorkspaceSnapshot=()=>clone(workspace);
+ window.restoreWorkspaceSnapshot=snapshot=>{if(!snapshot||!Array.isArray(snapshot.projects)||!snapshot.projects.length)throw new Error("项目备份格式无效");workspace=clone(snapshot);if(!workspace.projects.some(p=>p.id===workspace.activeId))workspace.activeId=workspace.projects[0].id;const p=activeProject();data=ensureArrays({...defaultData,...clone(p.data)});if(typeof taskDrafts!=="undefined")taskDrafts={...(p.taskDrafts||{})};saveWorkspace();};
  function saveWorkspace(){
    const p=activeProject();if(!p)return;
    p.name=data.title||p.name||"未命名作品";p.data=clone(ensureArrays(data));p.updatedAt=new Date().toISOString();
