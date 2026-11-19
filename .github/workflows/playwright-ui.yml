@@ -21,6 +21,8 @@ jobs:
         run: npm install --no-save @playwright/test
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Check JavaScript syntax
+        run: node --check public/experience.js && node --check functions/api/generate.js
       - name: Start local static preview
         run: python3 -m http.server 4173 --directory public > /tmp/novel-studio-preview.log 2>&1 &
       - name: Run safe UI checks
