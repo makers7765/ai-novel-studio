@@ -24,7 +24,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await expect(toggle).toBeVisible();
     await toggle.click();
     await expect(page.locator('#nav')).toHaveClass(/mobile-open/);
-    await expect(page.locator('#nav button')).toHaveCount(10);
+    await expect(page.locator('#nav button')).toHaveCount(11);
     await page.locator('#nav button[data-page="studio"]').click();
     await expect(page.locator('#page-studio')).toBeVisible();
     const metrics = await page.evaluate(() => ({
@@ -123,6 +123,40 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await page.reload();
     await page.locator('[data-page="memory"]').click();
     await expect(page.locator('#memoryList')).toContainText('主角右手受伤');
+    expect(errors).toEqual([]);
+  });
+  
+  test('人物关系图可生成，AI 质量检测可保存报告', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto('/');
+    await page.locator('[data-page="characters"]').click();
+    await page.locator('#addCharacter').click();
+    await page.locator('#charName').fill('林岚');
+    await page.locator('#characterForm').evaluate(form => form.requestSubmit());
+    await page.locator('#addCharacter').click();
+    await page.locator('#charName').fill('沈砚');
+    await page.locator('#characterForm').evaluate(form => form.requestSubmit());
+    await page.locator('[data-page="memory"]').click();
+    await page.locator('#relationFrom').selectOption('林岚');
+    await page.locator('#relationTo').selectOption('沈砚');
+    await page.locator('#relationType').selectOption('盟友');
+    await page.locator('#saveRelationship').click();
+    await expect(page.locator('#relationshipGraph svg line')).toHaveCount(1);
+    await expect(page.locator('#relationshipList')).toContainText('盟友');
+    await page.locator('[data-page="quality"]').click();
+    await page.route('**/api/generate', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ text: '检测报告：未发现明显逻辑冲突。' })
+    }));
+    await page.locator('#qaInput').fill('林岚与沈砚结伴进入北境。');
+    await page.locator('#runQualityCheck').click();
+    await expect(page.locator('#qaResult')).toHaveValue(/检测报告/);
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#saveQualityReport').click();
+    await page.locator('[data-page="archive"]').click();
+    await expect(page.locator('#archiveList')).toContainText('小说质量检测');
     expect(errors).toEqual([]);
   });
 });
