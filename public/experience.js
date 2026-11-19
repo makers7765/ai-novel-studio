@@ -7,6 +7,7 @@
  if(!mode||!reference||!instruction||!run)return;
  const hints={"自由创作":"从一个想法开始，AI 会结合当前小说资料补全合理细节。","扩写":"保留原文核心意思，扩展场景、动作、心理和细节。","续写":"承接参考文字最后的情节继续写，不重复前文。","重写":"按照新要求重组表达；除非明确要求，不改变剧情事实。","润色":"优化语言、节奏和画面感，尽量保留原文风格。","缩写":"压缩冗余表达，保留关键情节、信息和情绪。","自定义":"直接描述你想让 AI 完成的任务。"};
  mode.addEventListener("change",()=>{hint.textContent=hints[mode.value]||hints["自定义"];});
+ $id("useSelectedText").addEventListener("mousedown",event=>event.preventDefault());
  $id("useSelectedText").addEventListener("click",()=>{
    const sel=window.getSelection();const selected=String(sel||"").trim();const result=$id("result");
    if(!selected||!result.contains(sel.anchorNode)){status.textContent="请先在下方 AI 生成结果中选中一段文字，再点击此按钮。";return;}
