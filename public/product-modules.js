@@ -26,7 +26,7 @@
    if(!workspace.projects.some(p=>p.id===workspace.activeId))workspace.activeId=workspace.projects[0].id;
    const active=workspace.projects.find(p=>p.id===workspace.activeId);
    data=ensureArrays({...defaultData,...clone(active.data)});
-   try{localStorage.setItem("novelStudioV2",JSON.stringify(data));if(active.taskDrafts)localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(active.taskDrafts));}catch{}
+   try{localStorage.setItem("novelStudioV2",JSON.stringify(data));if(active.taskDrafts){localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(active.taskDrafts));if(typeof taskDrafts!=="undefined")taskDrafts={...active.taskDrafts};}}catch{}
  }
  const activeProject=()=>workspace.projects.find(p=>p.id===workspace.activeId)||workspace.projects[0];
  function saveWorkspace(){
@@ -160,6 +160,10 @@
  }));
  // Initialise project workspace without replacing the legacy single-project key.
  saveWorkspace();
+ if(typeof load==="function")load();
+ if(typeof renderTaskFields==="function"&&typeof currentTask!=="undefined")renderTaskFields(currentTask);
+ if(typeof renderVersions==="function")renderVersions();
+ if(typeof refreshContextPreview==="function")refreshContextPreview();
  if($("bookTitle"))$("bookTitle").value=data.title||activeProject().name||"";
  renderMemory();renderTimeline();renderMaterials();renderProjects();
 })();
