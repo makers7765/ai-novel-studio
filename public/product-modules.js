@@ -138,8 +138,8 @@
  }
  $("saveTimelineEvent")?.addEventListener("click",()=>{
    const date=$("eventDate").value.trim(),title=$("eventTitle").value.trim(),content=$("eventContent").value.trim();if(!date||!title){alert("请填写故事时间和事件名称。");return;}
-   data.timelineEvents.push({date,title,content,updatedAt:new Date().toLocaleString()});
-   $("eventDate").value="";$("eventTitle").value="";$("eventContent").value="";persist();renderTimeline();if(typeof refreshContextPreview==="function")refreshContextPreview();
+   const event={date,title,content,updatedAt:new Date().toLocaleString()};if(editingTimeline<0)data.timelineEvents.push(event);else data.timelineEvents[editingTimeline]=event;editingTimeline=-1;
+   $("eventDate").value="";$("eventTitle").value="";$("eventContent").value="";$("saveTimelineEvent").textContent="添加事件";persist();renderTimeline();if(typeof refreshContextPreview==="function")refreshContextPreview();
  });
  let editingMaterial=-1;
  function renderMaterials(){
