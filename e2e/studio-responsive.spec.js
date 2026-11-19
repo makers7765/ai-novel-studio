@@ -47,4 +47,28 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await page.locator('#toggleContextPreview').click();
     await expect(page.locator('#contextControls')).toBeVisible();
   });
+  
+  test('自由创作可选填输入并支持选段修改', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    await page.route('**/api/generate', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ text: '夜色渐深，远处传来一声钟响。' })
+    }));
+    await page.locator('#freeInstruction').fill('写一段悬疑小说开场');
+    await page.locator('#runFreeWrite').click();
+    await expect(page.locator('#result')).toContainText('夜色渐深');
+    await expect(page.locator('#versionList')).toContainText('自由创作');
+    await page.locator('#result').evaluate(el => {
+      el.textContent = '主角推开古老的木门。';
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
+    await page.locator('#useSelectedText').click();
+    await expect(page.locator('#freeReference')).toHaveValue('主角推开古老的木门。');
+  });
 });
