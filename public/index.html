@@ -186,7 +186,7 @@ function renderVersions(){const box=$("versionList");if(!box)return;const list=v
 function persist(){try{localStorage.setItem("novelStudioV2",JSON.stringify(data));const st=$("saveStatus");if(st)st.textContent="资料已自动保存到本机浏览器 · "+new Date().toLocaleTimeString();}catch(e){const st=$("saveStatus");if(st)st.textContent="本机存储空间不足，请立即导出备份。";}}
 
 function load(){$("bookTitle").value=data.title||"";$("synopsis").value=data.synopsis||"";$("notes").value=data.notes||"";renderChapters();renderCharacters();renderWorld();renderArchive();setupStudioQuickRefs();}
-function contextParts(){const people=data.characters.map(c=>`${c.name||"未命名人物"}：${c.info||Object.entries(c).filter(([k,v])=>k!=="name"&&v).map(([k,v])=>`${k}：${v}`).join("；")}`).join("const requiredKeys=[];n")||"暂无";return {synopsis:"作品简介 / 大纲：\n"+(data.synopsis||"暂无"),world:"世界观设定：\n"+(data.worldEntries?.map(w=>w.title+"："+w.content).join("\n")||data.world||"暂无"),characters:"人物档案：\n"+people,chapters:"最近章节：\n"+(data.chapters.slice(-3).map(c=>c.title+"\n"+c.body.slice(0,2500)).join("\n\n")||"暂无"),notes:"时间线、伏笔及补充资料：\n"+(data.notes||"暂无")};}
+function contextParts(){const people=data.characters.map(c=>`${c.name||"未命名人物"}：${c.info||Object.entries(c).filter(([k,v])=>k!=="name"&&v).map(([k,v])=>`${k}：${v}`).join("；")}`).join("\n")||"暂无";return {synopsis:"作品简介 / 大纲：\n"+(data.synopsis||"暂无"),world:"世界观设定：\n"+(data.worldEntries?.map(w=>w.title+"："+w.content).join("\n")||data.world||"暂无"),characters:"人物档案：\n"+people,chapters:"最近章节：\n"+(data.chapters.slice(-3).map(c=>c.title+"\n"+c.body.slice(0,2500)).join("\n\n")||"暂无"),notes:"时间线、伏笔及补充资料：\n"+(data.notes||"暂无")};}
 function contextText(){const parts=contextParts();const selected=[...document.querySelectorAll("[data-context]:checked")].map(x=>x.dataset.context);return "作品名："+(data.title||"未命名")+"\n"+selected.map(k=>parts[k]).join("\n\n");}
 function refreshContextPreview(){const el=$("contextPreview");if(!el)return;el.textContent=contextText();}
 function renderChapters(){const box=$("chapterList");box.innerHTML="";if(!data.chapters.length){box.innerHTML='<p class="muted">还没有章节，点击“新建章节”或从 AI 创作台保存。</p>';return;}data.chapters.forEach((c,i)=>{const el=document.createElement("div");el.className="item";el.innerHTML=`<strong>${i+1}. ${esc(c.title)}</strong><span class="muted">${c.body.length} 字</span>`;el.onclick=()=>{activeChapter=i;$("chapterTitle").value=c.title;$("chapterBody").value=c.body;$("chapterAppend").value="";};box.appendChild(el);});}
@@ -268,11 +268,7 @@ function renderTaskFields(task){
  const host=$("taskFields");host.innerHTML="";
  const fields=taskFields[task]||[];
  const saved=taskDrafts[task]||{};
- const requiredKeys={
-  "灵感生成":["seed"],"故事大纲":["premise"],"章节创作":["chapterGoal"],
-  "续写":["sourceText"],"人物设定":["personSeed"],"世界观设定":["worldSeed"],
-  "润色改写":["sourceText"],"剧情审查":["reviewText"]
- }[task]||[];
+ const requiredKeys=[];
  const choiceFields=[];
  fields.forEach(([key,label,type,placeholder])=>{
   const required=requiredKeys.includes(key);
@@ -371,7 +367,8 @@ document.querySelectorAll(".task").forEach(b=>b.addEventListener("click",()=>{
 }));
 $("generateBtn").onclick=async()=>{
  const taskAtStart=currentTask;const prompt=$("prompt").value.trim();const specific=taskInputText(taskAtStart);
- // All task fields are optional; the task instruction and existing novel context provide a useful starting point.\n const seq=++generationSeq,btn=$("generateBtn");taskJobs[taskAtStart]={status:"running",result:"",seq};btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在生成【"+taskAtStart+"】。请稍候，生成期间可以切换其他任务。";$("progress").dataset.state="running";$("result").textContent="AI 正在执行【"+taskAtStart+"】，请稍候…";
+ // All task fields are optional; the task instruction and existing novel context provide a useful starting point.
+ const seq=++generationSeq,btn=$("generateBtn");taskJobs[taskAtStart]={status:"running",result:"",seq};btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在生成【"+taskAtStart+"】。请稍候，生成期间可以切换其他任务。";$("progress").dataset.state="running";$("result").textContent="AI 正在执行【"+taskAtStart+"】，请稍候…";
  const fullPrompt="【任务类型】"+taskAtStart+"\n【任务专属要求】\n"+taskInstruction(taskAtStart)+"\n\n【专属输入】\n"+specific+"\n\n【补充要求】"+prompt+"\n\n只执行当前任务，不得改做其他任务。";
  try{
   const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()})});
