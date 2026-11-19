@@ -186,6 +186,12 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     page.once('dialog', dialog => dialog.accept());
     await page.locator('#saveChapterEdit').click();
     await expect(page.locator('#chapterList')).toContainText('雾夜来客');
+    await page.locator('#chapterBody').fill('林岚推开铁门，走进浓雾。');
+    await expect.poll(async () => page.evaluate(() => { const w = JSON.parse(localStorage.getItem('novelStudioV2Workspace') || '{}'); const p = (w.projects || []).find(x => x.id === w.activeId); return p?.data?.chapters?.[0]?.body || ''; }), { timeout: 5000 }).toBe('林岚推开铁门，走进浓雾。');
+    await page.reload();
+    await page.locator('[data-page="chapters"]').click();
+    await page.locator('#chapterList .item').first().click();
+    await expect(page.locator('#chapterBody')).toHaveValue('林岚推开铁门，走进浓雾。');
     expect(errors).toEqual([]);
   });
 });
