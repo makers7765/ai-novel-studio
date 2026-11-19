@@ -91,7 +91,19 @@ main,.layout,aside,.panel,.grid,.row,.field,.taskgrid,.workflow-wrap,.studio-ref
 @media(max-width:520px){.taskgrid{grid-template-columns:minmax(0,1fr)}.studio-actions{grid-template-columns:1fr 1fr}.version-entry{align-items:flex-start;flex-direction:column}.context-preview{max-height:35dvh}}
 </style><link rel="stylesheet" href="/experience.css"></head>
 <body>
-<header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="exportBtn">导出备份</button><button id="importBtn" type="button">导入恢复</button><input id="importFile" type="file" accept="application/json,.json" hidden></div></header>
+<header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="openProviderSettings" type="button">免费模型设置</button><button id="exportBtn">导出备份</button><button id="importBtn" type="button">导入恢复</button><input id="importFile" type="file" accept="application/json,.json" hidden></div></header><dialog id="providerDialog" style="width:min(560px,calc(100vw - 24px));max-height:90vh;overflow:auto;background:#171d29;color:var(--text);border:1px solid #46506a;border-radius:16px;padding:20px">
+  <form id="providerForm">
+    <h2>免费 AI 模型接入</h2>
+    <p class="muted" style="font-size:13px">选择有免费额度的 API 服务。免费额度由服务商提供，可能限速或调整；API Key 只保存在当前浏览器标签页会话中，关闭标签页后清除。</p>
+    <div class="field"><label for="freeProvider">服务商</label><select id="freeProvider"><option value="gemini">Google Gemini API（免费层）</option><option value="groq">Groq（免费层）</option><option value="openrouter">OpenRouter（免费模型）</option><option value="cloudflare">Cloudflare Workers AI（由网站部署者配置）</option></select></div>
+    <div class="field" id="freeKeyField"><label for="freeApiKey">API Key</label><input id="freeApiKey" type="password" autocomplete="off" placeholder="粘贴服务商发放的 API Key"></div>
+    <div class="field" id="freeModelField"><label for="freeModel">模型 ID（可选，留空使用默认免费模型）</label><input id="freeModel" placeholder="gemini-2.5-flash"></div>
+    <div class="notice" id="providerHelp">Gemini 免费额度和可用模型以 Google AI Studio 账户页面为准。</div>
+    <p style="font-size:12px" class="muted">获取 Key：<a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Gemini AI Studio</a> · <a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq</a> · <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a></p>
+    <div class="actions" style="justify-content:flex-end;margin-top:16px"><button type="button" id="clearProviderSettings">清除配置</button><button type="button" id="closeProviderSettings">取消</button><button class="primary" type="submit">保存并使用</button></div>
+  </form>
+</dialog>
+
 <div class="layout"><aside><button type="button" id="mobileNavToggle" class="mobile-nav-toggle" aria-expanded="false">☰ 打开导航菜单</button><div class="nav" id="nav">
 <button data-page="projects">▦ 项目中心</button><button data-page="project">⚙ 小说资料</button><button class="active" data-page="studio">✦ AI 创作台</button><button data-page="world">◈ 世界观设定</button><button data-page="characters">♙ 人物档案</button><button data-page="chapters">▤ 章节管理</button><button data-page="archive">▣ 创作归档</button><button data-page="memory">🧠 小说记忆</button><button data-page="timeline">◷ 剧情时间线</button><button data-page="library">▤ 素材库</button><button data-page="quality">✓ 质量检测</button>
 </div><div class="panel" style="margin-top:20px;padding:12px"><div class="muted" style="font-size:12px">当前作品</div><input id="bookTitle" placeholder="给小说起个名字" style="margin-top:7px"></div><div class="muted" id="saveStatus" style="font-size:12px;padding:8px">资料保存在本机浏览器 · 自动保存就绪</div></aside>
@@ -391,13 +403,40 @@ document.querySelectorAll("[data-workflow-task]").forEach(b=>b.onclick=()=>{
 document.querySelectorAll(".task").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll("[data-workflow-task]").forEach(x=>x.classList.toggle("active",x.dataset.workflowTask===b.dataset.task));
 }));
+const FREE_PROVIDER_DEFAULTS={gemini:"gemini-2.5-flash",groq:"openai/gpt-oss-120b",openrouter:"openrouter/free"};
+const FREE_PROVIDER_HELP={
+ gemini:"Gemini API 有免费层；具体模型、每日请求量和数据使用条款以 AI Studio 为准。",
+ groq:"Groq 提供按模型区分的免费速率限制；额度耗尽后请稍后重试或切换服务商。",
+ openrouter:"仅选择模型 ID 以 :free 结尾的免费模型；openrouter/free 会自动路由到可用免费模型。",
+ cloudflare:"使用网站部署者配置的 Cloudflare Workers AI，无需填写个人 API Key。"
+};
+function readProviderConfig(){try{return JSON.parse(sessionStorage.getItem("novelStudioFreeProvider")||"null");}catch{return null;}}
+function updateProviderDialog(){
+ const p=$("freeProvider").value,local=p!=="cloudflare";
+ $("freeKeyField").classList.toggle("hidden",!local);$("freeModelField").classList.toggle("hidden",!local);
+ $("providerHelp").textContent=FREE_PROVIDER_HELP[p]||"";
+ const cfg=readProviderConfig();$("freeApiKey").value=cfg?.provider===p?(cfg.apiKey||""):"";
+ $("freeModel").value=cfg?.provider===p?(cfg.model||""):(FREE_PROVIDER_DEFAULTS[p]||"");
+}
+$("openProviderSettings").onclick=()=>{$("freeProvider").value=readProviderConfig()?.provider||"gemini";updateProviderDialog();$("providerDialog").showModal();};
+$("freeProvider").onchange=updateProviderDialog;
+$("closeProviderSettings").onclick=()=> $("providerDialog").close();
+$("clearProviderSettings").onclick=()=>{sessionStorage.removeItem("novelStudioFreeProvider");$("freeApiKey").value="";$("freeModel").value="";$("providerDialog").close();$("apiStatus").textContent="已清除个人免费模型配置";};
+$("providerForm").onsubmit=e=>{
+ e.preventDefault();const provider=$("freeProvider").value;
+ if(provider==="cloudflare"){sessionStorage.setItem("novelStudioFreeProvider",JSON.stringify({provider}));}
+ else {const apiKey=$("freeApiKey").value.trim();if(apiKey.length<8){alert("请先填写有效的 API Key。");return;}
+ const model=$("freeModel").value.trim();if(provider==="openrouter"&&model&&model!=="openrouter/free"&&!model.endsWith(":free")){alert("OpenRouter 请填写免费模型 ID（通常以 :free 结尾），或留空使用自动免费路由。");return;}
+ sessionStorage.setItem("novelStudioFreeProvider",JSON.stringify({provider,apiKey,model}));}
+ $("providerDialog").close();$("apiStatus").textContent="已选择免费模型："+provider;$("apiStatus").style.color="var(--accent2)";
+};
 $("generateBtn").onclick=async()=>{
  const taskAtStart=currentTask;const prompt=$("prompt").value.trim();const specific=taskInputText(taskAtStart);
  // All task fields are optional; the task instruction and existing novel context provide a useful starting point.
  const seq=++generationSeq,btn=$("generateBtn");taskJobs[taskAtStart]={status:"running",result:"",seq};btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在生成【"+taskAtStart+"】。请稍候，生成期间可以切换其他任务。";$("progress").dataset.state="running";$("result").textContent="AI 正在执行【"+taskAtStart+"】，请稍候…";
  const fullPrompt="【任务类型】"+taskAtStart+"\n【任务专属要求】\n"+taskInstruction(taskAtStart)+"\n\n【专属输入】\n"+specific+"\n\n【补充要求】"+prompt+"\n\n只执行当前任务，不得改做其他任务。";
  try{
-  const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText()})});
+  const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText(),...(readProviderConfig()||{})})});
   let j;try{j=await r.json();}catch{throw new Error("服务器返回内容无法识别（HTTP "+r.status+"），请稍后重试。");}
   if(!r.ok)throw new Error(j.error||("服务器请求失败（HTTP "+r.status+"）"));
   if(taskJobs[taskAtStart]?.seq===seq){
@@ -444,6 +483,6 @@ $("saveProject").onclick=()=>{data.synopsis=$("synopsis").value;data.notes=$("no
 $("exportBtn").onclick=()=>{const backup={format:"ai-novel-studio-backup",version:2,exportedAt:new Date().toISOString(),project:data,taskDrafts:JSON.parse(localStorage.getItem("novelStudioV2TaskDrafts")||"{}"),versions:versionHistory,workspace:typeof window.exportWorkspaceSnapshot==="function"?window.exportWorkspaceSnapshot():null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="AI小说工作室完整备份-"+new Date().toISOString().slice(0,10)+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $("importBtn").onclick=()=>$("importFile").click();
 $("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const parsed=JSON.parse(await file.text());const incoming=parsed.project&&parsed.format==="ai-novel-studio-backup"?parsed.project:parsed;if(!incoming||typeof incoming!=="object"||(!Array.isArray(incoming.chapters)&&!Array.isArray(incoming.characters)&&typeof incoming.title!=="string"))throw new Error("文件格式不符合小说工作室备份格式。");if(!confirm("导入将替换当前作品资料。建议先点击“导出备份”。确定继续？"))return;data={...defaultData,...incoming};if(parsed.workspace&&typeof window.restoreWorkspaceSnapshot==="function")window.restoreWorkspaceSnapshot(parsed.workspace);if(parsed.taskDrafts)localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(parsed.taskDrafts));if(parsed.versions){versionHistory=parsed.versions;localStorage.setItem("novelStudioV2Versions",JSON.stringify(versionHistory));}persist();load();renderTaskFields(currentTask);renderVersions();refreshContextPreview();alert("备份恢复成功。");}catch(err){alert("导入失败："+err.message);}finally{e.target.value="";}};
-async function check(){try{const r=await fetch("/api/health");const j=await r.json();if(j.configured){$("apiStatus").textContent=`● AI 服务已配置 · ${j.model}`;$("apiStatus").style.color="var(--accent2)";}else if(!j.keyConfigured){$("apiStatus").textContent="● 服务已启动，等待配置 API Key";$("apiStatus").style.color="#f0c477";}else{$("apiStatus").textContent="● API Key 已配置，等待配置模型名称";$("apiStatus").style.color="#f0c477";}}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
+async function check(){const personal=readProviderConfig();if(personal){$("apiStatus").textContent="● 已选择免费模型："+personal.provider;$("apiStatus").style.color="var(--accent2)";return;}try{const r=await fetch("/api/health");const j=await r.json();if(j.configured){$("apiStatus").textContent=`● AI 服务已配置 · ${j.model}`;$("apiStatus").style.color="var(--accent2)";}else if(!j.keyConfigured){$("apiStatus").textContent="● 服务已启动，等待配置 API Key";$("apiStatus").style.color="#f0c477";}else{$("apiStatus").textContent="● API Key 已配置，等待配置模型名称";$("apiStatus").style.color="#f0c477";}}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
 $("saveChapter").textContent="确认保存到对应资料库";renderTaskFields(currentTask);document.querySelector('[data-task="灵感生成"]').style.borderColor="var(--accent)";document.querySelector('[data-task="灵感生成"]').setAttribute("aria-pressed","true");load();renderVersions();refreshContextPreview();check();
 </script><script src="/experience.js" defer></script><script src="/product-modules.js" defer></script></body></html>
