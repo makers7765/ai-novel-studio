@@ -178,7 +178,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await page.locator('#chapterReplace').fill('铁门');
     page.once('dialog', dialog => dialog.accept());
     await page.locator('#replaceChapterText').click();
-    await expect(page.locator('#chapterBody')).toContainText('铁门');
+    await expect(page.locator('#chapterBody')).toHaveValue(/铁门/);
     await page.locator('#focusEditor').click();
     await expect(page.locator('body')).toHaveClass(/writing-focus/);
     await page.keyboard.press('Escape');
