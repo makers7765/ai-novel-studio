@@ -1,0 +1,43 @@
+/* AI Novel Studio · product experience refresh */
+:root{--bg:#0b1020;--panel:#121a2b;--panel2:#1a263b;--line:#293751;--text:#edf3ff;--muted:#93a3bd;--accent:#a78bfa;--accent2:#5eead4;--danger:#fb7185}
+body{background:radial-gradient(ellipse at 72% -12%,rgba(91,72,170,.22),transparent 38%),linear-gradient(180deg,#0b1020,#0a1020 60%,#0b1222);letter-spacing:.005em}
+header{height:74px;background:rgba(12,18,32,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(122,145,180,.16);padding:0 clamp(16px,3vw,36px)}
+.brand{font-size:19px;letter-spacing:-.03em}.brand:before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;background:linear-gradient(135deg,#c4b5fd,#5eead4);margin-right:10px;box-shadow:0 0 20px #a78bfa88}
+.layout{grid-template-columns:248px minmax(0,1fr);max-width:1680px;margin:0 auto;min-height:calc(100vh - 74px)}
+aside{background:rgba(13,20,35,.82);border-right:1px solid rgba(122,145,180,.14);padding:22px 14px}
+.nav{gap:7px}.nav button{padding:12px 14px;border-radius:12px;font-size:14px;transition:all .18s}.nav button.active,.nav button:hover{background:linear-gradient(100deg,rgba(167,139,250,.18),rgba(94,234,212,.06));border-color:rgba(167,139,250,.25);color:#f4f1ff}
+main{padding:clamp(18px,3vw,42px);max-width:1440px;margin:0 auto}
+.topline{margin-bottom:24px}.topline h1{font-size:clamp(25px,3vw,34px);letter-spacing:-.04em}.topline .muted{font-size:14px}
+.panel{background:linear-gradient(145deg,rgba(21,31,50,.96),rgba(16,25,42,.96));border:1px solid rgba(128,151,187,.17);border-radius:20px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.13);margin-bottom:18px}
+button{border-color:rgba(129,151,187,.22);background:#1a263b;border-radius:11px;transition:transform .16s,border-color .16s,background .16s}
+button:hover{border-color:rgba(167,139,250,.55);transform:translateY(-1px)}
+button.primary{background:linear-gradient(120deg,#a78bfa,#8b7cf6 55%,#6ee7d2);color:#111426;box-shadow:0 8px 22px rgba(139,124,246,.22)}
+input,textarea,select{background:#0d1628;border-color:rgba(128,151,187,.22);border-radius:12px;padding:12px 14px}
+input:focus,textarea:focus,select:focus{border-color:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.12)}
+.task-entry-panel{padding:18px 20px}.task-entry-heading{margin-bottom:14px}.taskgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.task{min-height:88px;border-radius:14px;background:linear-gradient(150deg,#17243a,#111c30);padding:14px;border-color:rgba(128,151,187,.17)}
+.task:hover,.task[aria-pressed="true"]{border-color:#a78bfa;background:linear-gradient(145deg,rgba(111,84,177,.28),rgba(18,32,49,.98));box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.task strong{font-size:14px}.task-step{letter-spacing:.08em}
+.workflow-wrap,.workflow-steps,[data-workflow-task]{display:none!important}
+.studio-reference{background:rgba(19,31,49,.75);padding:16px 20px}
+.context-panel{padding:16px 20px}.context-panel h2,.studio-reference h2{font-size:15px}
+.grid:has(#taskFields){grid-template-columns:minmax(310px,.82fr) minmax(0,1.18fr);gap:18px}
+.output{background:#0b1425;border-color:rgba(128,151,187,.2);border-radius:14px;min-height:520px;padding:22px;font-size:15px;line-height:2}
+.version-panel{border-color:rgba(128,151,187,.2)}.version-entry{background:#0c1628;border-color:rgba(128,151,187,.16);border-radius:10px}
+.collection-card,.item{background:#111d31;border-color:rgba(128,151,187,.18);border-radius:14px}
+.modal{background:#111b2d;border-color:#34435f;border-radius:18px}
+.free-studio{padding:24px;background:radial-gradient(ellipse at 88% 0%,rgba(110,231,210,.11),transparent 34%),linear-gradient(125deg,rgba(39,34,72,.95),rgba(18,31,49,.98) 62%,rgba(15,36,47,.95));border-color:rgba(167,139,250,.28);position:relative;overflow:hidden}
+.free-studio:after{content:"";position:absolute;width:240px;height:240px;border:1px solid rgba(167,139,250,.1);border-radius:50%;right:-100px;top:-140px;box-shadow:0 0 0 28px rgba(167,139,250,.025),0 0 0 58px rgba(167,139,250,.02);pointer-events:none}
+.free-studio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;position:relative;z-index:1}
+.free-studio h2{font-size:22px;letter-spacing:-.03em;margin:3px 0 5px}.free-studio-head p{font-size:13px;margin:0;max-width:650px}
+.eyebrow{font-size:10px;letter-spacing:.18em;color:#c4b5fd;font-weight:800}
+.live-pill{white-space:nowrap;border:1px solid rgba(94,234,212,.25);background:rgba(94,234,212,.08);border-radius:30px;padding:6px 10px;font-size:11px;color:#a7f3e8}
+.live-pill i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#5eead4;margin-right:6px;box-shadow:0 0 10px #5eead4}
+.free-toolbar{display:flex;align-items:center;gap:14px;margin:20px 0 12px;position:relative;z-index:1}.free-toolbar .field{margin:0;max-width:260px;flex:0 0 260px}.free-toolbar .field span,.free-fields .field span{font-size:13px;color:#e1e8f7;font-weight:650}.free-mode-hint{font-size:12px;color:#a9b8ce}
+.free-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative;z-index:1}.free-fields .field{margin:0}.free-fields .field em{font-style:normal;color:#a9b8ce;font-size:11px;font-weight:400;margin-left:6px}.free-fields textarea{min-height:118px;line-height:1.7;background:rgba(8,16,30,.72)}
+.free-footer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;position:relative;z-index:1}.free-footer .muted{font-size:11px;flex:1}.free-run{min-width:170px;padding:12px 18px;font-weight:750}
+.free-selection-mark{outline:2px solid #5eead4;outline-offset:2px}
+#page-studio .topline{margin-bottom:18px}
+@media(max-width:1100px){.layout{grid-template-columns:210px minmax(0,1fr)}.grid:has(#taskFields){grid-template-columns:1fr}.taskgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:850px){.layout{grid-template-columns:minmax(0,1fr)}aside{padding:10px 12px}.free-fields{grid-template-columns:1fr}.free-toolbar{align-items:flex-start;flex-direction:column}.free-toolbar .field{max-width:none;width:100%;flex:1}.free-studio-head{flex-direction:column}.taskgrid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:16px}}
+@media(max-width:520px){.panel{padding:15px}.free-studio{padding:17px}.free-studio h2{font-size:20px}.taskgrid{grid-template-columns:1fr}.free-footer{align-items:stretch}.free-footer button{width:100%}.free-run{min-width:0}}
