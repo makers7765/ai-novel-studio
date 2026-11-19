@@ -147,7 +147,7 @@
    $("materialTitle").value="";$("materialContent").value="";$("materialTags").value="";persist();renderMaterials();if(typeof refreshContextPreview==="function")refreshContextPreview();
  });
  $("materialSearch")?.addEventListener("input",renderMaterials);
- $("bookTitle")?.addEventListener("input",()=>{data.title=$("bookTitle").value;const p=activeProject();if(p){p.name=data.title||"未命名作品";p.data=clone(data);try{localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{}}});
+ $("bookTitle")?.addEventListener("input",()=>{data.title=$("bookTitle").value;const p=activeProject();if(p){p.name=data.title||"未命名作品";p.data=clone(data);try{localStorage.setItem("novelStudioV2",JSON.stringify(data));localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{}}});
  // Keep the project's data synchronized when existing app controls save it.
  const originalLoad=load;
  load=function(){originalLoad();renderMemory();renderTimeline();renderMaterials();renderProjects();};
