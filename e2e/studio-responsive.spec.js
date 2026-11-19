@@ -169,7 +169,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await page.locator('#chapterTitle').fill('雾夜来客');
     await page.locator('#chapterBody').fill('林岚推开木门，走进雾中。');
     await expect(page.locator('#chapterWordCount')).toContainText('字');
-    await expect(page.locator('#chapterSaveState')).toContainText('草稿已自动保存', { timeout: 5000 });
+    await expect.poll(async () => page.evaluate(() => { const w = JSON.parse(localStorage.getItem('novelStudioV2Workspace') || '{}'); const p = (w.projects || []).find(x => x.id === w.activeId); return p?.editorDraft?.title || ''; }), { timeout: 5000 }).toBe('雾夜来客');
     await page.reload();
     await page.locator('[data-page="chapters"]').click();
     await expect(page.locator('#chapterTitle')).toHaveValue('雾夜来客');
