@@ -24,7 +24,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await expect(toggle).toBeVisible();
     await toggle.click();
     await expect(page.locator('#nav')).toHaveClass(/mobile-open/);
-    await expect(page.locator('#nav button')).toHaveCount(6);
+    await expect(page.locator('#nav button')).toHaveCount(10);
     await page.locator('#nav button[data-page="studio"]').click();
     await expect(page.locator('#page-studio')).toBeVisible();
     const metrics = await page.evaluate(() => ({
