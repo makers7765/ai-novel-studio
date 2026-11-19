@@ -25,7 +25,7 @@
    const prompt="【创作模式】"+chosenMode+"\n【执行要求】"+(behavior[chosenMode]||behavior["自定义"])+"\n【参考文字】\n"+(source||"无；请根据用户要求和小说资料创作。")+"\n\n【用户指令】\n"+(ask||"请根据参考资料创作合适的小说内容。")+"\n\n只输出可直接使用的创作内容，不要解释执行过程。";
    const oldLabel=run.textContent;run.disabled=true;run.textContent="AI 正在创作…";status.textContent="正在处理本次要求；原结果会保留在版本历史中。";
    try{
-     const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task,prompt,context:typeof contextText==="function"?contextText():""})});
+     const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task,prompt,context:typeof contextText==="function"?contextText():"",...(typeof readProviderConfig==="function"?(readProviderConfig()||{}):{})})});
      const payload=await response.json();if(!response.ok)throw new Error(payload.error||"AI 请求失败");
      const output=String(payload.text||"").trim();if(!output)throw new Error("AI 没有返回正文");
      const result=$id("result");result.textContent=output;
