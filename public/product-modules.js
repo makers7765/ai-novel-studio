@@ -149,14 +149,15 @@
    $("materialCount").textContent=filtered.length+" / "+data.materials.length+" 条";
    if(!filtered.length){const empty=document.createElement("div");empty.className="empty-state";empty.textContent=q?"没有找到匹配素材。":"素材库还是空的，添加第一条灵感或参考资料吧。";box.append(empty);return;}
    filtered.forEach(item=>box.append(recordCard(item,item.category+" · "+(item.tags||[]).join("、"),[
+    {label:"编辑",run:()=>{editingMaterial=item._index;$("materialCategory").value=item.category;$("materialTitle").value=item.title;$("materialContent").value=item.content;$("materialTags").value=(item.tags||[]).join("、");$("saveMaterial").textContent="更新素材";}},
     {label:"放入创作区",run:()=>{switchPage("studio");$("freeReference").value=item.content;$("freeInstruction").value="请参考这条素材进行创作："+item.title;}},
     {label:"删除",run:()=>{if(!confirm("确定删除这条素材？"))return;data.materials.splice(item._index,1);persist();renderMaterials();}}
    ])));
  }
  $("saveMaterial")?.addEventListener("click",()=>{
    const title=$("materialTitle").value.trim(),content=$("materialContent").value.trim();if(!title||!content){alert("请填写素材名称和内容。");return;}
-   data.materials.push({category:$("materialCategory").value,title,content,tags:$("materialTags").value.split(/[,，]/).map(x=>x.trim()).filter(Boolean),createdAt:new Date().toLocaleString()});
-   $("materialTitle").value="";$("materialContent").value="";$("materialTags").value="";persist();renderMaterials();if(typeof refreshContextPreview==="function")refreshContextPreview();
+   const item={category:$("materialCategory").value,title,content,tags:$("materialTags").value.split(/[,，、]/).map(x=>x.trim()).filter(Boolean),createdAt:new Date().toLocaleString()};if(editingMaterial<0)data.materials.push(item);else data.materials[editingMaterial]=item;editingMaterial=-1;
+   $("materialTitle").value="";$("materialContent").value="";$("materialTags").value="";$("saveMaterial").textContent="保存素材";persist();renderMaterials();if(typeof refreshContextPreview==="function")refreshContextPreview();
  });
  $("materialSearch")?.addEventListener("input",renderMaterials);
  $("bookTitle")?.addEventListener("input",()=>{data.title=$("bookTitle").value;const p=activeProject();if(p){p.name=data.title||"未命名作品";p.data=clone(data);try{localStorage.setItem("novelStudioV2",JSON.stringify(data));localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{}}});
