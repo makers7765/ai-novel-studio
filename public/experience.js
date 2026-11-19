@@ -28,15 +28,15 @@
      const payload=await response.json();if(!response.ok)throw new Error(payload.error||"AI 请求失败");
      const output=String(payload.text||"").trim();if(!output)throw new Error("AI 没有返回正文");
      const result=$id("result");result.textContent=output;
-     if(typeof saveResultVersion==="function")saveResultVersion(output,"自由创作·"+chosenMode);
-     if(typeof syncEditedResult==="function")syncEditedResult();
      const saveTask=chosenMode==="续写"?"续写":(["重写","润色","缩写"].includes(chosenMode)?"润色改写":"章节创作");
      if(typeof currentTask!=="undefined"){
        currentTask=saveTask;
        if($id("taskName"))$id("taskName").value=saveTask;
        if(typeof taskJobs!=="undefined")taskJobs[saveTask]={status:"done",result:output,seq:Date.now()};
-       if(typeof renderVersions==="function")renderVersions();
      }
+     if(typeof saveResultVersion==="function")saveResultVersion(output,"自由创作·"+chosenMode);
+     if(typeof syncEditedResult==="function")syncEditedResult();
+     if(typeof renderVersions==="function")renderVersions();
      const p=$id("progress");if(p){p.textContent="已完成："+chosenMode+"。你可以直接编辑结果、继续提出修改要求，或保存到章节 / 对应资料库。";p.dataset.state="success";}
      status.textContent="创作完成 · "+output.length+" 字。可继续修改，下一次会以当前结果为基础。";
    }catch(error){status.textContent="生成失败："+error.message;}
