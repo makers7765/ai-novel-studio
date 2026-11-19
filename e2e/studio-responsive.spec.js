@@ -74,4 +74,55 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await page.locator('#useSelectedText').click();
     await expect(page.locator('#freeReference')).toHaveValue('主角推开古老的木门。');
   });
+  
+  test('多小说项目可创建、切换并保留独立资料', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto('/');
+    await page.locator('[data-page="projects"]').click();
+    await expect(page.locator('#novelProjectList .project-card')).toHaveCount(1);
+    page.once('dialog', dialog => dialog.accept('测试小说二'));
+    await page.locator('#createNovelProject').click();
+    await expect(page.locator('#bookTitle')).toHaveValue('测试小说二');
+    await page.locator('[data-page="projects"]').click();
+    await expect(page.locator('#novelProjectList .project-card')).toHaveCount(2);
+    await page.locator('#novelProjectList .project-card').first().getByRole('button', { name: '打开项目' }).click();
+    await expect(page.locator('#bookTitle')).not.toHaveValue('测试小说二');
+    await page.reload();
+    await page.locator('[data-page="projects"]').click();
+    await expect(page.locator('#novelProjectList .project-card')).toHaveCount(2);
+    expect(errors).toEqual([]);
+  });
+
+  test('小说记忆、剧情时间线和素材可保存并进入 AI 上下文', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto('/');
+    await page.locator('[data-page="memory"]').click();
+    await page.locator('#memoryTitle').fill('主角右手受伤');
+    await page.locator('#memoryContent').fill('在治愈之前不能使用长剑。');
+    await page.locator('#saveMemory').click();
+    await expect(page.locator('#memoryList')).toContainText('主角右手受伤');
+    await page.locator('[data-page="timeline"]').click();
+    await page.locator('#eventDate').fill('帝历 302 年春');
+    await page.locator('#eventTitle').fill('进入北境');
+    await page.locator('#eventContent').fill('主角抵达边境城。');
+    await page.locator('#saveTimelineEvent').click();
+    await expect(page.locator('#timelineList')).toContainText('进入北境');
+    await page.locator('[data-page="library"]').click();
+    await page.locator('#materialTitle').fill('雾中车站');
+    await page.locator('#materialContent').fill('废弃车站被浓雾笼罩，远处传来钟声。');
+    await page.locator('#saveMaterial').click();
+    await expect(page.locator('#materialList')).toContainText('雾中车站');
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#toggleContextPreview').click();
+    await page.locator('[data-context="materials"]').check();
+    await expect(page.locator('#contextPreview')).toContainText('主角右手受伤');
+    await expect(page.locator('#contextPreview')).toContainText('进入北境');
+    await expect(page.locator('#contextPreview')).toContainText('雾中车站');
+    await page.reload();
+    await page.locator('[data-page="memory"]').click();
+    await expect(page.locator('#memoryList')).toContainText('主角右手受伤');
+    expect(errors).toEqual([]);
+  });
 });
