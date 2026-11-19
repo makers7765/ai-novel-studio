@@ -51,18 +51,41 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await expect(page.locator('#contextControls')).toBeVisible();
   });
   
-  test('自由创作可选填输入并支持选段修改', async ({ page }) => {
+  test('自由创作传递已选服务商、连续生成并保存版本，支持选段修改', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
+    await page.addInitScript(() => sessionStorage.setItem('novelStudioFreeProvider', JSON.stringify({
+      provider: 'gemini', apiKey: 'test-gemini-key-123', model: 'gemini-test-model'
+    })));
     await page.goto('/');
-    await page.route('**/api/generate', route => route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ text: '夜色渐深，远处传来一声钟响。' })
-    }));
+    const requests = [];
+    await page.route('**/api/generate', route => {
+      requests.push(route.request().postDataJSON());
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ text: requests.length === 1 ? '夜色渐深，远处传来一声钟响。' : '钟声之后，门缝里透出一道冷光。' })
+      });
+    });
     await page.locator('#freeInstruction').fill('写一段悬疑小说开场');
     await page.locator('#runFreeWrite').click();
     await expect(page.locator('#result')).toContainText('夜色渐深');
     await expect(page.locator('#versionList')).toContainText('自由创作');
+    expect(requests[0].provider).toBe('gemini');
+    expect(requests[0].apiKey).toBe('test-gemini-key-123');
+    expect(requests[0].model).toBe('gemini-test-model');
+
+    await page.locator('#freeMode').selectOption('续写');
+    await page.locator('#freeInstruction').fill('继续写，保持悬疑气氛');
+    await page.locator('#runFreeWrite').click();
+    await expect(page.locator('#result')).toContainText('门缝里透出一道冷光');
+    expect(requests).toHaveLength(2);
+    expect(requests[1].prompt).toContain('夜色渐深，远处传来一声钟响。');
+    expect(requests[1].provider).toBe('gemini');
+    await expect.poll(async () => page.evaluate(() => {
+      const versions = JSON.parse(localStorage.getItem('novelStudioV2Versions') || '{}');
+      return Object.values(versions).flat().length;
+    })).toBeGreaterThanOrEqual(2);
+
     await page.locator('#result').evaluate(el => {
       el.textContent = '主角推开古老的木门。';
       const range = document.createRange();
