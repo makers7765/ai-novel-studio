@@ -12,8 +12,6 @@ jobs:
   ui-checks:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      PLAYWRIGHT_BASE_URL: https://feature-studio-responsive-context-versions-20261118.ai-novel-studio-1ma.pages.dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,8 +21,12 @@ jobs:
         run: npm install --no-save @playwright/test
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Check JavaScript syntax
+        run: node --check public/experience.js && node --check functions/api/generate.js
+      - name: Start local static preview
+        run: python3 -m http.server 4173 --directory public > /tmp/novel-studio-preview.log 2>&1 &
       - name: Run safe UI checks
-        run: npx playwright test
+        run: PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 npx playwright test
       - name: Upload test report and evidence
         if: always()
         uses: actions/upload-artifact@v4
