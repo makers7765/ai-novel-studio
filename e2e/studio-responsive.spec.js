@@ -3,6 +3,8 @@ const { test, expect } = require('@playwright/test');
 test.describe('AI 小说工作室 · 安全 UI 检查', () => {
   test('桌面端页面加载、八项任务入口和上下文预览存在', async ({ page }) => {
     await page.setViewportSize({ width: 1365, height: 900 });
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
     await page.goto('/');
     await expect(page).toHaveTitle(/AI Novel Studio/);
     await expect(page.locator('#freeStudio')).toBeVisible();
@@ -12,6 +14,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await expect(page.locator('#importBtn')).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(overflow).toBeFalsy();
+    expect(pageErrors).toEqual([]);
   });
 
   test('窄屏导航可展开，任务卡片单列且无横向溢出', async ({ page }) => {
