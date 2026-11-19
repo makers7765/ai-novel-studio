@@ -243,7 +243,7 @@
    setTimeout(()=>{const p=activeProject();if(p){delete p.editorDraft;saveWorkspace();}updateChapterWordCount();if($("chapterSaveState"))$("chapterSaveState").textContent="正在编辑已保存章节";},0);
  });
  $("newChapter")?.addEventListener("click",()=>{activeChapter=null;setTimeout(()=>{updateChapterWordCount();saveEditorDraft();},0);});
- $("saveChapterEdit")?.addEventListener("click",()=>{clearTimeout(editorSaveTimer);setTimeout(()=>{delete activeProject().editorDraft;saveWorkspace();if($("chapterSaveState"))$("chapterSaveState").textContent="章节已保存";updateChapterWordCount();},0);});
+ $("saveChapterEdit")?.addEventListener("click",()=>{clearTimeout(editorSaveTimer);setTimeout(()=>{if(activeChapter===null&&data.chapters.length){const lastIndex=data.chapters.length-1;if(data.chapters[lastIndex].title===($("chapterTitle").value||"未命名章节"))activeChapter=lastIndex;}delete activeProject().editorDraft;persist();if($("chapterSaveState"))$("chapterSaveState").textContent="章节已保存";updateChapterWordCount();},0);});
  $("focusEditor")?.addEventListener("click",()=>{
    const focused=document.body.classList.toggle("writing-focus");$("focusEditor").textContent=focused?"退出沉浸写作":"沉浸写作";
  });
