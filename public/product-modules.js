@@ -82,11 +82,12 @@
  }
  function loadActiveProject(){
    const p=activeProject();if(!p)return;
-   data=ensureArrays({...defaultData,...clone(p.data)});
+   data=ensureArrays({...defaultData,...clone(p.data)});activeChapter=null;
    try{localStorage.setItem("novelStudioV2",JSON.stringify(data));localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(p.taskDrafts||{}));if(typeof taskDrafts!=="undefined"){taskDrafts={...(p.taskDrafts||{})};}}
    catch{}
    if($("bookTitle"))$("bookTitle").value=data.title||p.name||"";
    if(typeof load==="function")load();
+   restoreEditorDraft();
    if(typeof renderTaskFields==="function"&&typeof currentTask!=="undefined")renderTaskFields(currentTask);
    if(typeof renderVersions==="function")renderVersions();
    if(typeof refreshContextPreview==="function")refreshContextPreview();
@@ -188,6 +189,77 @@
  $("materialSearch")?.addEventListener("input",renderMaterials);
  $("bookTitle")?.addEventListener("input",()=>{data.title=$("bookTitle").value;const p=activeProject();if(p){p.name=data.title||"未命名作品";p.data=clone(data);try{localStorage.setItem("novelStudioV2",JSON.stringify(data));localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{}}});
 
+ function restoreEditorDraft(){
+   const draft=activeProject().editorDraft;
+   if(draft&&$("chapterTitle")&&$("chapterBody")){activeChapter=null;$("chapterTitle").value=draft.title||"";$("chapterBody").value=draft.body||"";updateChapterWordCount();if($("chapterSaveState"))$("chapterSaveState").textContent="已恢复未保存草稿";}
+ }
+ function updateChapterWordCount(){
+   const text=$("chapterBody")?.value||"";
+   const count=(text.match(/[\u3400-\u9fff]|[A-Za-z0-9]+/g)||[]).length;
+   if($("chapterWordCount"))$("chapterWordCount").textContent=count.toLocaleString()+" 字";
+ }
+ function downloadText(filename,content){
+   const blob=new Blob(["\uFEFF",content],{type:"text/plain;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }
+ let editorSaveTimer=null;
+ function saveEditorDraft(){
+   const p=activeProject();if(!p)return;
+   const title=$("chapterTitle")?.value||"",body=$("chapterBody")?.value||"";
+   if(activeChapter!==null&&data.chapters[activeChapter]){
+     data.chapters[activeChapter]={...data.chapters[activeChapter],title:title||"未命名章节",body};
+     persist();
+     if($("chapterSaveState"))$("chapterSaveState").textContent="已自动保存 · "+new Date().toLocaleTimeString();
+   }else{
+     p.editorDraft={title,body,updatedAt:new Date().toISOString()};
+     try{localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{}
+     if($("chapterSaveState"))$("chapterSaveState").textContent="草稿已自动保存 · "+new Date().toLocaleTimeString();
+   }
+ }
+ function refreshChapterListControls(){
+   const list=$("chapterList");if(!list)return;
+   [...list.children].forEach((item,index)=>{
+     if(item.querySelector(".chapter-list-actions"))return;
+     const actions=document.createElement("div");actions.className="chapter-list-actions";
+     [{label:"↑ 上移",delta:-1},{label:"↓ 下移",delta:1}].forEach(action=>{
+       const button=document.createElement("button");button.type="button";button.textContent=action.label;button.disabled=index+action.delta<0||index+action.delta>=data.chapters.length;
+       button.onclick=event=>{event.stopPropagation();const target=index+action.delta;[data.chapters[index],data.chapters[target]]=[data.chapters[target],data.chapters[index]];if(activeChapter===index)activeChapter=target;else if(activeChapter===target)activeChapter=index;persist();renderChapters();};
+       actions.append(button);
+     });
+     item.append(actions);
+   });
+ }
+ const originalRenderChapters=renderChapters;
+ renderChapters=function(){originalRenderChapters();refreshChapterListControls();};
+ $("chapterBody")?.addEventListener("input",()=>{
+   updateChapterWordCount();clearTimeout(editorSaveTimer);editorSaveTimer=setTimeout(saveEditorDraft,650);
+ });
+ $("chapterTitle")?.addEventListener("input",()=>{
+   clearTimeout(editorSaveTimer);editorSaveTimer=setTimeout(saveEditorDraft,650);
+ });
+ $("chapterList")?.addEventListener("click",event=>{
+   if(event.target.closest("button"))return;
+   setTimeout(()=>{const p=activeProject();if(p){delete p.editorDraft;saveWorkspace();}updateChapterWordCount();if($("chapterSaveState"))$("chapterSaveState").textContent="正在编辑已保存章节";},0);
+ });
+ $("newChapter")?.addEventListener("click",()=>{activeChapter=null;setTimeout(()=>{updateChapterWordCount();saveEditorDraft();},0);});
+ $("saveChapterEdit")?.addEventListener("click",()=>{setTimeout(()=>{delete activeProject().editorDraft;saveWorkspace();if($("chapterSaveState"))$("chapterSaveState").textContent="章节已保存";updateChapterWordCount();},0);});
+ $("focusEditor")?.addEventListener("click",()=>{
+   const focused=document.body.classList.toggle("writing-focus");$("focusEditor").textContent=focused?"退出沉浸写作":"沉浸写作";
+ });
+ $("chapterFind")?.addEventListener("keydown",event=>{if(event.key==="Enter")$("replaceChapterText").click();});
+ $("replaceChapterText")?.addEventListener("click",()=>{
+   const find=$("chapterFind").value;if(!find){alert("请先填写要查找的文字。");return;}
+   const body=$("chapterBody"),original=body.value,count=original.split(find).length-1;if(!count){alert("没有找到匹配文字。");return;}
+   body.value=original.split(find).join($("chapterReplace").value);body.dispatchEvent(new Event("input",{bubbles:true}));alert("已替换 "+count+" 处。");
+ });
+ $("exportCurrentChapter")?.addEventListener("click",()=>{
+   const title=$("chapterTitle").value.trim()||"未命名章节",body=$("chapterBody").value;if(!body.trim()){alert("当前章节没有正文。");return;}downloadText(title.replace(/[\\/:*?"<>|]/g,"_")+".txt",title+"\n\n"+body);
+ });
+ $("exportAllChapters")?.addEventListener("click",()=>{
+   if(!data.chapters.length){alert("当前小说还没有已保存章节。");return;}
+   const content=data.chapters.map((c,i)=>"第 "+(i+1)+" 章  "+(c.title||"未命名章节")+"\n\n"+(c.body||"")).join("\n\n"+"—".repeat(24)+"\n\n");
+   downloadText((data.title||"小说")+"-全文.txt",(data.title||"小说")+"\n\n"+content);
+ });
+ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&document.body.classList.contains("writing-focus")){document.body.classList.remove("writing-focus");if($("focusEditor"))$("focusEditor").textContent="沉浸写作";}});
  // AI-powered manuscript quality review. The report never edits manuscript data.
  $("runQualityCheck")?.addEventListener("click",async()=>{
    const selected=[...document.querySelectorAll(".quality-checks input:checked")].map(x=>x.value);
@@ -222,6 +294,7 @@
  // Initialise project workspace without replacing the legacy single-project key.
  saveWorkspace();
  if(typeof load==="function")load();
+ restoreEditorDraft();
  if(typeof renderTaskFields==="function"&&typeof currentTask!=="undefined")renderTaskFields(currentTask);
  if(typeof renderVersions==="function")renderVersions();
  if(typeof refreshContextPreview==="function")refreshContextPreview();
