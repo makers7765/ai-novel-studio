@@ -26,7 +26,7 @@
    if(!workspace.projects.length){const initial=ensureArrays(clone(data));const p={id:"novel-"+Date.now(),name:initial.title||"我的第一本小说",data:initial,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};workspace={activeId:p.id,projects:[p]};}
    if(!workspace.projects.some(p=>p.id===workspace.activeId))workspace.activeId=workspace.projects[0].id;
    const active=workspace.projects.find(p=>p.id===workspace.activeId);
-   data=ensureArrays({...defaultData,...clone(active.data)});
+   data=ensureArrays({...defaultData,...clone(active.data)});if(!data.title)data.title=active.name||"未命名作品";
    try{localStorage.setItem("novelStudioV2",JSON.stringify(data));if(active.taskDrafts){localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(active.taskDrafts));if(typeof taskDrafts!=="undefined")taskDrafts={...active.taskDrafts};}}catch{}
  }
  const activeProject=()=>workspace.projects.find(p=>p.id===workspace.activeId)||workspace.projects[0];
@@ -95,6 +95,7 @@
  }
  function activateProject(id){
    if(id===workspace.activeId)return;
+   if(typeof editorSaveTimer!=="undefined"&&$("page-chapters")&&!$("page-chapters").classList.contains("hidden")){clearTimeout(editorSaveTimer);saveEditorDraft();}
    saveWorkspace();workspace.activeId=id;loadActiveProject();switchPage("studio");
    const st=$("saveStatus");if(st)st.textContent="已切换项目："+(data.title||"未命名作品")+" · 自动保存已开启";
  }
@@ -187,6 +188,7 @@
    $("materialTitle").value="";$("materialContent").value="";$("materialTags").value="";$("saveMaterial").textContent="保存素材";persist();renderMaterials();if(typeof refreshContextPreview==="function")refreshContextPreview();
  });
  $("materialSearch")?.addEventListener("input",renderMaterials);
+ window.addEventListener("beforeunload",()=>{if(typeof editorSaveTimer!=="undefined"&&$("page-chapters")&&!$("page-chapters").classList.contains("hidden")){clearTimeout(editorSaveTimer);saveEditorDraft();}});
  $("bookTitle")?.addEventListener("input",()=>{data.title=$("bookTitle").value;const p=activeProject();if(p){p.name=data.title||"未命名作品";p.data=clone(data);try{localStorage.setItem("novelStudioV2",JSON.stringify(data));localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{}}});
 
  function restoreEditorDraft(){
