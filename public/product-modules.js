@@ -29,6 +29,13 @@
    try{localStorage.setItem("novelStudioV2",JSON.stringify(data));if(active.taskDrafts){localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(active.taskDrafts));if(typeof taskDrafts!=="undefined")taskDrafts={...active.taskDrafts};}}catch{}
  }
  const activeProject=()=>workspace.projects.find(p=>p.id===workspace.activeId)||workspace.projects[0];
+ const originalVersionKey=versionKey;
+ const legacyVersionKey=originalVersionKey();
+ const scopedVersionKey=activeProject().id+"::"+legacyVersionKey;
+ if(versionHistory[legacyVersionKey]&&!versionHistory[scopedVersionKey])versionHistory[scopedVersionKey]=versionHistory[legacyVersionKey];
+ versionKey=function(){return activeProject().id+"::"+originalVersionKey();};
+ const nativeStorageSet=Storage.prototype.setItem;
+ Storage.prototype.setItem=function(key,value){nativeStorageSet.call(this,key,value);if(key==="novelStudioV2TaskDrafts"&&workspace){try{const p=activeProject();p.taskDrafts=JSON.parse(value||"{}");nativeStorageSet.call(this,WORKSPACE_KEY,JSON.stringify(workspace));}catch{}}};
  window.exportWorkspaceSnapshot=()=>clone(workspace);
  window.restoreWorkspaceSnapshot=snapshot=>{if(!snapshot||!Array.isArray(snapshot.projects)||!snapshot.projects.length)throw new Error("项目备份格式无效");workspace=clone(snapshot);if(!workspace.projects.some(p=>p.id===workspace.activeId))workspace.activeId=workspace.projects[0].id;const p=activeProject();data=ensureArrays({...defaultData,...clone(p.data)});if(typeof taskDrafts!=="undefined")taskDrafts={...(p.taskDrafts||{})};saveWorkspace();};
  function saveWorkspace(){
@@ -118,10 +125,12 @@
    editingMemory=-1;$("memoryType").value="人物状态";$("memoryTitle").value="";$("memoryContent").value="";$("saveMemory").textContent="保存到记忆库";
    persist();renderMemory();if(typeof refreshContextPreview==="function")refreshContextPreview();
  });
+ let editingTimeline=-1;
  function renderTimeline(){
    const box=$("timelineList");if(!box)return;box.innerHTML="";$("timelineCount").textContent=data.timelineEvents.length+" 个事件";
    if(!data.timelineEvents.length){const empty=document.createElement("div");empty.className="empty-state";empty.textContent="还没有剧情事件。按故事发生顺序添加关键节点。";box.append(empty);return;}
    data.timelineEvents.forEach((item,i)=>box.append(recordCard(item,item.date+" · "+(item.updatedAt||""),[
+    {label:"编辑",run:()=>{editingTimeline=i;$("eventDate").value=item.date;$("eventTitle").value=item.title;$("eventContent").value=item.content||"";$("saveTimelineEvent").textContent="更新事件";}},
     {label:"上移",run:()=>{if(i===0)return;[data.timelineEvents[i-1],data.timelineEvents[i]]=[data.timelineEvents[i],data.timelineEvents[i-1]];persist();renderTimeline();}},
     {label:"下移",run:()=>{if(i===data.timelineEvents.length-1)return;[data.timelineEvents[i+1],data.timelineEvents[i]]=[data.timelineEvents[i],data.timelineEvents[i+1]];persist();renderTimeline();}},
     {label:"删除",run:()=>{if(!confirm("确定删除该剧情事件？"))return;data.timelineEvents.splice(i,1);persist();renderTimeline();}}
@@ -132,6 +141,7 @@
    data.timelineEvents.push({date,title,content,updatedAt:new Date().toLocaleString()});
    $("eventDate").value="";$("eventTitle").value="";$("eventContent").value="";persist();renderTimeline();if(typeof refreshContextPreview==="function")refreshContextPreview();
  });
+ let editingMaterial=-1;
  function renderMaterials(){
    const box=$("materialList");if(!box)return;box.innerHTML="";
    const q=($("materialSearch")?.value||"").trim().toLowerCase();
