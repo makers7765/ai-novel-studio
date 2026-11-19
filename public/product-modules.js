@@ -8,6 +8,7 @@
    book.memoryEntries=Array.isArray(book.memoryEntries)?book.memoryEntries:[];
    book.timelineEvents=Array.isArray(book.timelineEvents)?book.timelineEvents:[];
    book.materials=Array.isArray(book.materials)?book.materials:[];
+   book.relationships=Array.isArray(book.relationships)?book.relationships:[];
    book.chapters=Array.isArray(book.chapters)?book.chapters:[];
    book.characters=Array.isArray(book.characters)?book.characters:[];
    book.worldEntries=Array.isArray(book.worldEntries)?book.worldEntries:[];
@@ -50,7 +51,7 @@
  contextParts=function(){
    const base=originalContextParts();
    return {...base,
-     memory:"小说记忆库：\n"+(data.memoryEntries.map(x=>"["+x.type+"] "+x.title+"："+x.content).join("\n")||"暂无"),
+     memory:"小说记忆库：\n"+(data.memoryEntries.map(x=>"["+x.type+"] "+x.title+"："+x.content).join("\n")||"暂无")+"\n人物关系："+(data.relationships.map(x=>x.from+" —"+x.type+"→ "+x.to+(x.note?"（"+x.note+"）":"")).join("；")||"暂无"),
      timeline:"剧情时间线：\n"+(data.timelineEvents.map(x=>x.date+" · "+x.title+"："+x.content).join("\n")||"暂无"),
      materials:"素材库：\n"+(data.materials.map(x=>"["+x.category+"] "+x.title+"："+x.content).join("\n")||"暂无")
    };
@@ -110,6 +111,31 @@
    card.append(h,m,p,row);return card;
  }
  let editingMemory=-1;
+
+ function renderRelationships(){
+   const from=$("relationFrom"),to=$("relationTo"),graph=$("relationshipGraph"),list=$("relationshipList");if(!from||!to||!graph||!list)return;
+   const names=data.characters.map(c=>c.name).filter(Boolean);
+   [from,to].forEach(select=>{const previous=select.value;select.innerHTML="";names.forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.append(option);});if(names.includes(previous))select.value=previous;});
+   from.disabled=to.disabled=names.length<2;graph.innerHTML="";list.innerHTML="";
+   if(names.length<1){const empty=document.createElement("div");empty.className="empty-state";empty.textContent="先到人物档案添加人物，再建立人物关系。";graph.append(empty);}
+   else{
+     const width=640,height=300,cx=width/2,cy=height/2,radius=Math.min(112,42+names.length*7);
+     const points=names.map((name,i)=>({name,x:names.length===1?cx:cx+Math.cos(-Math.PI/2+i*2*Math.PI/names.length)*radius,y:names.length===1?cy:cy+Math.sin(-Math.PI/2+i*2*Math.PI/names.length)*radius}));
+     const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("viewBox","0 0 "+width+" "+height);svg.setAttribute("width","640");svg.setAttribute("height","300");svg.setAttribute("role","img");svg.setAttribute("aria-label","人物关系网络图");
+     const pointMap=new Map(points.map(p=>[p.name,p]));
+     data.relationships.forEach(rel=>{const a=pointMap.get(rel.from),b=pointMap.get(rel.to);if(!a||!b)return;const line=document.createElementNS(svg.namespaceURI,"line");line.setAttribute("x1",a.x);line.setAttribute("y1",a.y);line.setAttribute("x2",b.x);line.setAttribute("y2",b.y);line.setAttribute("class","relation-edge");svg.append(line);const label=document.createElementNS(svg.namespaceURI,"text");label.setAttribute("x",(a.x+b.x)/2);label.setAttribute("y",(a.y+b.y)/2-5);label.setAttribute("class","relation-edge-label");label.textContent=rel.type;svg.append(label);});
+     points.forEach(point=>{const circle=document.createElementNS(svg.namespaceURI,"circle");circle.setAttribute("cx",point.x);circle.setAttribute("cy",point.y);circle.setAttribute("r","25");circle.setAttribute("class","relation-node");svg.append(circle);const label=document.createElementNS(svg.namespaceURI,"text");label.setAttribute("x",point.x);label.setAttribute("y",point.y+4);label.setAttribute("class","relation-node-label");label.textContent=point.name.length>6?point.name.slice(0,6)+"…":point.name;svg.append(label);});
+     graph.append(svg);
+   }
+   data.relationships.forEach((rel,i)=>{const chip=document.createElement("span");chip.className="relationship-chip";chip.textContent=rel.from+" · "+rel.type+" · "+rel.to+(rel.note?"（"+rel.note+"）":"");const del=document.createElement("button");del.type="button";del.textContent="×";del.title="删除关系";del.style.marginLeft="6px";del.onclick=()=>{data.relationships.splice(i,1);persist();renderRelationships();};chip.append(del);list.append(chip);});
+ }
+ $("saveRelationship")?.addEventListener("click",()=>{
+   const a=$("relationFrom").value,b=$("relationTo").value;if(!a||!b||a===b){alert("请选择两位不同的人物。");return;}
+   const type=$("relationType").value,note=$("relationNote").value.trim();
+   if(data.relationships.some(x=>x.from===a&&x.to===b&&x.type===type)){alert("这条人物关系已经存在。");return;}
+   data.relationships.push({from:a,to:b,type,note});$("relationNote").value="";persist();renderRelationships();if(typeof refreshContextPreview==="function")refreshContextPreview();
+ });
+
  function renderMemory(){
    const box=$("memoryList");if(!box)return;box.innerHTML="";$("memoryCount").textContent=data.memoryEntries.length+" 条";
    if(!data.memoryEntries.length){const empty=document.createElement("div");empty.className="empty-state";empty.textContent="还没有记忆条目。可以先添加人物状态、世界规则或重要伏笔。";box.append(empty);return;}
@@ -161,15 +187,37 @@
  });
  $("materialSearch")?.addEventListener("input",renderMaterials);
  $("bookTitle")?.addEventListener("input",()=>{data.title=$("bookTitle").value;const p=activeProject();if(p){p.name=data.title||"未命名作品";p.data=clone(data);try{localStorage.setItem("novelStudioV2",JSON.stringify(data));localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{}}});
+
+ // AI-powered manuscript quality review. The report never edits manuscript data.
+ $("runQualityCheck")?.addEventListener("click",async()=>{
+   const selected=[...document.querySelectorAll(".quality-checks input:checked")].map(x=>x.value);
+   if(!selected.length){alert("至少选择一个检测项目。");return;}
+   const pasted=$("qaInput").value.trim();
+   const manuscript=pasted||data.chapters.slice(-8).map(c=>"【"+c.title+"】\n"+(c.body||"").slice(0,4500)).join("\n\n");
+   const source=manuscript||data.synopsis||"";
+   if(!source.trim()){alert("当前项目还没有可审查的正文或故事简介。请先添加章节，或粘贴需要检测的内容。");return;}
+   const btn=$("runQualityCheck"),status=$("qaStatus");btn.disabled=true;btn.textContent="AI 正在检测…";status.textContent="正在分析 "+selected.join("、")+"；不会修改原文。";
+   const prompt="请对以下小说内容进行专业质量审查。重点检查："+selected.join("、")+"。\n请按以下结构输出：\n一、总体评价（简明）\n二、发现的问题（按严重/中等/建议分类，引用具体原句或情节位置）\n三、前后矛盾与证据\n四、修改建议（给出可直接执行的方案，必要时提供示例）\n五、优先修改清单。\n不要擅自重写原文，不要把推测当成事实；资料不足时标注“无法判断”。\n\n【待审查内容】\n"+source;
+   try{const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:"剧情审查",prompt,context:contextText()})});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"检测请求失败");$("qaResult").value=payload.text||"";status.textContent="检测完成 · "+$("qaResult").value.length+" 字。请核对 AI 指出的证据，再决定是否修改。";}
+   catch(error){status.textContent="检测失败："+error.message;}
+   finally{btn.disabled=false;btn.textContent="✦ 开始 AI 质量检测";}
+ });
+ $("saveQualityReport")?.addEventListener("click",()=>{
+   const content=$("qaResult").value.trim();if(!content){alert("还没有可保存的检测报告。");return;}
+   data.archive.push({category:"小说质量检测",title:(data.title||"小说")+" · 质量检测报告",content,createdAt:new Date().toLocaleString()});persist();if(typeof renderArchive==="function")renderArchive();alert("检测报告已保存到创作归档。");
+ });
  // Keep the project's data synchronized when existing app controls save it.
+ const originalRenderCharacters=renderCharacters;
+ renderCharacters=function(){originalRenderCharacters();renderRelationships();};
  const originalLoad=load;
- load=function(){originalLoad();renderMemory();renderTimeline();renderMaterials();renderProjects();};
+ load=function(){originalLoad();renderMemory();renderTimeline();renderMaterials();renderProjects();renderRelationships();};
  // Ensure switching to the new modules always shows their current data.
  document.querySelectorAll('.nav button[data-page]').forEach(button=>button.addEventListener("click",()=>{
    if(button.dataset.page==="projects")renderProjects();
    if(button.dataset.page==="memory")renderMemory();
    if(button.dataset.page==="timeline")renderTimeline();
    if(button.dataset.page==="library")renderMaterials();
+   if(button.dataset.page==="quality")$("qaInput")?.focus();
  }));
  // Initialise project workspace without replacing the legacy single-project key.
  saveWorkspace();
@@ -178,5 +226,5 @@
  if(typeof renderVersions==="function")renderVersions();
  if(typeof refreshContextPreview==="function")refreshContextPreview();
  if($("bookTitle"))$("bookTitle").value=data.title||activeProject().name||"";
- renderMemory();renderTimeline();renderMaterials();renderProjects();
+ renderMemory();renderTimeline();renderMaterials();renderProjects();renderRelationships();
 })();
