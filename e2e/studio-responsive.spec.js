@@ -4,7 +4,9 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
   test('桌面端页面加载、八项任务入口和上下文预览存在', async ({ page }) => {
     await page.setViewportSize({ width: 1365, height: 900 });
     await page.goto('/');
-    await expect(page).toHaveTitle(/AI 小说工作室/);
+    await expect(page).toHaveTitle(/AI Novel Studio/);
+    await expect(page.locator('#freeStudio')).toBeVisible();
+    await expect(page.locator('#freeMode')).toBeVisible();
     await expect(page.locator('#tasks .task')).toHaveCount(8);
     await expect(page.locator('#contextControls')).toBeAttached();
     await expect(page.locator('#importBtn')).toBeVisible();
@@ -37,6 +39,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
   test('切换任务不触发 AI 请求，八项入口保持可用', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
+    await page.locator('.advanced-task-list summary').click();
     await page.locator('.task[data-task="人物设定"]').click();
     await expect(page.locator('#taskName')).toHaveValue('人物设定');
     await page.locator('.task[data-task="续写"]').click();
