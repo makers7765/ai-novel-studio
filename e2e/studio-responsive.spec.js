@@ -159,4 +159,33 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await expect(page.locator('#archiveList')).toContainText('小说质量检测');
     expect(errors).toEqual([]);
   });
+  
+  test('章节编辑器自动保存、查找替换与沉浸写作可用', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto('/');
+    await page.locator('[data-page="chapters"]').click();
+    await page.locator('#newChapter').click();
+    await page.locator('#chapterTitle').fill('雾夜来客');
+    await page.locator('#chapterBody').fill('林岚推开木门，走进雾中。');
+    await expect(page.locator('#chapterWordCount')).toContainText('字');
+    await expect(page.locator('#chapterSaveState')).toContainText('草稿已自动保存', { timeout: 5000 });
+    await page.reload();
+    await page.locator('[data-page="chapters"]').click();
+    await expect(page.locator('#chapterTitle')).toHaveValue('雾夜来客');
+    await expect(page.locator('#chapterBody')).toHaveValue('林岚推开木门，走进雾中。');
+    await page.locator('#chapterFind').fill('木门');
+    await page.locator('#chapterReplace').fill('铁门');
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#replaceChapterText').click();
+    await expect(page.locator('#chapterBody')).toContainText('铁门');
+    await page.locator('#focusEditor').click();
+    await expect(page.locator('body')).toHaveClass(/writing-focus/);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('body')).not.toHaveClass(/writing-focus/);
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#saveChapterEdit').click();
+    await expect(page.locator('#chapterList')).toContainText('雾夜来客');
+    expect(errors).toEqual([]);
+  });
 });
