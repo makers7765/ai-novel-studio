@@ -16,7 +16,7 @@
    const chosenMode=mode.value;const ref=reference.value.trim();const ask=instruction.value.trim();
    const current=($id("result").innerText||$id("result").textContent||"").trim();
    const needsSource=["扩写","续写","重写","润色","缩写"].includes(chosenMode);
-   const source=ref||(needsSource?current:"");
+   const source=ref||((needsSource||(chosenMode==="自定义"&&ask))?current:"");
    if(needsSource&&!source){status.textContent="这个模式需要参考文字：请粘贴原文，或先在结果区选中一段文字。";reference.focus();return;}
    if(!ask&&!source&&chosenMode!=="自由创作"){status.textContent="请简单描述你希望 AI 完成什么；其他资料都可以留空。";instruction.focus();return;}
    const task=["重写","润色","缩写"].includes(chosenMode)?"选段修改":"自由创作";
