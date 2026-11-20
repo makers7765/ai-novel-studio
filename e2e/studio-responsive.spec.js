@@ -39,6 +39,30 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     expect(metrics.clearVisible).toBeTruthy();
   });
 
+  test('新版桌面与手机布局没有横向溢出，导航和内容区域可用', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    const desktop = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth > innerWidth,
+      sidebar: getComputedStyle(document.querySelector('aside')).position,
+      mainWidth: document.querySelector('main').getBoundingClientRect().width
+    }));
+    expect(desktop.overflow).toBeFalsy();
+    expect(desktop.sidebar).toBe('sticky');
+    expect(desktop.mainWidth).toBeGreaterThan(700);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+    await page.locator('#mobileNavToggle').click();
+    await expect(page.locator('#nav')).toHaveClass(/mobile-open/);
+    await page.locator('#nav [data-page="chapters"]').click();
+    const mobile = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth > innerWidth,
+      editorWidth: document.querySelector('#chapterBody').getBoundingClientRect().width
+    }));
+    expect(mobile.overflow).toBeFalsy();
+    expect(mobile.editorWidth).toBeGreaterThan(300);
+  });
+
   test('切换任务不触发 AI 请求，八项入口保持可用', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
