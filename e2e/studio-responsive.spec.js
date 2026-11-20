@@ -107,9 +107,33 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     }
   });
 
+  test('新版创作台是左右双栏写作桌，专业任务默认收纳且可展开', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await expect(page.locator('.studio-workspace')).toBeVisible();
+    await expect(page.locator('.studio-controls #freeStudio')).toBeVisible();
+    await expect(page.locator('.studio-result #result')).toBeVisible();
+    await expect(page.locator('.professional-drawer')).not.toHaveAttribute('open', '');
+    const metrics = await page.evaluate(() => {
+      const left = document.querySelector('.studio-controls').getBoundingClientRect();
+      const right = document.querySelector('.studio-result').getBoundingClientRect();
+      const output = document.querySelector('#result').getBoundingClientRect();
+      return { gap: right.left - left.right, leftWidth: left.width, rightWidth: right.width, outputHeight: output.height, overlap: left.right > right.left };
+    });
+    expect(metrics.overlap).toBeFalsy();
+    expect(metrics.gap).toBeGreaterThanOrEqual(8);
+    expect(metrics.leftWidth).toBeGreaterThan(360);
+    expect(metrics.rightWidth).toBeGreaterThan(450);
+    expect(metrics.outputHeight).toBeGreaterThan(500);
+    await page.locator('.professional-drawer > summary').click();
+    await expect(page.locator('.professional-content #taskFields')).toBeVisible();
+    await expect(page.locator('.professional-content #tasks .task')).toHaveCount(8);
+  });
+
   test('切换任务不触发 AI 请求，八项入口保持可用', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
+    await page.locator('.professional-drawer > summary').click();
     await page.locator('.advanced-task-list summary').click();
     await page.locator('.task[data-task="人物设定"]').click();
     await expect(page.locator('#taskName')).toHaveValue('人物设定');
