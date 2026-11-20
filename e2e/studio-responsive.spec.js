@@ -44,7 +44,7 @@ test.describe('StoryForge V3 · 独立验收', () => {
     await expect(page.locator('.project-card')).toHaveCount(2);
     await page.reload();
     await expect(page.locator('.project-card')).toHaveCount(2);
-    await expect(page.locator('.project-card')).toContainText('雾海纪事');
+    await expect(page.locator('.project-card').filter({hasText:'雾海纪事'})).toHaveCount(1);
     const storage=await page.evaluate(()=>JSON.parse(localStorage.getItem('storyforge.workspace.v1')));
     expect(storage.books.length).toBe(2);
     expect(storage.books.find(b=>b.title==='雾海纪事').synopsis).toContain('灯塔');
@@ -152,6 +152,10 @@ test.describe('StoryForge V3 · 独立验收', () => {
   });
 
   test('质量检测会把结果写入报告并可保存归档（模拟模型响应）', async ({page})=>{
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#providerBtn').click();
+    await page.locator('#apiKey').fill('test-key-123456789');
+    await page.locator('#saveProvider').click();
     await page.route('**/api/generate',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({text:'审查结论：主角行动动机充分；第三幕时间线需要补充。'})}));
     await page.locator('[data-page="quality"]').click();
     await page.locator('#qualityInput').fill('林岚在夜里离开灯塔，第二天清晨却已经回到房间。');
