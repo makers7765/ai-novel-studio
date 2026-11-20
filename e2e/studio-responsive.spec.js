@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('node:fs');
+const AxeBuilder = require('@axe-core/playwright').default;
 
 test.describe('StoryForge V3 · 独立验收', () => {
   test.beforeEach(async ({ page }) => {
@@ -237,5 +238,14 @@ test.describe('StoryForge V3 · 独立验收', () => {
     await page.locator('#importFile').setInputFiles({name:'storyforge-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
     await expect(page.locator('#page-home')).toBeVisible();
     await expect(page.locator('.project-card').filter({hasText:'备份恢复测试作品'})).toHaveCount(1);
+  });
+
+  test('主要工作页面通过 WCAG 2.1 A/AA 自动化无障碍检查', async ({page,browserName})=>{
+    test.skip(browserName!=='chromium','Axe 主审计在 Chromium 上执行一次，跨浏览器布局另行检查');
+    for(const name of ['home','studio','book','world','characters','chapters','memory','timeline','library','archive','quality']){
+      await page.locator('[data-page="'+name+'"]').click();
+      const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+      expect(audit.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})),name+' 页面无障碍违规').toEqual([]);
+    }
   });
 });
