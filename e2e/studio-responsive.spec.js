@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const fs = require('node:fs');
 
 test.describe('StoryForge V3 · 独立验收', () => {
   test.beforeEach(async ({ page }) => {
@@ -214,5 +215,24 @@ test.describe('StoryForge V3 · 独立验收', () => {
     await expect(page.locator('#result')).toHaveValue('测试生成成功。');
     expect(requestBody.prompt.length).toBeLessThan(30000);
     expect(requestBody.context.length).toBeGreaterThan(30000);
+  });
+
+  test('完整备份可导出并重新导入恢复作品', async ({page})=>{
+    await page.locator('#newProject').click();
+    await page.locator('#bookTitle').fill('备份恢复测试作品');
+    await page.locator('#synopsis').fill('用于验证导出和导入完整性。');
+    await page.locator('#saveBook').click();
+    const downloadPromise=page.waitForEvent('download');
+    await page.locator('#exportBtn').click();
+    const download=await downloadPromise;
+    expect(download.suggestedFilename()).toContain('StoryForge-小说备份');
+    const backup=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
+    expect(backup.workspace.books.some(b=>b.title==='备份恢复测试作品')).toBe(true);
+    await page.locator('#newProject').click();
+    await expect(page.locator('#bookTitle')).toHaveValue('我的新小说');
+    page.once('dialog',d=>d.accept());
+    await page.locator('#importFile').setInputFiles({name:'storyforge-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
+    await expect(page.locator('#page-home')).toBeVisible();
+    await expect(page.locator('.project-card').filter({hasText:'备份恢复测试作品'})).toHaveCount(1);
   });
 });
