@@ -145,6 +145,11 @@ test.describe('StoryForge V3 · 独立验收', () => {
     expect(savedData).not.toContain('test-key-123456789');
     expect(requests[0].apiKey).toBe('test-key-123456789');
     await expect(page.locator('#versionList .version-item')).toHaveCount(2);
+    await page.locator('[data-version="1"]').click();
+    await expect(page.locator('#result')).toHaveValue('夜色降临，灯塔突然熄灭。');
+    await page.reload();
+    await page.locator('[data-page="studio"]').click();
+    await expect(page.locator('#result')).toHaveValue('夜色降临，灯塔突然熄灭。');
     await page.locator('#saveResultBtn').click();
     await page.locator('[data-page="archive"]').click();
     await expect(page.locator('#archiveList')).toContainText('雾中传来三声敲门');
