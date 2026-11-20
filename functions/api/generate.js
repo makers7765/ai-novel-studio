@@ -43,7 +43,13 @@ export async function onRequestPost({ request, env }) {
   const hasWorkersAI = Boolean(env.AI && typeof env.AI.run === "function");
   const hasOpenAI = Boolean(env.OPENAI_API_KEY && env.OPENAI_MODEL);
   let body;
-  try { body = await request.json(); } catch { return Response.json({ error: "请求格式无效，请刷新页面后重试。" }, { status: 400 }); }
+  const declaredLength = Number(request.headers.get("content-length") || 0);
+  if (declaredLength > 400000) return Response.json({ error: "请求内容过大，请缩短创作资料后重试。" }, { status: 413 });
+  try {
+    const raw = await request.text();
+    if (raw.length > 400000) return Response.json({ error: "请求内容过大，请缩短创作资料后重试。" }, { status: 413 });
+    body = JSON.parse(raw);
+  } catch { return Response.json({ error: "请求格式无效，请刷新页面后重试。" }, { status: 400 }); }
   const { task, prompt, context = "", provider, apiKey, model } = body || {};
   if (typeof task !== "string" || !Object.prototype.hasOwnProperty.call(TASK_RULES, task)) return Response.json({ error: "任务类型无效。请从创作台上方选择一个任务后重试。" }, { status: 400 });
   if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 30000) return Response.json({ error: "请输入有效创作要求（最多 30000 字符）。" }, { status: 400 });

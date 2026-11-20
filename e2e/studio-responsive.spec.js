@@ -1,326 +1,283 @@
 const { test, expect } = require('@playwright/test');
+const fs = require('node:fs');
+const AxeBuilder = require('@axe-core/playwright').default;
 
-test.describe('AI 小说工作室 · 安全 UI 检查', () => {
-  test('第三轮视觉系统：浅色编辑界面、深色导航与创作区比例正确', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 960 });
-    await page.goto('/');
-    const studio = await page.evaluate(() => {
-      const css = getComputedStyle(document.body);
-      const sidebar = getComputedStyle(document.querySelector('aside'));
-      const result = getComputedStyle(document.querySelector('#result'));
-      const free = document.querySelector('#freeStudio').getBoundingClientRect();
-      const work = document.querySelector('#taskFields').closest('.grid').getBoundingClientRect();
-      const input = document.querySelector('#taskFields').closest('.panel').getBoundingClientRect();
-      const output = document.querySelector('#result').closest('.panel').getBoundingClientRect();
-      return {
-        bodyBackground: css.backgroundColor,
-        sidebarBackground: sidebar.backgroundColor,
-        resultBackground: result.backgroundColor,
-        freeWidth: free.width,
-        inputWidth: input.width,
-        outputWidth: output.width,
-        workWidth: work.width,
-        overflow: document.documentElement.scrollWidth > innerWidth
-      };
+test.describe('StoryForge V3 · 独立验收', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__storyforgeErrors = [];
+      window.addEventListener('error', event => window.__storyforgeErrors.push(event.message));
+      window.addEventListener('unhandledrejection', event => window.__storyforgeErrors.push(String(event.reason)));
     });
-    expect(studio.overflow).toBeFalsy();
-    expect(studio.freeWidth).toBeGreaterThan(900);
-    expect(studio.outputWidth).toBeGreaterThan(studio.inputWidth);
-    expect(studio.outputWidth).toBeGreaterThan(500);
-    expect(studio.resultBackground).toBe('rgb(255, 255, 255)');
+    await page.goto('/');
+  });
+
+  test('页面启动无 JS 异常，11 个导航栏目逐个切换且内容唯一可见', async ({ page }) => {
+    const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+    const names=['home','studio','book','world','characters','chapters','memory','timeline','library','archive','quality'];
+    for(const name of names){
+      await page.locator('[data-page="'+name+'"]').click();
+      await expect(page.locator('#page-'+name)).toBeVisible();
+      await expect(page.locator('#page-'+name+' h1')).toBeVisible();
+      await expect(page.locator('.page.active-page')).toHaveCount(1);
+    }
+    expect(errors).toEqual([]);
+    expect(await page.evaluate(() => window.__storyforgeErrors)).toEqual([]);
+  });
+
+  test('桌面固定侧栏与右侧独立滚动，手机端导航横向可用且无横向溢出', async ({ page }) => {
+    await page.setViewportSize({width:1440,height:850});
     await page.locator('[data-page="chapters"]').click();
-    const chapter = await page.locator('#chapterBody').evaluate(el => ({
-      background: getComputedStyle(el).backgroundColor,
-      width: el.getBoundingClientRect().width,
-      height: el.getBoundingClientRect().height
-    }));
-    expect(chapter.background).toBe('rgb(255, 255, 255)');
-    expect(chapter.width).toBeGreaterThan(700);
-    expect(chapter.height).toBeGreaterThan(500);
-  });
-
-  test('桌面端页面加载、八项任务入口和上下文预览存在', async ({ page }) => {
-    await page.setViewportSize({ width: 1365, height: 900 });
-    const pageErrors = [];
-    page.on('pageerror', error => pageErrors.push(error.message));
-    await page.goto('/');
-    await expect(page).toHaveTitle(/AI Novel Studio/);
-    await expect(page.locator('#freeStudio')).toBeVisible();
-    await expect(page.locator('#freeMode')).toBeVisible();
-    await expect(page.locator('#tasks .task')).toHaveCount(8);
-    await expect(page.locator('#contextControls')).toBeAttached();
-    await expect(page.locator('#importBtn')).toBeVisible();
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-    expect(overflow).toBeFalsy();
-    expect(pageErrors).toEqual([]);
-  });
-
-  test('窄屏导航可展开，任务卡片单列且无横向溢出', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/');
-    const toggle = page.locator('#mobileNavToggle');
-    await expect(toggle).toBeVisible();
-    await toggle.click();
-    await expect(page.locator('#nav')).toHaveClass(/mobile-open/);
-    await expect(page.locator('#nav button')).toHaveCount(11);
-    await page.locator('#nav button[data-page="studio"]').click();
-    await expect(page.locator('#page-studio')).toBeVisible();
-    const metrics = await page.evaluate(() => ({
-      overflow: document.documentElement.scrollWidth > window.innerWidth,
-      taskColumns: getComputedStyle(document.querySelector('#tasks')).gridTemplateColumns.split(' ').length,
-      generateVisible: (() => { const r = document.querySelector('#generateBtn').getBoundingClientRect(); return r.width > 0 && r.right <= innerWidth + 1; })(),
-      clearVisible: (() => { const r = document.querySelector('#clearPrompt').getBoundingClientRect(); return r.width > 0 && r.right <= innerWidth + 1; })()
-    }));
-    expect(metrics.overflow).toBeFalsy();
-    expect(metrics.taskColumns).toBe(1);
-    expect(metrics.generateVisible).toBeTruthy();
-    expect(metrics.clearVisible).toBeTruthy();
-  });
-
-  test('新版桌面与手机布局没有横向溢出，导航和内容区域可用', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
-    const desktop = await page.evaluate(() => ({
-      overflow: document.documentElement.scrollWidth > innerWidth,
-      sidebar: getComputedStyle(document.querySelector('aside')).position,
-      mainWidth: document.querySelector('main').getBoundingClientRect().width
-    }));
-    expect(desktop.overflow).toBeFalsy();
-    expect(desktop.sidebar).toBe('sticky');
-    expect(desktop.mainWidth).toBeGreaterThan(700);
-    await page.setViewportSize({ width: 390, height: 844 });
+    const desktop=await page.evaluate(()=>{
+      const side=document.querySelector('.sidebar'),main=document.querySelector('#main');
+      return {grid:getComputedStyle(document.querySelector('.app-shell')).display,side:side.getBoundingClientRect(),main:main.getBoundingClientRect(),overflow:document.documentElement.scrollWidth>innerWidth};
+    });
+    expect(desktop.grid).toBe('grid'); expect(desktop.overflow).toBe(false);
+    expect(desktop.main.left).toBeGreaterThan(desktop.side.left+desktop.side.width-1);
+    await page.setViewportSize({width:390,height:844});
     await page.reload();
-    await page.locator('#mobileNavToggle').click();
-    await expect(page.locator('#nav')).toHaveClass(/mobile-open/);
-    await page.locator('#nav [data-page="chapters"]').click();
-    const mobile = await page.evaluate(() => ({
-      overflow: document.documentElement.scrollWidth > innerWidth,
-      editorWidth: document.querySelector('#chapterBody').getBoundingClientRect().width
-    }));
-    expect(mobile.overflow).toBeFalsy();
-    expect(mobile.editorWidth).toBeGreaterThan(300);
+    const mobile=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,nav:getComputedStyle(document.querySelector('.nav')).display,body:getComputedStyle(document.body).overflowY}));
+    expect(mobile.overflow).toBe(false); expect(mobile.nav).toBe('flex'); expect(mobile.body).not.toBe('hidden');
+    await page.locator('[data-page="quality"]').click();
+    await expect(page.locator('#page-quality')).toBeVisible();
   });
 
-  test('第二轮工作区布局：章节编辑器占据主区域，顶部状态不挤压', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
-    const header = await page.locator('header').evaluate(el => {
-      const brand = el.querySelector('.brand').getBoundingClientRect();
-      const controls = el.querySelector('.row').getBoundingClientRect();
-      const status = el.querySelector('#apiStatus').getBoundingClientRect();
-      return { brandRight: brand.right, controlsLeft: controls.left, statusWidth: status.width, overflow: el.scrollWidth > el.clientWidth };
-    });
-    expect(header.overflow).toBeFalsy();
-    expect(header.controlsLeft).toBeGreaterThan(header.brandRight);
-    expect(header.statusWidth).toBeGreaterThan(100);
+  test('多作品创建、切换、重命名和刷新后数据仍存在', async ({page})=>{
+    await page.locator('#newProject').click();
+    await expect(page.locator('#page-book')).toBeVisible();
+    await page.locator('#bookTitle').fill('雾海纪事');
+    await page.locator('#synopsis').fill('失踪的灯塔守夜人留下了一本航海日志。');
+    await page.locator('#saveBook').click();
+    await page.locator('[data-page="home"]').click();
+    await expect(page.locator('.project-card')).toHaveCount(2);
+    await page.reload();
+    await expect(page.locator('.project-card')).toHaveCount(2);
+    await expect(page.locator('.project-card').filter({hasText:'雾海纪事'})).toHaveCount(1);
+    const storage=await page.evaluate(()=>JSON.parse(localStorage.getItem('storyforge.workspace.v1')));
+    expect(storage.books.length).toBe(2);
+    expect(storage.books.find(b=>b.title==='雾海纪事').synopsis).toContain('灯塔');
+  });
 
+  test('小说资料、世界观、人物、记忆、时间线和素材 CRUD 正常', async ({page})=>{
+    await page.locator('[data-page="book"]').click();
+    await page.locator('#bookTitle').fill('自动化测试作品');
+    await page.locator('#synopsis').fill('一个测试用故事简介。');
+    await page.locator('#saveBook').click();
+    await page.locator('[data-page="world"]').click();
+    await page.locator('#worldTitle').fill('潮汐法则');
+    await page.locator('#worldContent').fill('每逢月蚀，海潮会倒流三刻钟。');
+    await page.locator('#saveWorld').click();
+    await expect(page.locator('#worldList')).toContainText('潮汐法则');
+    await page.locator('[data-page="characters"]').click();
+    await page.locator('#charName').fill('林岚');
+    await page.locator('#charRole').fill('灯塔守夜人');
+    await page.locator('#charGoal').fill('寻找失踪的姐姐');
+    await page.locator('#saveCharacter').click();
+    await expect(page.locator('#characterList')).toContainText('林岚');
+    await page.locator('[data-page="memory"]').click();
+    await page.locator('#memoryTitle').fill('重要事实');
+    await page.locator('#memoryContent').fill('林岚害怕深水。');
+    await page.locator('#saveMemory').click();
+    await expect(page.locator('#memoryList')).toContainText('林岚害怕深水');
+    await page.locator('[data-page="timeline"]').click();
+    await page.locator('#eventTime').fill('第三年冬');
+    await page.locator('#eventTitle').fill('灯塔熄灭');
+    await page.locator('#eventContent').fill('海雾吞没了灯塔的光。');
+    await page.locator('#saveEvent').click();
+    await expect(page.locator('#timelineList')).toContainText('灯塔熄灭');
+    await page.locator('[data-page="library"]').click();
+    await page.locator('#materialTitle').fill('海雾场景');
+    await page.locator('#materialContent').fill('浓雾贴着礁石移动。');
+    await page.locator('#saveMaterial').click();
+    await expect(page.locator('#materialList')).toContainText('海雾场景');
+    await page.reload();
+    await page.locator('[data-page="world"]').click();
+    await expect(page.locator('#worldList')).toContainText('潮汐法则');
+  });
+
+  test('章节新建、草稿自动保存、保存、再次打开和删除', async ({page})=>{
     await page.locator('[data-page="chapters"]').click();
-    await expect(page.locator('#page-chapters h1')).toBeVisible();
-    await expect(page.locator('#chapterTitle')).toBeVisible();
-    await expect(page.locator('#chapterBody')).toBeVisible();
-    const editor = await page.locator('#chapterBody').evaluate(el => {
-      const r = el.getBoundingClientRect();
-      return { width: r.width, height: r.height, columns: getComputedStyle(document.querySelector('#page-chapters > .grid')).gridTemplateColumns };
-    });
-    expect(editor.width).toBeGreaterThan(650);
-    expect(editor.height).toBeGreaterThan(500);
-    expect(editor.columns.split(' ').length).toBe(2);
+    await page.locator('#newChapter').click();
+    await page.locator('#chapterTitle').fill('第一章 雾');
+    await page.locator('#chapterBody').fill('林岚推开木门，走进雾中。');
+    await expect(page.locator('#chapterWords')).toContainText('字');
+    await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('storyforge.workspace.v1')).books[0].editorDraft.body)).toContain('林岚');
+    await page.reload();
+    await page.locator('[data-page="chapters"]').click();
+    await expect(page.locator('#chapterTitle')).toHaveValue('第一章 雾');
+    await expect(page.locator('#chapterBody')).toHaveValue('林岚推开木门，走进雾中。');
+    await page.locator('#saveChapter').click();
+    await expect(page.locator('#chapterList')).toContainText('第一章 雾');
+    await page.locator('#newChapter').click();
+    await page.locator('#chapterTitle').fill('第二章');
+    await page.locator('#chapterBody').fill('潮水拍打礁石。');
+    await page.locator('#saveChapter').click();
+    await expect(page.locator('#chapterList .chapter-item')).toHaveCount(2);
+    page.once('dialog',d=>d.accept());
+    await page.locator('#deleteChapter').click();
+    await expect(page.locator('#chapterList .chapter-item')).toHaveCount(1);
   });
 
-  test('核心栏目切换后均显示真实标题和内容容器', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/');
-    const pages = [
-      ['projects','小说项目中心'],['project','小说资料'],['studio','AI 创作台'],
-      ['world','世界观设定'],['characters','人物档案'],['chapters','章节管理'],
-      ['archive','创作归档'],['memory','小说记忆库'],['timeline','剧情时间线'],
-      ['library','小说素材库'],['quality','小说质量检测']
-    ];
-    for (const [key,title] of pages) {
-      await page.locator('[data-page="'+key+'"]').click();
-      await expect(page.locator('#page-'+key)).toBeVisible();
-      await expect(page.locator('#page-'+key+' h1')).toHaveText(title);
-      const box=await page.locator('#page-'+key).boundingBox();
-      expect(box && box.width).toBeGreaterThan(700);
+  test('模型配置、AI 生成、连续续写、版本恢复和归档可用（模拟模型响应）', async ({page})=>{
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#providerBtn').click();
+    await page.locator('#apiKey').fill('test-key-123456789');
+    await page.locator('#saveProvider').click();
+    await page.locator('#prompt').fill('写一段悬疑小说开场。');
+    const requests=[];
+    await page.route('**/api/generate',async route=>{
+      const body=route.request().postDataJSON();requests.push(body);
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({text:requests.length===1?'夜色降临，灯塔突然熄灭。':'雾中传来三声敲门。'})});
+    });
+    await page.locator('#generateBtn').click();
+    await expect(page.locator('#result')).toHaveValue('夜色降临，灯塔突然熄灭。');
+    await expect(page.locator('#versionList')).toContainText('自由创作');
+    await page.locator('#prompt').fill('继续写，制造悬念。');
+    await page.locator('#sourceText').fill('夜色降临，灯塔突然熄灭。');
+    await page.locator('#taskList [data-task="续写"]').click();
+    await page.locator('#generateBtn').click();
+    await expect(page.locator('#result')).toHaveValue('雾中传来三声敲门。');
+    expect(requests).toHaveLength(2);
+    expect(requests[1].task).toBe('续写');
+    expect(requests[0].task).toBe('自由创作');
+    expect(requests[0].provider).toBe('gemini');
+    const savedData=await page.evaluate(()=>localStorage.getItem('storyforge.workspace.v1')||'');
+    expect(savedData).not.toContain('test-key-123456789');
+    expect(requests[0].apiKey).toBe('test-key-123456789');
+    await expect(page.locator('#versionList .version-item')).toHaveCount(2);
+    await page.locator('[data-version="1"]').click();
+    await expect(page.locator('#result')).toHaveValue('夜色降临，灯塔突然熄灭。');
+    await page.reload();
+    await page.locator('[data-page="studio"]').click();
+    await expect(page.locator('#result')).toHaveValue('夜色降临，灯塔突然熄灭。');
+    await page.locator('#saveResultBtn').click();
+    await page.locator('[data-page="archive"]').click();
+    await expect(page.locator('#archiveList')).toContainText('雾中传来三声敲门');
+  });
+
+  test('清空输入不清空结果；复制和备份导入导出控件存在', async ({page})=>{
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#prompt').fill('待清空的提示词');
+    await page.locator('#sourceText').fill('待清空的原文');
+    await page.locator('#result').fill('保留的生成结果');
+    await page.locator('#clearBtn').click();
+    await expect(page.locator('#prompt')).toBeEmpty();
+    await expect(page.locator('#sourceText')).toBeEmpty();
+    await expect(page.locator('#result')).toHaveValue('保留的生成结果');
+    await expect(page.locator('#exportBtn')).toBeVisible();
+    await expect(page.locator('#importBtn')).toBeVisible();
+  });
+
+  test('质量检测会把结果写入报告并可保存归档（模拟模型响应）', async ({page})=>{
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#providerBtn').click();
+    await page.locator('#apiKey').fill('test-key-123456789');
+    await page.locator('#saveProvider').click();
+    await page.route('**/api/generate',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({text:'审查结论：主角行动动机充分；第三幕时间线需要补充。'})}));
+    await page.locator('[data-page="quality"]').click();
+    await page.locator('#qualityInput').fill('林岚在夜里离开灯塔，第二天清晨却已经回到房间。');
+    await page.locator('#runQuality').click();
+    await expect(page.locator('#qualityResult')).toHaveValue(/审查结论/);
+    await page.locator('#saveQuality').click();
+    await expect(page.locator('#archiveList')).toContainText('质量检测报告');
+  });
+
+  test('输入内容安全转义，作品标题不会执行 HTML', async ({page})=>{
+    await page.locator('[data-page="world"]').click();
+    await page.locator('#worldTitle').fill('<img src=x onerror=alert(1)>');
+    await page.locator('#worldContent').fill('普通设定');
+    await page.locator('#saveWorld').click();
+    await expect(page.locator('#worldList img')).toHaveCount(0);
+    await expect(page.locator('#worldList')).toContainText('<img src=x onerror=alert(1)>');
+  });
+
+  test('常见手机、平板和桌面视口逐页无横向溢出', async ({page})=>{
+    for(const width of [320,360,390,430,768,1024,1280,1440]){
+      await page.setViewportSize({width,height:900});
+      await page.goto('/');
+      for(const name of ['home','studio','book','world','characters','chapters','memory','timeline','library','archive','quality']){
+        await page.locator('[data-page="'+name+'"]').click();
+        const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
+        expect(overflow, '横向溢出，视口宽度：'+width+'，栏目：'+name).toBe(false);
+      }
     }
   });
 
-  test('切换任务不触发 AI 请求，八项入口保持可用', async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto('/');
-    await page.locator('.advanced-task-list summary').click();
-    await page.locator('.task[data-task="人物设定"]').click();
-    await expect(page.locator('#taskName')).toHaveValue('人物设定');
-    await page.locator('.task[data-task="续写"]').click();
-    await expect(page.locator('#taskName')).toHaveValue('续写');
-    await page.locator('#toggleContextPreview').click();
-    await expect(page.locator('#contextControls')).toBeVisible();
-  });
-  
-  test('自由创作传递已选服务商、连续生成并保存版本，支持选段修改', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await page.addInitScript(() => sessionStorage.setItem('novelStudioFreeProvider', JSON.stringify({
-      provider: 'gemini', apiKey: 'test-gemini-key-123', model: 'gemini-test-model'
-    })));
-    await page.goto('/');
-    const requests = [];
-    await page.route('**/api/generate', route => {
-      requests.push(route.request().postDataJSON());
-      return route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ text: requests.length === 1 ? '夜色渐深，远处传来一声钟响。' : '钟声之后，门缝里透出一道冷光。' })
-      });
-    });
-    await page.locator('#freeInstruction').fill('写一段悬疑小说开场');
-    await page.locator('#runFreeWrite').click();
-    await expect(page.locator('#result')).toContainText('夜色渐深');
-    await expect(page.locator('#versionList')).toContainText('自由创作');
-    expect(requests[0].provider).toBe('gemini');
-    expect(requests[0].apiKey).toBe('test-gemini-key-123');
-    expect(requests[0].model).toBe('gemini-test-model');
-
-    await page.locator('#freeMode').selectOption('续写');
-    await page.locator('#freeInstruction').fill('继续写，保持悬疑气氛');
-    await page.locator('#runFreeWrite').click();
-    await expect(page.locator('#result')).toContainText('门缝里透出一道冷光');
-    expect(requests).toHaveLength(2);
-    expect(requests[1].prompt).toContain('夜色渐深，远处传来一声钟响。');
-    expect(requests[1].provider).toBe('gemini');
-    await expect.poll(async () => page.evaluate(() => {
-      const versions = JSON.parse(localStorage.getItem('novelStudioV2Versions') || '{}');
-      return Object.values(versions).flat().length;
-    })).toBeGreaterThanOrEqual(2);
-
-    await page.locator('#result').evaluate(el => {
-      el.textContent = '主角推开古老的木门。';
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-    });
-    await page.locator('#useSelectedText').click();
-    await expect(page.locator('#freeReference')).toHaveValue('主角推开古老的木门。');
-  });
-  
-  test('多小说项目可创建、切换并保留独立资料', async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
-    await page.goto('/');
-    await page.locator('[data-page="projects"]').click();
-    await expect(page.locator('#novelProjectList .project-card')).toHaveCount(1);
-    page.once('dialog', dialog => dialog.accept('测试小说二'));
-    await page.locator('#createNovelProject').click();
-    await expect(page.locator('#bookTitle')).toHaveValue('测试小说二');
-    await page.locator('[data-page="projects"]').click();
-    await expect(page.locator('#novelProjectList .project-card')).toHaveCount(2);
-    await page.locator('#novelProjectList .project-card').first().getByRole('button', { name: '打开项目' }).click();
-    await expect(page.locator('#bookTitle')).not.toHaveValue('测试小说二');
-    await page.reload();
-    await page.locator('[data-page="projects"]').click();
-    await expect(page.locator('#novelProjectList .project-card')).toHaveCount(2);
-    expect(errors).toEqual([]);
-  });
-
-  test('小说记忆、剧情时间线和素材可保存并进入 AI 上下文', async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
-    await page.goto('/');
-    await page.locator('[data-page="memory"]').click();
-    await page.locator('#memoryTitle').fill('主角右手受伤');
-    await page.locator('#memoryContent').fill('在治愈之前不能使用长剑。');
-    await page.locator('#saveMemory').click();
-    await expect(page.locator('#memoryList')).toContainText('主角右手受伤');
-    await page.locator('[data-page="timeline"]').click();
-    await page.locator('#eventDate').fill('帝历 302 年春');
-    await page.locator('#eventTitle').fill('进入北境');
-    await page.locator('#eventContent').fill('主角抵达边境城。');
-    await page.locator('#saveTimelineEvent').click();
-    await expect(page.locator('#timelineList')).toContainText('进入北境');
-    await page.locator('[data-page="library"]').click();
-    await page.locator('#materialTitle').fill('雾中车站');
-    await page.locator('#materialContent').fill('废弃车站被浓雾笼罩，远处传来钟声。');
-    await page.locator('#saveMaterial').click();
-    await expect(page.locator('#materialList')).toContainText('雾中车站');
+  test('生成结果手动编辑后刷新仍保留', async ({page})=>{
     await page.locator('[data-page="studio"]').click();
-    await page.locator('#toggleContextPreview').click();
-    await page.locator('[data-context="materials"]').check();
-    await expect(page.locator('#contextPreview')).toContainText('主角右手受伤');
-    await expect(page.locator('#contextPreview')).toContainText('进入北境');
-    await expect(page.locator('#contextPreview')).toContainText('雾中车站');
+    await page.locator('#result').fill('这是用户手动修改后的章节内容。');
     await page.reload();
-    await page.locator('[data-page="memory"]').click();
-    await expect(page.locator('#memoryList')).toContainText('主角右手受伤');
-    expect(errors).toEqual([]);
+    await page.locator('[data-page="studio"]').click();
+    await expect(page.locator('#result')).toHaveValue('这是用户手动修改后的章节内容。');
   });
-  
-  test('人物关系图可生成，AI 质量检测可保存报告', async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
-    await page.goto('/');
-    await page.locator('[data-page="characters"]').click();
-    await page.locator('#addCharacter').click();
-    await page.locator('#charName').fill('林岚');
-    await page.locator('#characterForm').evaluate(form => form.requestSubmit());
-    await page.locator('#addCharacter').click();
-    await page.locator('#charName').fill('沈砚');
-    await page.locator('#characterForm').evaluate(form => form.requestSubmit());
-    await page.locator('[data-page="memory"]').click();
-    await page.locator('#relationFrom').selectOption('林岚');
-    await page.locator('#relationTo').selectOption('沈砚');
-    await page.locator('#relationType').selectOption('盟友');
-    await page.locator('#saveRelationship').click();
-    await expect(page.locator('#relationshipGraph svg line')).toHaveCount(1);
-    await expect(page.locator('#relationshipList')).toContainText('盟友');
-    await page.locator('[data-page="quality"]').click();
-    await page.route('**/api/generate', route => route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ text: '检测报告：未发现明显逻辑冲突。' })
-    }));
-    await page.locator('#qaInput').fill('林岚与沈砚结伴进入北境。');
-    await page.locator('#runQualityCheck').click();
-    await expect(page.locator('#qaResult')).toHaveValue(/检测报告/);
-    page.once('dialog', dialog => dialog.accept());
-    await page.locator('#saveQualityReport').click();
-    await page.locator('[data-page="archive"]').click();
-    await expect(page.locator('#archiveList')).toContainText('小说质量检测');
-    expect(errors).toEqual([]);
+
+  test('长篇小说资料作为独立上下文发送，不挤占创作指令长度', async ({page})=>{
+    await page.locator('[data-page="book"]').click();
+    await page.locator('#synopsis').fill('海雾与灯塔。'.repeat(7000));
+    await page.locator('#saveBook').click();
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#providerBtn').click();
+    await page.locator('#apiKey').fill('test-key-123456789');
+    await page.locator('#saveProvider').click();
+    let requestBody;
+    await page.route('**/api/generate',async route=>{
+      requestBody=route.request().postDataJSON();
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({text:'测试生成成功。'})});
+    });
+    await page.locator('#prompt').fill('写一个新的开场场景。');
+    await page.locator('#generateBtn').click();
+    await expect(page.locator('#result')).toHaveValue('测试生成成功。');
+    expect(requestBody.prompt.length).toBeLessThan(30000);
+    expect(requestBody.context.length).toBeGreaterThan(30000);
   });
-  
-  test('章节编辑器自动保存、查找替换与沉浸写作可用', async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
+
+  test('完整备份可导出并重新导入恢复作品', async ({page})=>{
+    await page.locator('#newProject').click();
+    await page.locator('#bookTitle').fill('备份恢复测试作品');
+    await page.locator('#synopsis').fill('用于验证导出和导入完整性。');
+    await page.locator('#saveBook').click();
+    const downloadPromise=page.waitForEvent('download');
+    await page.locator('#exportBtn').click();
+    const download=await downloadPromise;
+    expect(download.suggestedFilename()).toContain('StoryForge-小说备份');
+    const backup=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
+    expect(backup.workspace.books.some(b=>b.title==='备份恢复测试作品')).toBe(true);
+    await page.locator('[data-page="home"]').click();
+    await page.locator('#newProject').click();
+    await expect(page.locator('#bookTitle')).toHaveValue('我的新小说');
+    page.once('dialog',d=>d.accept());
+    await page.locator('#importFile').setInputFiles({name:'storyforge-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
+    await expect(page.locator('#page-home')).toBeVisible();
+    await expect(page.locator('.project-card').filter({hasText:'备份恢复测试作品'})).toHaveCount(1);
+  });
+
+  test('主要工作页面通过 WCAG 2.1 A/AA 自动化无障碍检查', async ({page,browserName})=>{
+    test.skip(browserName!=='chromium','Axe 主审计在 Chromium 上执行一次，跨浏览器布局另行检查');
+    for(const name of ['home','studio','book','world','characters','chapters','memory','timeline','library','archive','quality']){
+      await page.locator('[data-page="'+name+'"]').click();
+      const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+      expect(audit.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})),name+' 页面无障碍违规').toEqual([]);
+    }
+    for(const route of ['/privacy.html','/terms.html']){
+      await page.goto(route);
+      const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+      expect(audit.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})),route+' 页面无障碍违规').toEqual([]);
+    }
+  });
+
+  test('隐私说明和使用条款可从主界面打开', async ({page})=>{
+    await expect(page.locator('a[href="/privacy.html"]')).toBeVisible();
+    await page.locator('a[href="/privacy.html"]').click();
+    await expect(page).toHaveTitle(/隐私说明/);
+    await expect(page.locator('main')).toContainText('第三方 AI 服务');
     await page.goto('/');
-    await page.locator('[data-page="chapters"]').click();
-    await page.locator('#newChapter').click();
-    await page.locator('#chapterTitle').fill('雾夜来客');
-    await page.locator('#chapterBody').fill('林岚推开木门，走进雾中。');
-    await expect(page.locator('#chapterWordCount')).toContainText('字');
-    await expect.poll(async () => page.evaluate(() => { const w = JSON.parse(localStorage.getItem('novelStudioV2Workspace') || '{}'); const p = (w.projects || []).find(x => x.id === w.activeId); return p?.editorDraft?.title || ''; }), { timeout: 5000 }).toBe('雾夜来客');
-    await page.reload();
-    await page.locator('[data-page="chapters"]').click();
-    await expect(page.locator('#chapterTitle')).toHaveValue('雾夜来客');
-    await expect(page.locator('#chapterBody')).toHaveValue('林岚推开木门，走进雾中。');
-    await page.locator('#chapterFind').fill('木门');
-    await page.locator('#chapterReplace').fill('铁门');
-    page.once('dialog', dialog => dialog.accept());
-    await page.locator('#replaceChapterText').click();
-    await expect(page.locator('#chapterBody')).toHaveValue(/铁门/);
-    await page.locator('#focusEditor').click();
-    await expect(page.locator('body')).toHaveClass(/writing-focus/);
-    await page.keyboard.press('Escape');
-    await expect(page.locator('body')).not.toHaveClass(/writing-focus/);
-    page.once('dialog', dialog => dialog.accept());
-    await page.locator('#saveChapterEdit').click();
-    await expect(page.locator('#chapterList')).toContainText('雾夜来客');
-    await page.locator('#chapterBody').fill('林岚推开铁门，走进浓雾。');
-    await expect.poll(async () => page.evaluate(() => { const w = JSON.parse(localStorage.getItem('novelStudioV2Workspace') || '{}'); const p = (w.projects || []).find(x => x.id === w.activeId); return p?.data?.chapters?.[0]?.body || ''; }), { timeout: 5000 }).toBe('林岚推开铁门，走进浓雾。');
-    await page.reload();
-    await page.locator('[data-page="chapters"]').click();
-    await page.locator('#chapterList .item').first().click();
-    await expect(page.locator('#chapterBody')).toHaveValue('林岚推开铁门，走进浓雾。');
-    expect(errors).toEqual([]);
+    await page.locator('a[href="/terms.html"]').click();
+    await expect(page).toHaveTitle(/使用条款/);
+    await expect(page.locator('main')).toContainText('AI 内容与知识产权');
+    await page.setViewportSize({width:320,height:720});
+    await page.goto('/privacy.html');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.goto('/terms.html');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   });
 });
