@@ -198,7 +198,7 @@ test.describe('StoryForge V3 · 独立验收', () => {
 
   test('长篇小说资料作为独立上下文发送，不挤占创作指令长度', async ({page})=>{
     await page.locator('[data-page="book"]').click();
-    await page.locator('#synopsis').fill('海雾与灯塔。'.repeat(4000));
+    await page.locator('#synopsis').fill('海雾与灯塔。'.repeat(7000));
     await page.locator('#saveBook').click();
     await page.locator('[data-page="studio"]').click();
     await page.locator('#providerBtn').click();
