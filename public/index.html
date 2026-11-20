@@ -300,6 +300,36 @@ html body .layout main section#page-studio div#result.output[contenteditable="tr
 html body #result{background-color:#fff!important;color:#26344b!important}
 html body #chapterBody{background-color:#fff!important;color:#26344b!important}
 
+
+/* Unified app shell and accessible writing controls */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{background:#f3f5fa!important;color:#1d2940!important}
+header{position:sticky;top:0;z-index:60;background:#fff!important;color:#1d2940!important;border-bottom:1px solid #e3e8f0!important}
+.layout{display:grid!important;grid-template-columns:228px minmax(0,1fr)!important;min-height:calc(100vh - 68px)!important;align-items:stretch}
+aside{position:sticky;top:68px;align-self:start;height:calc(100vh - 68px);overflow-y:auto;background:#17243b!important;color:#e6edf8!important;border-right:1px solid #2a3953!important}
+main{width:100%;min-width:0;max-width:1600px;margin:0 auto!important;padding:26px clamp(18px,2.6vw,40px) 52px!important;background:#f3f5fa!important}
+main>section{width:100%;min-width:0}
+main>section.hidden{display:none!important}
+main>section:not(.hidden){display:block!important;animation:workspace-enter .16s ease-out}
+@keyframes workspace-enter{from{opacity:.65;transform:translateY(3px)}to{opacity:1;transform:none}}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 20px!important;padding:0 0 15px;border-bottom:1px solid #e2e7ef}
+.topline h1{color:#1c2940!important;font-size:25px!important;font-weight:780;letter-spacing:-.035em}
+main .panel{background:#fff!important;color:#26344b!important;border:1px solid #e4e9f1!important;border-radius:14px!important;box-shadow:0 5px 20px rgba(28,42,68,.045)}
+main .muted,main .field label{color:#758198!important}
+main input,main textarea,main select,main .picker-trigger{background:#fff!important;color:#24324a!important;border:1px solid #dce3ed!important;box-shadow:none}
+main input::placeholder,main textarea::placeholder{color:#9aa6b8!important}
+main input:focus,main textarea:focus,main select:focus,main .picker-trigger:focus{border-color:#8f7de0!important;box-shadow:0 0 0 3px rgba(112,87,217,.1)!important}
+main .output,main #result,main #chapterBody{background:#fff!important;color:#26344b!important;border:1px solid #e1e6ef!important}
+main button{color:#2b3850}
+main button.primary{background:#7057d9!important;color:#fff!important;border-color:#7057d9!important}
+.nav button[aria-current="page"]{background:linear-gradient(100deg,rgba(137,111,231,.28),rgba(74,181,164,.1))!important;border-color:rgba(174,155,255,.25)!important;box-shadow:inset 3px 0 #a993ff!important;color:#fff!important}
+@media(max-width:850px){
+ .layout{grid-template-columns:minmax(0,1fr)!important}
+ aside{position:relative;top:auto;height:auto;overflow:visible}
+ main{padding:18px 14px 34px!important}
+}
+@media(max-width:560px){main{padding:14px 10px 28px!important}.topline h1{font-size:22px!important}}
+
 </style></head>
 <body>
 <header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="openProviderSettings" type="button">免费模型设置</button><button id="exportBtn">导出备份</button><button id="importBtn" type="button">导入恢复</button><input id="importFile" type="file" accept="application/json,.json" hidden></div></header><dialog id="providerDialog" style="width:min(560px,calc(100vw - 24px));max-height:90vh;overflow:auto;background:#171d29;color:var(--text);border:1px solid #46506a;border-radius:16px;padding:20px">
@@ -459,7 +489,33 @@ function resultTitle(fallback){const first=(lastResult||"").split(/\r?\n/).map(x
 function appendText(oldText,addition){return oldText?oldText+"\n\n"+addition:addition;}
 function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 $("bookTitle").onchange=()=>{data.title=$("bookTitle").value;persist();};
-document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));$("page-"+b.dataset.page).classList.remove("hidden");$("nav").classList.remove("mobile-open");$("mobileNavToggle").setAttribute("aria-expanded","false");$("mobileNavToggle").textContent="☰ 打开导航菜单";});
+function activateWorkspacePage(page,options={}) {
+ const target=$("page-"+page);
+ if(!target){console.error("页面不存在：",page);return false;}
+ document.querySelectorAll(".nav button[data-page]").forEach(button=>{
+  const active=button.dataset.page===page;
+  button.classList.toggle("active",active);
+  if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");
+ });
+ document.querySelectorAll("main section[id^='page-']").forEach(section=>{
+  section.classList.toggle("hidden",section!==target);
+ });
+ if(page==="world")renderWorld();
+ if(page==="characters")renderCharacters();
+ if(page==="chapters")renderChapters();
+ if(page==="archive")renderArchive();
+ if(page==="projects"&&typeof renderProjects==="function")renderProjects();
+ if(page==="memory"&&typeof renderMemory==="function")renderMemory();
+ if(page==="timeline"&&typeof renderTimeline==="function")renderTimeline();
+ if(page==="library"&&typeof renderMaterials==="function")renderMaterials();
+ if(page==="quality"&&typeof renderQuality==="function")renderQuality();
+ $("nav").classList.remove("mobile-open");
+ $("mobileNavToggle").setAttribute("aria-expanded","false");
+ $("mobileNavToggle").textContent="☰ 打开导航菜单";
+ if(options.scroll!==false)window.scrollTo({top:0,behavior:"instant"});
+ return true;
+}
+document.querySelectorAll(".nav button[data-page]").forEach(button=>button.addEventListener("click",()=>activateWorkspacePage(button.dataset.page)));
 $("mobileNavToggle").onclick=()=>{const open=$("nav").classList.toggle("mobile-open");$("mobileNavToggle").setAttribute("aria-expanded",String(open));$("mobileNavToggle").textContent=open?"✕ 收起导航菜单":"☰ 打开导航菜单";};
 $("toggleContextPreview").onclick=()=>{const box=$("contextControls");box.classList.toggle("hidden");$("toggleContextPreview").textContent=box.classList.contains("hidden")?"展开预览":"收起预览";refreshContextPreview();};
 document.querySelectorAll("[data-context]").forEach(x=>x.addEventListener("change",refreshContextPreview));
