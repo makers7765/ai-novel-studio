@@ -108,3 +108,12 @@ test("returns a clear setup error when no provider is configured", async () => {
   assert.equal(r.status, 503);
   assert.match((await json(r)).error, /没有可用 AI 服务/);
 });
+test("accepts a maximum-length Chinese context within the UTF-8 request budget", async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "长上下文通过" }] } }] }), { status: 200 });
+  try {
+    const r = await onRequestPost({ request: request({ ...base, context: "海".repeat(60000), provider: "gemini", apiKey: "test-gemini-key" }), env: {} });
+    assert.equal(r.status, 200);
+    assert.equal((await json(r)).text, "长上下文通过");
+  } finally { globalThis.fetch = original; }
+});
