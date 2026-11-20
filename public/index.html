@@ -350,6 +350,26 @@ main button.primary{background:#7057d9!important;color:#fff!important;border-col
 }
 @media(max-width:560px){main{padding:14px 10px 28px!important}.topline h1{font-size:22px!important}}
 
+
+/* Final desktop workspace layout overrides: fixed shell, independent content scroll */
+@media(min-width:851px){
+ html,body{width:100%;height:100%;min-height:0!important;max-height:100%;overflow:hidden!important}
+ body{height:100dvh!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+ header{flex:0 0 68px!important;height:68px!important;min-height:68px!important}
+ .layout{display:grid!important;grid-template-columns:228px minmax(0,1fr)!important;width:100%!important;height:calc(100dvh - 68px)!important;min-height:0!important;max-height:calc(100dvh - 68px)!important;flex:1 1 auto!important;overflow:hidden!important;align-items:stretch!important}
+ aside{position:relative!important;top:auto!important;align-self:stretch!important;width:auto!important;height:100%!important;min-height:0!important;max-height:100%!important;overflow-y:auto!important;overscroll-behavior:contain}
+ main{display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-height:100%!important;margin:0!important;padding:26px clamp(18px,2.6vw,40px) 52px!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;scroll-behavior:smooth}
+ main>section{width:100%;min-width:0}
+ main>section.hidden{display:none!important}
+ main>section:not(.hidden){display:block!important}
+}
+@media(max-width:850px){
+ html,body{height:auto!important;min-height:100%!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important}
+ body{display:block!important;height:auto!important}
+ .layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+ aside{position:relative!important;top:auto!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}
+ main{display:block!important;width:100%!important;height:auto!important;min-height:calc(100dvh - 180px)!important;max-height:none!important;overflow:visible!important;padding:18px 14px 34px!important}
+}
 </style></head>
 <body>
 <header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="openProviderSettings" type="button">免费模型设置</button><button id="exportBtn">导出备份</button><button id="importBtn" type="button">导入恢复</button><input id="importFile" type="file" accept="application/json,.json" hidden></div></header><dialog id="providerDialog" style="width:min(560px,calc(100vw - 24px));max-height:90vh;overflow:auto;background:#171d29;color:var(--text);border:1px solid #46506a;border-radius:16px;padding:20px">
@@ -547,6 +567,7 @@ document.addEventListener("click",event=>{
  const button=event.target.closest("#nav button[data-page]");
  if(!button)return;
  event.preventDefault();
+ event.stopImmediatePropagation();
  activateWorkspacePage(button.dataset.page);
 },true);
 document.addEventListener("DOMContentLoaded",()=>{
