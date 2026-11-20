@@ -230,6 +230,7 @@ test.describe('StoryForge V3 · 独立验收', () => {
     expect(download.suggestedFilename()).toContain('StoryForge-小说备份');
     const backup=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
     expect(backup.workspace.books.some(b=>b.title==='备份恢复测试作品')).toBe(true);
+    await page.locator('[data-page="home"]').click();
     await page.locator('#newProject').click();
     await expect(page.locator('#bookTitle')).toHaveValue('我的新小说');
     page.once('dialog',d=>d.accept());
