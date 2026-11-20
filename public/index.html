@@ -53,7 +53,7 @@
         </div>
         <div class="studio-output">
           <div class="output-head"><div><span class="step-number">02</span><div><h2>创作结果</h2><p>结果可直接编辑，修改会自动保存</p></div></div><span id="wordCount" class="count-pill">0 字</span></div>
-          <textarea id="result" class="result-editor" placeholder="AI 生成的内容会显示在这里，你也可以直接写作或修改……"></textarea>
+          <textarea id="result" aria-label="AI 创作结果编辑区" class="result-editor" placeholder="AI 生成的内容会显示在这里，你也可以直接写作或修改……"></textarea>
           <div class="output-toolbar"><button id="copyBtn" class="btn btn-quiet">复制正文</button><button id="saveResultBtn" class="btn btn-primary">保存到作品</button></div>
           <div class="history-head"><h3>最近版本</h3><button id="restoreLast" class="text-button">恢复上一版</button></div><div id="versionList" class="version-list"></div>
         </div>
@@ -67,32 +67,32 @@
 
     <section id="page-world" class="page">
       <div class="page-heading"><div><div class="eyebrow">WORLD BUILDING</div><h1>世界观设定</h1><p>整理世界规则、势力、地理、历史与力量体系。</p></div><button id="addWorld" class="btn btn-primary">＋ 添加设定</button></div>
-      <div class="split-layout"><div class="form-card"><h2 id="worldFormTitle">新增世界观条目</h2><input id="worldTitle" placeholder="条目名称，例如：力量体系"><textarea id="worldContent" placeholder="详细描述这条设定……"></textarea><button id="saveWorld" class="btn btn-primary">保存条目</button></div><div id="worldList" class="record-list"></div></div>
+      <div class="split-layout"><div class="form-card"><h2 id="worldFormTitle">新增世界观条目</h2><input id="worldTitle" aria-label="世界观条目名称" placeholder="条目名称，例如：力量体系"><textarea id="worldContent" aria-label="世界观条目详细内容" placeholder="详细描述这条设定……"></textarea><button id="saveWorld" class="btn btn-primary">保存条目</button></div><div id="worldList" class="record-list"></div></div>
     </section>
 
     <section id="page-characters" class="page">
       <div class="page-heading"><div><div class="eyebrow">CHARACTER BIBLE</div><h1>人物档案</h1><p>记录角色的身份、性格、目标与人物关系。</p></div><button id="addCharacter" class="btn btn-primary">＋ 新增人物</button></div>
-      <div class="split-layout"><div class="form-card"><h2 id="characterFormTitle">人物资料</h2><input id="charName" placeholder="人物姓名 / 称谓"><div class="two-fields"><input id="charRole" placeholder="身份 / 角色"><input id="charAge" placeholder="年龄"></div><input id="charGoal" placeholder="核心目标"><textarea id="charPersonality" placeholder="性格、外貌、背景、能力、秘密、成长弧光……"></textarea><button id="saveCharacter" class="btn btn-primary">保存人物</button></div><div id="characterList" class="record-list"></div></div>
+      <div class="split-layout"><div class="form-card"><h2 id="characterFormTitle">人物资料</h2><input id="charName" aria-label="人物姓名" placeholder="人物姓名 / 称谓"><div class="two-fields"><input id="charRole" aria-label="人物身份或角色" placeholder="身份 / 角色"><input id="charAge" aria-label="人物年龄" placeholder="年龄"></div><input id="charGoal" aria-label="人物核心目标" placeholder="核心目标"><textarea id="charPersonality" aria-label="人物性格、外貌和背景" placeholder="性格、外貌、背景、能力、秘密、成长弧光……"></textarea><button id="saveCharacter" class="btn btn-primary">保存人物</button></div><div id="characterList" class="record-list"></div></div>
     </section>
 
     <section id="page-chapters" class="page">
       <div class="page-heading"><div><div class="eyebrow">MANUSCRIPT</div><h1>章节管理</h1><p>集中管理章节正文，支持自动保存与 AI 续写。</p></div><button id="newChapter" class="btn btn-primary">＋ 新建章节</button></div>
-      <div class="chapter-layout"><div class="chapter-list-panel"><div class="list-heading">章节目录 <span id="chapterCount">0</span></div><div id="chapterList" class="chapter-list"></div></div><div class="editor-panel"><input id="chapterTitle" class="chapter-title" placeholder="章节标题"><div class="editor-meta"><span id="chapterWords">0 字</span><span id="chapterSaveState">自动保存就绪</span></div><textarea id="chapterBody" class="chapter-editor" placeholder="在这里写下章节正文……"></textarea><div class="editor-actions"><button id="saveChapter" class="btn btn-primary">保存章节</button><button id="continueChapter" class="btn btn-quiet">AI 续写本章</button><button id="deleteChapter" class="btn btn-danger">删除章节</button></div></div></div>
+      <div class="chapter-layout"><div class="chapter-list-panel"><div class="list-heading">章节目录 <span id="chapterCount">0</span></div><div id="chapterList" class="chapter-list"></div></div><div class="editor-panel"><input id="chapterTitle" aria-label="章节标题" class="chapter-title" placeholder="章节标题"><div class="editor-meta"><span id="chapterWords">0 字</span><span id="chapterSaveState">自动保存就绪</span></div><textarea id="chapterBody" aria-label="章节正文编辑区" class="chapter-editor" placeholder="在这里写下章节正文……"></textarea><div class="editor-actions"><button id="saveChapter" class="btn btn-primary">保存章节</button><button id="continueChapter" class="btn btn-quiet">AI 续写本章</button><button id="deleteChapter" class="btn btn-danger">删除章节</button></div></div></div>
     </section>
 
     <section id="page-memory" class="page">
       <div class="page-heading"><div><div class="eyebrow">STORY MEMORY</div><h1>小说记忆</h1><p>记录不能遗忘的事实、伏笔、约束和已发生事件。</p></div></div>
-      <div class="split-layout"><div class="form-card"><h2>添加记忆</h2><input id="memoryTitle" placeholder="记忆标题"><textarea id="memoryContent" placeholder="需要 AI 始终记住的内容"></textarea><button id="saveMemory" class="btn btn-primary">保存记忆</button></div><div id="memoryList" class="record-list"></div></div>
+      <div class="split-layout"><div class="form-card"><h2>添加记忆</h2><input id="memoryTitle" aria-label="小说记忆标题" placeholder="记忆标题"><textarea id="memoryContent" aria-label="小说记忆内容" placeholder="需要 AI 始终记住的内容"></textarea><button id="saveMemory" class="btn btn-primary">保存记忆</button></div><div id="memoryList" class="record-list"></div></div>
     </section>
 
     <section id="page-timeline" class="page">
       <div class="page-heading"><div><div class="eyebrow">STORY TIMELINE</div><h1>剧情时间线</h1><p>按故事时间梳理事件，避免前后矛盾。</p></div></div>
-      <div class="split-layout"><div class="form-card"><h2>添加事件</h2><input id="eventTime" placeholder="故事时间，例如：第三年冬季"><input id="eventTitle" placeholder="事件名称"><textarea id="eventContent" placeholder="事件经过与影响"></textarea><button id="saveEvent" class="btn btn-primary">保存事件</button></div><div id="timelineList" class="record-list"></div></div>
+      <div class="split-layout"><div class="form-card"><h2>添加事件</h2><input id="eventTime" aria-label="剧情事件发生时间" placeholder="故事时间，例如：第三年冬季"><input id="eventTitle" aria-label="剧情事件名称" placeholder="事件名称"><textarea id="eventContent" aria-label="剧情事件内容" placeholder="事件经过与影响"></textarea><button id="saveEvent" class="btn btn-primary">保存事件</button></div><div id="timelineList" class="record-list"></div></div>
     </section>
 
     <section id="page-library" class="page">
       <div class="page-heading"><div><div class="eyebrow">REFERENCE LIBRARY</div><h1>素材库</h1><p>保存灵感、资料片段、地点、道具与参考文本。</p></div></div>
-      <div class="split-layout"><div class="form-card"><h2>添加素材</h2><input id="materialTitle" placeholder="素材名称"><select id="materialType"><option>灵感</option><option>地点</option><option>道具</option><option>参考资料</option><option>其他</option></select><textarea id="materialContent" placeholder="素材内容"></textarea><button id="saveMaterial" class="btn btn-primary">保存素材</button></div><div id="materialList" class="record-list"></div></div>
+      <div class="split-layout"><div class="form-card"><h2>添加素材</h2><input id="materialTitle" aria-label="素材名称" placeholder="素材名称"><select id="materialType" aria-label="素材类型"><option>灵感</option><option>地点</option><option>道具</option><option>参考资料</option><option>其他</option></select><textarea id="materialContent" aria-label="素材内容" placeholder="素材内容"></textarea><button id="saveMaterial" class="btn btn-primary">保存素材</button></div><div id="materialList" class="record-list"></div></div>
     </section>
 
     <section id="page-archive" class="page">
@@ -101,7 +101,7 @@
 
     <section id="page-quality" class="page">
       <div class="page-heading"><div><div class="eyebrow">QUALITY CONTROL</div><h1>质量检测</h1><p>检查剧情逻辑、人物动机、时间线与设定一致性。</p></div></div>
-      <div class="form-card quality-card"><label class="field-label" for="qualityInput">粘贴需要检查的内容</label><textarea id="qualityInput" placeholder="粘贴章节、大纲或剧情片段……"></textarea><label class="field-label" for="qualityFocus">重点检查方向</label><select id="qualityFocus"><option>全面检查</option><option>逻辑漏洞</option><option>人物动机</option><option>时间线冲突</option><option>世界观设定冲突</option><option>节奏与可读性</option></select><button id="runQuality" class="btn btn-primary">开始检测</button><textarea id="qualityResult" class="quality-result" placeholder="检测报告会显示在这里"></textarea><button id="saveQuality" class="btn btn-quiet">保存检测报告</button></div>
+      <div class="form-card quality-card"><label class="field-label" for="qualityInput">粘贴需要检查的内容</label><textarea id="qualityInput" placeholder="粘贴章节、大纲或剧情片段……"></textarea><label class="field-label" for="qualityFocus">重点检查方向</label><select id="qualityFocus"><option>全面检查</option><option>逻辑漏洞</option><option>人物动机</option><option>时间线冲突</option><option>世界观设定冲突</option><option>节奏与可读性</option></select><button id="runQuality" class="btn btn-primary">开始检测</button><textarea id="qualityResult" aria-label="质量检测报告结果" class="quality-result" placeholder="检测报告会显示在这里"></textarea><button id="saveQuality" class="btn btn-quiet">保存检测报告</button></div>
     </section>
   </main>
 </div>
