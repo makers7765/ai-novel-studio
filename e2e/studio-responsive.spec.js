@@ -50,7 +50,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     await expect(page.locator('#newChapter')).toBeVisible();
     await expect(page.locator('#chapterList')).toContainText('还没有章节');
     await expect(page.locator('#chapterBody')).toBeVisible();
-    const hiddenPages = await page.locator('main section:not(.hidden)').count();
+    const hiddenPages = await page.locator('main section:visible').count();
     expect(hiddenPages).toBe(1);
     await page.locator('[data-page="studio"]').click();
     await expect(page.locator('#page-studio')).toBeVisible();
