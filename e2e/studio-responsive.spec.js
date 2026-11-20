@@ -193,4 +193,24 @@ test.describe('StoryForge V3 · 独立验收', () => {
     await page.locator('[data-page="studio"]').click();
     await expect(page.locator('#result')).toHaveValue('这是用户手动修改后的章节内容。');
   });
+
+  test('长篇小说资料作为独立上下文发送，不挤占创作指令长度', async ({page})=>{
+    await page.locator('[data-page="book"]').click();
+    await page.locator('#synopsis').fill('海雾与灯塔。'.repeat(4000));
+    await page.locator('#saveBook').click();
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#providerBtn').click();
+    await page.locator('#apiKey').fill('test-key-123456789');
+    await page.locator('#saveProvider').click();
+    let requestBody;
+    await page.route('**/api/generate',async route=>{
+      requestBody=route.request().postDataJSON();
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({text:'测试生成成功。'})});
+    });
+    await page.locator('#prompt').fill('写一个新的开场场景。');
+    await page.locator('#generateBtn').click();
+    await expect(page.locator('#result')).toHaveValue('测试生成成功。');
+    expect(requestBody.prompt.length).toBeLessThan(30000);
+    expect(requestBody.context.length).toBeGreaterThan(30000);
+  });
 });
