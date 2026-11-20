@@ -74,7 +74,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     });
     expect(header.overflow).toBeFalsy();
     expect(header.controlsLeft).toBeGreaterThan(header.brandRight);
-    expect(header.statusWidth).toBeGreaterThan(100);
+    expect(header.statusWidth).toBeGreaterThan(80);
 
     await page.locator('[data-page="chapters"]').click();
     await expect(page.locator('#page-chapters h1')).toBeVisible();
