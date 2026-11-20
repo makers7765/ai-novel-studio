@@ -89,7 +89,7 @@ main,.layout,aside,.panel,.grid,.row,.field,.taskgrid,.workflow-wrap,.studio-ref
 .version-panel{border-top:1px solid var(--line);padding-top:10px;margin-top:12px}.version-panel summary{cursor:pointer;color:#d8d1ff;font-weight:650}.version-list{display:grid;gap:8px;margin-top:10px}.version-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px;background:#111722;border:1px solid var(--line);border-radius:9px}.version-entry span{font-size:12px;color:var(--muted)}.studio-actions{position:relative}.save-indicator{font-size:12px;color:var(--accent2)}
 @media(max-width:850px){.mobile-nav-toggle{display:block}.nav{display:none!important}.nav.mobile-open{display:flex!important;flex-wrap:wrap;overflow:visible;padding:4px 0}.nav.mobile-open button{flex:1 1 130px;white-space:normal}.taskgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.studio-actions{position:sticky;bottom:8px;z-index:20;background:rgba(25,30,41,.96);border:1px solid var(--line);padding:9px;border-radius:12px;box-shadow:0 6px 24px #0008}.context-controls label{display:flex;margin-right:0}.task-entry-heading{align-items:flex-start;flex-direction:column}}
 @media(max-width:520px){.taskgrid{grid-template-columns:minmax(0,1fr)}.studio-actions{grid-template-columns:1fr 1fr}.version-entry{align-items:flex-start;flex-direction:column}.context-preview{max-height:35dvh}}
-</style><link rel="stylesheet" href="/experience.css"><link rel="stylesheet" href="/redesign.css"><link rel="stylesheet" href="/redesign-round2.css"></head>
+</style><link rel="stylesheet" href="/experience.css"><link rel="stylesheet" href="/ui-overhaul.css"></head>
 <body>
 <header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="openProviderSettings" type="button">免费模型设置</button><button id="exportBtn">导出备份</button><button id="importBtn" type="button">导入恢复</button><input id="importFile" type="file" accept="application/json,.json" hidden></div></header><dialog id="providerDialog" style="width:min(560px,calc(100vw - 24px));max-height:90vh;overflow:auto;background:#171d29;color:var(--text);border:1px solid #46506a;border-radius:16px;padding:20px">
   <form id="providerForm">
@@ -485,4 +485,69 @@ $("importBtn").onclick=()=>$("importFile").click();
 $("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const parsed=JSON.parse(await file.text());const incoming=parsed.project&&parsed.format==="ai-novel-studio-backup"?parsed.project:parsed;if(!incoming||typeof incoming!=="object"||(!Array.isArray(incoming.chapters)&&!Array.isArray(incoming.characters)&&typeof incoming.title!=="string"))throw new Error("文件格式不符合小说工作室备份格式。");if(!confirm("导入将替换当前作品资料。建议先点击“导出备份”。确定继续？"))return;data={...defaultData,...incoming};if(parsed.workspace&&typeof window.restoreWorkspaceSnapshot==="function")window.restoreWorkspaceSnapshot(parsed.workspace);if(parsed.taskDrafts)localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(parsed.taskDrafts));if(parsed.versions){versionHistory=parsed.versions;localStorage.setItem("novelStudioV2Versions",JSON.stringify(versionHistory));}persist();load();renderTaskFields(currentTask);renderVersions();refreshContextPreview();alert("备份恢复成功。");}catch(err){alert("导入失败："+err.message);}finally{e.target.value="";}};
 async function check(){const personal=readProviderConfig();if(personal){$("apiStatus").textContent="● 已选择免费模型："+personal.provider;$("apiStatus").style.color="var(--accent2)";return;}try{const r=await fetch("/api/health");const j=await r.json();if(j.configured){$("apiStatus").textContent=`● AI 服务已配置 · ${j.model}`;$("apiStatus").style.color="var(--accent2)";}else if(!j.keyConfigured){$("apiStatus").textContent="● 服务已启动，等待配置 API Key";$("apiStatus").style.color="#f0c477";}else{$("apiStatus").textContent="● API Key 已配置，等待配置模型名称";$("apiStatus").style.color="#f0c477";}}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
 $("saveChapter").textContent="确认保存到对应资料库";renderTaskFields(currentTask);document.querySelector('[data-task="灵感生成"]').style.borderColor="var(--accent)";document.querySelector('[data-task="灵感生成"]').setAttribute("aria-pressed","true");load();renderVersions();refreshContextPreview();check();
-</script><script src="/experience.js" defer></script><script src="/product-modules.js" defer></script></body></html>
+</script><script src="/experience.js" defer></script><script src="/product-modules.js" defer></script><script>
+/* Rebuild the writing workspace without replacing existing feature logic. */
+(() => {
+  const page = document.getElementById("page-studio");
+  const free = document.getElementById("freeStudio");
+  const taskFields = document.getElementById("taskFields");
+  const resultEditor = document.getElementById("result");
+  document.documentElement.dataset.uiOverhaulLoaded = "yes";
+  document.documentElement.dataset.uiOverhaulFound = [!!page,!!free,!!taskFields,!!resultEditor].join(",");
+  if (!page || !free || !taskFields || !resultEditor || page.dataset.layoutRebuilt === "true") return;
+  const formPanel = taskFields.closest(".panel");
+  const outputPanel = resultEditor.closest(".panel");
+  const legacyGrid = formPanel && formPanel.parentElement;
+  if (!formPanel || !outputPanel || !legacyGrid) return;
+
+  const taskEntry = document.querySelector(".task-entry-panel");
+  const refs = document.querySelector(".studio-reference");
+  const context = document.querySelector(".context-panel");
+  const desk = document.createElement("div");
+  desk.className = "studio-workspace";
+  const controls = document.createElement("div");
+  controls.className = "studio-controls";
+  const result = document.createElement("div");
+  result.className = "studio-result";
+  const advanced = document.createElement("details");
+  advanced.className = "professional-drawer";
+  const summary = document.createElement("summary");
+  summary.innerHTML = '<span><b>专业创作任务</b><small>八项任务、结构化提示词与高级生成设置</small></span><span class="drawer-indicator">展开设置　＋</span>';
+  const advancedBody = document.createElement("div");
+  advancedBody.className = "professional-content";
+  advanced.append(summary, advancedBody);
+  desk.append(controls, result);
+  controls.append(free, advanced);
+  if (taskEntry) advancedBody.append(taskEntry);
+  advancedBody.append(formPanel);
+  result.append(outputPanel);
+  if (refs || context) {
+    const support = document.createElement("details");
+    support.className = "studio-support";
+    const supportSummary = document.createElement("summary");
+    supportSummary.textContent = "小说资料与 AI 上下文";
+    const supportBody = document.createElement("div");
+    supportBody.className = "studio-support-body";
+    if (refs) supportBody.append(refs);
+    if (context) supportBody.append(context);
+    support.append(supportSummary, supportBody);
+    controls.append(support);
+  }
+  legacyGrid.remove();
+  document.querySelectorAll("#page-studio [data-workflow-task]").forEach(el => el.remove());
+  const workflowWrap = page.querySelector(".workflow-wrap");
+  if (workflowWrap) workflowWrap.remove();
+  const notice = page.querySelector(".notice");
+  if (notice) page.insertBefore(desk, notice);
+  else page.append(desk);
+  page.dataset.layoutRebuilt = "true";
+  advanced.addEventListener("toggle", () => {
+    const indicator = summary.querySelector(".drawer-indicator");
+    if (indicator) indicator.textContent = advanced.open ? "收起设置　−" : "展开设置　＋";
+  });
+  advancedBody.addEventListener("click", event => {
+    if (event.target.closest("[data-task]")) advanced.open = true;
+  });
+})();
+</script>
+</body></html>
