@@ -63,6 +63,50 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     expect(mobile.editorWidth).toBeGreaterThan(300);
   });
 
+  test('第二轮工作区布局：章节编辑器占据主区域，顶部状态不挤压', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    const header = await page.locator('header').evaluate(el => {
+      const brand = el.querySelector('.brand').getBoundingClientRect();
+      const controls = el.querySelector('.row').getBoundingClientRect();
+      const status = el.querySelector('#apiStatus').getBoundingClientRect();
+      return { brandRight: brand.right, controlsLeft: controls.left, statusWidth: status.width, overflow: el.scrollWidth > el.clientWidth };
+    });
+    expect(header.overflow).toBeFalsy();
+    expect(header.controlsLeft).toBeGreaterThan(header.brandRight);
+    expect(header.statusWidth).toBeGreaterThan(100);
+
+    await page.locator('[data-page="chapters"]').click();
+    await expect(page.locator('#page-chapters h1')).toBeVisible();
+    await expect(page.locator('#chapterTitle')).toBeVisible();
+    await expect(page.locator('#chapterBody')).toBeVisible();
+    const editor = await page.locator('#chapterBody').evaluate(el => {
+      const r = el.getBoundingClientRect();
+      return { width: r.width, height: r.height, columns: getComputedStyle(document.querySelector('#page-chapters > .grid')).gridTemplateColumns };
+    });
+    expect(editor.width).toBeGreaterThan(650);
+    expect(editor.height).toBeGreaterThan(500);
+    expect(editor.columns.split(' ').length).toBe(2);
+  });
+
+  test('核心栏目切换后均显示真实标题和内容容器', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    const pages = [
+      ['projects','小说项目中心'],['project','小说资料'],['studio','AI 创作台'],
+      ['world','世界观设定'],['characters','人物档案'],['chapters','章节管理'],
+      ['archive','创作归档'],['memory','小说记忆库'],['timeline','剧情时间线'],
+      ['library','小说素材库'],['quality','小说质量检测']
+    ];
+    for (const [key,title] of pages) {
+      await page.locator('[data-page="'+key+'"]').click();
+      await expect(page.locator('#page-'+key)).toBeVisible();
+      await expect(page.locator('#page-'+key+' h1')).toHaveText(title);
+      const box=await page.locator('#page-'+key).boundingBox();
+      expect(box && box.width).toBeGreaterThan(700);
+    }
+  });
+
   test('切换任务不触发 AI 请求，八项入口保持可用', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
