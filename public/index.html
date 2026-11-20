@@ -540,15 +540,15 @@ function activateWorkspacePage(page,options={}) {
  return true;
 }
 window.activateWorkspacePage=activateWorkspacePage;
-// Re-apply after every other click listener has completed. Project modules also
-// change the active project and must not leave the content area hidden.
+// Use one delegated handler for every sidebar item. Capture the click before
+// legacy/module listeners can alter visibility; the active section is the sole
+// visible page and the main pane owns scrolling.
 document.addEventListener("click",event=>{
- const button=event.target.closest(".nav button[data-page]");
+ const button=event.target.closest("#nav button[data-page]");
  if(!button)return;
- const page=button.dataset.page;
- setTimeout(()=>activateWorkspacePage(page),0);
+ event.preventDefault();
+ activateWorkspacePage(button.dataset.page);
 },true);
-document.querySelectorAll(".nav button[data-page]").forEach(button=>button.addEventListener("click",()=>activateWorkspacePage(button.dataset.page)));
 document.addEventListener("DOMContentLoaded",()=>{
  const initial=document.querySelector(".nav button.active[data-page]")?.dataset.page||"studio";
  activateWorkspacePage(initial,{scroll:false});
