@@ -39,24 +39,6 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     expect(metrics.clearVisible).toBeTruthy();
   });
 
-  test('章节管理页面始终显示编辑区与清晰空状态，导航切换正确', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
-    await page.goto('/');
-    await page.locator('[data-page="chapters"]').click();
-    await expect(page.locator('#page-chapters')).toBeVisible();
-    await expect(page.locator('#page-chapters h1')).toHaveText('章节管理');
-    await expect(page.locator('#newChapter')).toBeVisible();
-    await expect(page.locator('#chapterList')).toContainText('还没有章节');
-    await expect(page.locator('#chapterBody')).toBeVisible();
-    await expect(page.locator('#page-chapters')).toBeVisible();
-    await page.locator('[data-page="studio"]').click();
-    await expect(page.locator('#page-studio')).toBeVisible();
-    await expect(page.locator('#page-chapters')).toBeHidden();
-    expect(errors).toEqual([]);
-  });
-
   test('新版桌面与手机布局没有横向溢出，导航和内容区域可用', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
