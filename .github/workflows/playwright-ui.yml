@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 22
       - name: Install Playwright
-        run: npm install --no-save @playwright/test
+        run: npm install --no-save @playwright/test @axe-core/playwright
       - name: Install Chromium
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Check JavaScript syntax
