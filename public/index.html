@@ -301,6 +301,26 @@ html body #result{background-color:#fff!important;color:#26344b!important}
 html body #chapterBody{background-color:#fff!important;color:#26344b!important}
 
 
+/* Navigation workspace: keep the app shell fixed and scroll only the active page */
+@media(min-width:851px){
+ html,body{height:100%;min-height:0;overflow:hidden!important}
+ body{height:100dvh;display:flex;flex-direction:column}
+ header{flex:0 0 68px}
+ .layout{height:calc(100dvh - 68px);min-height:0;flex:1 1 auto;overflow:hidden}
+ aside{height:100%;min-height:0;position:relative;top:auto;overflow-y:auto;overscroll-behavior:contain}
+ main{height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scroll-behavior:smooth}
+}
+@media(max-width:850px){
+ html,body{height:auto;min-height:100%;overflow-x:hidden!important;overflow-y:auto!important}
+ body{display:block;height:auto}
+ .layout{height:auto;min-height:0;overflow:visible}
+ aside{position:relative;height:auto;max-height:none;overflow:visible}
+ main{height:auto;min-height:calc(100dvh - 180px);overflow:visible}
+}
+/* Never let inactive sections occupy space in the content viewport */
+main>section.hidden{display:none!important}
+main>section:not(.hidden){display:block!important}
+
 /* Unified app shell and accessible writing controls */
 html,body{width:100%;max-width:100%;overflow-x:hidden}
 body{background:#f3f5fa!important;color:#1d2940!important}
@@ -516,7 +536,7 @@ function activateWorkspacePage(page,options={}) {
  $("nav").classList.remove("mobile-open");
  $("mobileNavToggle").setAttribute("aria-expanded","false");
  $("mobileNavToggle").textContent="☰ 打开导航菜单";
- if(options.scroll!==false)window.scrollTo({top:0,behavior:"instant"});
+ if(options.scroll!==false){const content=document.querySelector("main");if(content)content.scrollTo({top:0,behavior:"instant"});window.scrollTo({top:0,behavior:"instant"});}
  return true;
 }
 window.activateWorkspacePage=activateWorkspacePage;
