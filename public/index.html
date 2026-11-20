@@ -485,5 +485,68 @@ $("importBtn").onclick=()=>$("importFile").click();
 $("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const parsed=JSON.parse(await file.text());const incoming=parsed.project&&parsed.format==="ai-novel-studio-backup"?parsed.project:parsed;if(!incoming||typeof incoming!=="object"||(!Array.isArray(incoming.chapters)&&!Array.isArray(incoming.characters)&&typeof incoming.title!=="string"))throw new Error("文件格式不符合小说工作室备份格式。");if(!confirm("导入将替换当前作品资料。建议先点击“导出备份”。确定继续？"))return;data={...defaultData,...incoming};if(parsed.workspace&&typeof window.restoreWorkspaceSnapshot==="function")window.restoreWorkspaceSnapshot(parsed.workspace);if(parsed.taskDrafts)localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(parsed.taskDrafts));if(parsed.versions){versionHistory=parsed.versions;localStorage.setItem("novelStudioV2Versions",JSON.stringify(versionHistory));}persist();load();renderTaskFields(currentTask);renderVersions();refreshContextPreview();alert("备份恢复成功。");}catch(err){alert("导入失败："+err.message);}finally{e.target.value="";}};
 async function check(){const personal=readProviderConfig();if(personal){$("apiStatus").textContent="● 已选择免费模型："+personal.provider;$("apiStatus").style.color="var(--accent2)";return;}try{const r=await fetch("/api/health");const j=await r.json();if(j.configured){$("apiStatus").textContent=`● AI 服务已配置 · ${j.model}`;$("apiStatus").style.color="var(--accent2)";}else if(!j.keyConfigured){$("apiStatus").textContent="● 服务已启动，等待配置 API Key";$("apiStatus").style.color="#f0c477";}else{$("apiStatus").textContent="● API Key 已配置，等待配置模型名称";$("apiStatus").style.color="#f0c477";}}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
 $("saveChapter").textContent="确认保存到对应资料库";renderTaskFields(currentTask);document.querySelector('[data-task="灵感生成"]').style.borderColor="var(--accent)";document.querySelector('[data-task="灵感生成"]').setAttribute("aria-pressed","true");load();renderVersions();refreshContextPreview();check();
-</script><script src="/experience.js" defer></script><script src="/product-modules.js" defer></script><script src="/ui-overhaul.js"></script>
+</script><script src="/experience.js" defer></script><script src="/product-modules.js" defer></script><script>
+/* Rebuild the writing workspace without replacing existing feature logic. */
+(() => {
+  const page = document.getElementById("page-studio");
+  if (!page || page.dataset.layoutRebuilt === "true") return;
+  const free = document.getElementById("freeStudio");
+  const legacyGrid = [...page.querySelectorAll(".grid")].find(el => el.querySelector("#taskFields"));
+  if (!free || !legacyGrid) return;
+  const panels = [...legacyGrid.children].filter(el => el.classList.contains("panel"));
+  const formPanel = panels.find(el => el.querySelector("#taskFields"));
+  const outputPanel = panels.find(el => el.querySelector("#result"));
+  if (!formPanel || !outputPanel) return;
+
+  const taskEntry = page.querySelector(".task-entry-panel");
+  const refs = page.querySelector(".studio-reference");
+  const context = page.querySelector(".context-panel");
+  const desk = document.createElement("div");
+  desk.className = "studio-workspace";
+  const controls = document.createElement("div");
+  controls.className = "studio-controls";
+  const result = document.createElement("div");
+  result.className = "studio-result";
+  const advanced = document.createElement("details");
+  advanced.className = "professional-drawer";
+  const summary = document.createElement("summary");
+  summary.innerHTML = '<span><b>专业创作任务</b><small>八项任务、结构化提示词与高级生成设置</small></span><span class="drawer-indicator">展开设置　＋</span>';
+  const advancedBody = document.createElement("div");
+  advancedBody.className = "professional-content";
+  advanced.append(summary, advancedBody);
+  desk.append(controls, result);
+  controls.append(free, advanced);
+  if (taskEntry) advancedBody.append(taskEntry);
+  advancedBody.append(formPanel);
+  result.append(outputPanel);
+  if (refs || context) {
+    const support = document.createElement("details");
+    support.className = "studio-support";
+    const supportSummary = document.createElement("summary");
+    supportSummary.textContent = "小说资料与 AI 上下文";
+    const supportBody = document.createElement("div");
+    supportBody.className = "studio-support-body";
+    if (refs) supportBody.append(refs);
+    if (context) supportBody.append(context);
+    support.append(supportSummary, supportBody);
+    controls.append(support);
+  }
+  legacyGrid.remove();
+  page.querySelectorAll("[data-workflow-task]").forEach(el => el.remove());
+  const workflowWrap = page.querySelector(".workflow-wrap");
+  if (workflowWrap) workflowWrap.remove();
+  const notice = page.querySelector(":scope > .notice");
+  if (notice) page.insertBefore(desk, notice);
+  else page.append(desk);
+  page.dataset.layoutRebuilt = "true";
+  advanced.addEventListener("toggle", () => {
+    const indicator = summary.querySelector(".drawer-indicator");
+    if (indicator) indicator.textContent = advanced.open ? "收起设置　−" : "展开设置　＋";
+  });
+  advancedBody.addEventListener("click", event => {
+    if (event.target.closest("[data-task]")) advanced.open = true;
+  });
+})();
+
+</script>
 </body></html>
