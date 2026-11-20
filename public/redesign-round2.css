@@ -1,0 +1,106 @@
+/* Round 2 — stronger information architecture and writing-first workspaces */
+:root{
+ --bg:#080f1d;--panel:#111d30;--panel2:#172740;--line:#2b3d5a;--text:#f1f5ff;--muted:#9aabc5;
+ --accent:#b6a1ff;--accent2:#6ee7d2;--surface:#0b1729;
+}
+body{background:radial-gradient(ellipse at 70% -10%,rgba(123,91,214,.19),transparent 34%),radial-gradient(ellipse at 0% 45%,rgba(40,117,143,.08),transparent 30%),#080f1d;color:var(--text)}
+header{display:grid;grid-template-columns:minmax(210px,1fr) auto;gap:18px;height:72px;min-height:72px;padding:0 clamp(16px,2.5vw,34px);background:rgba(8,15,29,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(160,180,215,.15)}
+header .brand{align-self:center}
+header>.row{display:flex;align-items:center;justify-content:flex-end;gap:8px;max-width:none!important;width:auto;min-width:0}
+header .status{display:inline-flex;align-items:center;min-width:112px;max-width:240px;flex:0 0 auto;white-space:normal;overflow-wrap:normal;word-break:normal;font-size:12px;line-height:1.35;padding:7px 10px;border:1px solid rgba(110,231,210,.18);background:rgba(110,231,210,.06);border-radius:10px}
+header button{white-space:nowrap;min-height:38px}
+.layout{grid-template-columns:238px minmax(0,1fr);max-width:1880px;min-height:calc(100vh - 72px)}
+aside{top:72px;height:calc(100vh - 72px);padding:20px 12px;background:rgba(9,17,31,.92);border-right:1px solid rgba(160,180,215,.13)}
+.nav{gap:5px}
+.nav button{min-height:44px;padding:10px 13px;font-size:13px;font-weight:560;border-radius:11px;color:#a9bad4}
+.nav button.active{background:linear-gradient(105deg,rgba(166,139,250,.2),rgba(110,231,210,.07));border-color:rgba(182,161,255,.3);box-shadow:inset 3px 0 #b6a1ff;color:#fff}
+main{max-width:1540px;padding:clamp(20px,2.8vw,42px)}
+main>section:not(.hidden){display:block!important;min-height:calc(100vh - 120px)}
+.topline{padding-bottom:16px;border-bottom:1px solid rgba(160,180,215,.12);margin-bottom:22px;align-items:center}
+.topline h1{font-size:clamp(26px,2.2vw,34px);font-weight:760;letter-spacing:-.045em}
+.topline .muted{font-size:13px;color:#9aabc5}
+.panel{padding:22px;border-radius:17px;background:linear-gradient(150deg,rgba(19,32,52,.98),rgba(13,24,41,.98));border-color:rgba(153,177,214,.15);box-shadow:0 14px 38px rgba(0,0,0,.14)}
+h2{font-size:16px;font-weight:720;letter-spacing:-.025em}
+.field{gap:8px;margin:13px 0}
+.field label,.field>span{color:#c7d3e6;font-size:12px;font-weight:650}
+input,textarea,select{background:#0a1527;border:1px solid rgba(151,174,211,.2);border-radius:10px;color:#f1f5ff;padding:12px 13px}
+input:hover,textarea:hover,select:hover{border-color:rgba(182,161,255,.42)}
+input:focus,textarea:focus,select:focus{border-color:#b6a1ff;box-shadow:0 0 0 3px rgba(182,161,255,.12)}
+button{border-radius:10px;min-height:40px;padding:9px 14px;background:#1b2b45;border-color:rgba(151,174,211,.2);font-weight:620}
+button.primary{background:linear-gradient(115deg,#b6a1ff,#8e83f5 58%,#6ee7d2);color:#101426;font-weight:760}
+button:focus-visible{outline:2px solid #6ee7d2;outline-offset:3px}
+#page-studio>.grid{grid-template-columns:minmax(320px,.78fr) minmax(0,1.22fr);gap:18px}
+#page-studio>.grid>.panel{min-width:0}
+#page-studio #result{min-height:560px!important;max-height:calc(100vh - 330px)!important;padding:24px;background:linear-gradient(180deg,#091426,#0b1729);border:1px solid rgba(151,174,211,.2);border-radius:14px;line-height:2;font-size:15px}
+#page-studio #taskFields{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}
+#page-studio #taskFields .field:has(textarea){grid-column:1/-1}
+#page-studio .free-studio{padding:26px 28px;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.16)}
+#page-studio .free-fields{gap:16px}
+#page-studio .free-fields textarea{min-height:136px}
+#page-studio .free-toolbar{margin:22px 0 16px}
+#page-studio .free-run{min-height:46px;padding-inline:22px}
+#page-studio .studio-reference,#page-studio .context-panel{background:rgba(16,29,48,.9)}
+#page-chapters>.grid{grid-template-columns:minmax(240px,.34fr) minmax(0,1fr);gap:18px;align-items:stretch}
+#page-chapters>.grid>.panel{min-width:0}
+#page-chapters #chapterList{display:grid;gap:9px;align-content:start}
+#page-chapters #chapterList>.item{margin:0;padding:14px;border-radius:12px;background:#0c192c;border-color:rgba(151,174,211,.16);cursor:pointer}
+#page-chapters #chapterList>.item:hover{border-color:rgba(182,161,255,.6);background:#14243b}
+#page-chapters #chapterTitle{font-size:17px;font-weight:700;padding:14px 15px}
+#page-chapters .editor-toolbar{display:flex;gap:8px;align-items:center;padding:10px 0 12px;margin:0;flex-wrap:wrap}
+#page-chapters .editor-toolbar #chapterWordCount{margin-right:auto;font-size:13px}
+#page-chapters .editor-find{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;margin:10px 0}
+#page-chapters #chapterBody{width:100%;min-height:64vh!important;max-height:none;resize:vertical;padding:22px 24px;background:#091426;border:1px solid rgba(151,174,211,.18);border-radius:13px;font-size:15px;line-height:2.05;letter-spacing:.01em}
+#page-chapters #chapterAppend{width:100%;min-height:120px;background:#0c192c}
+#page-chapters .actions{margin-top:12px}
+#page-chapters #chapterList:empty:after{content:"还没有章节";display:block;padding:24px 12px;text-align:center;color:#9aabc5;border:1px dashed rgba(151,174,211,.22);border-radius:12px}
+#page-characters #characterList,#page-world #worldList,#page-archive #archiveList{min-height:180px}
+#page-characters #characterList>.muted,#page-world #worldList>.muted,#page-archive #archiveList>.muted{display:block;padding:28px 18px;text-align:center;border:1px dashed rgba(151,174,211,.22);border-radius:13px;background:rgba(9,20,37,.4)}
+#page-memory .memory-layout,#page-timeline .memory-layout,#page-library .memory-layout,#page-quality .memory-layout{grid-template-columns:minmax(290px,.72fr) minmax(0,1.28fr);gap:18px}
+#page-memory .relation-panel{padding:22px}
+#page-memory .relationship-graph{min-height:260px}
+#page-quality #qaResult{min-height:58vh!important;background:#091426}
+#page-projects .project-overview{gap:14px}
+#page-projects .metric-card{padding:20px;border-radius:16px}
+#page-projects .project-card{padding:20px;border-radius:16px;transition:transform .18s,border-color .18s}
+#page-projects .project-card:hover{transform:translateY(-2px);border-color:rgba(182,161,255,.48)}
+#page-project .panel{max-width:980px}
+.notice{border:1px solid rgba(182,161,255,.18);background:rgba(120,98,185,.11);padding:13px 16px;border-radius:12px}
+@media(max-width:1150px){
+ .layout{grid-template-columns:210px minmax(0,1fr)}
+ #page-studio>.grid{grid-template-columns:minmax(0,1fr)}
+ #page-studio #result{min-height:380px!important;max-height:60vh!important}
+ #page-chapters>.grid{grid-template-columns:minmax(0,1fr)}
+ #page-chapters #chapterBody{min-height:55vh!important}
+ #page-memory .memory-layout,#page-timeline .memory-layout,#page-library .memory-layout,#page-quality .memory-layout{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:850px){
+ header{display:flex;min-height:0;height:auto;padding:12px 14px;align-items:flex-start;flex-direction:column;gap:10px}
+ header>.row{width:100%;display:flex;justify-content:flex-start;flex-wrap:wrap}
+ header .status{max-width:none;flex:1 1 100%}
+ .layout{grid-template-columns:minmax(0,1fr)}
+ aside{position:relative;top:auto;height:auto;overflow:visible;padding:9px 12px}
+ .nav{display:none!important}
+ .nav.mobile-open{display:flex!important;flex-direction:row;flex-wrap:wrap;overflow:visible}
+ .nav.mobile-open button{flex:1 1 145px}
+ main{padding:16px}
+ main>section:not(.hidden){min-height:0}
+ #page-studio #taskFields{grid-template-columns:minmax(0,1fr)}
+ #page-studio #taskFields .field:has(textarea){grid-column:auto}
+ #page-chapters #chapterBody{min-height:54vh!important}
+}
+@media(max-width:520px){
+ main{padding:12px}
+ .panel{padding:16px;border-radius:14px}
+ .topline{align-items:flex-start;flex-wrap:wrap;padding-bottom:13px}
+ .topline h1{font-size:25px}
+ #page-chapters .editor-find{grid-template-columns:minmax(0,1fr)}
+ #page-chapters .editor-toolbar{align-items:flex-start}
+ #page-chapters .editor-toolbar #chapterWordCount{flex:1 1 100%}
+ #page-chapters .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #page-chapters .actions button{width:100%}
+ #page-studio #result{min-height:300px!important;max-height:55vh!important;padding:16px}
+ #page-studio .free-studio{padding:18px}
+ #page-studio .free-fields{grid-template-columns:minmax(0,1fr)}
+ #page-projects .project-overview{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
