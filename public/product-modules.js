@@ -57,8 +57,9 @@
    };
  };
  function switchPage(name){
+   if(typeof window.activateWorkspacePage==="function"){window.activateWorkspacePage(name);return;}
    document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
-   document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
+   document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="page-"+name));
    const page=$("page-"+name);if(page)page.classList.remove("hidden");
    $("nav").classList.remove("mobile-open");$("mobileNavToggle").setAttribute("aria-expanded","false");$("mobileNavToggle").textContent="☰ 打开导航菜单";
  }
