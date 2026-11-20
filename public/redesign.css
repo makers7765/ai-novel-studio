@@ -1,0 +1,121 @@
+/* AI Novel Studio — cohesive UI/UX refresh */
+:root{
+ --bg:#0a1020;--panel:#111b2d;--panel2:#17243a;--line:#293a56;--text:#eef3ff;--muted:#91a2bd;
+ --accent:#a78bfa;--accent2:#5eead4;--danger:#fb7185;--surface:#0d1729;
+ --shadow:0 18px 48px rgba(0,0,0,.22)
+}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 78% -18%,rgba(105,83,190,.22),transparent 38%),linear-gradient(180deg,#0a1020,#0b1425 65%,#0a1020);color:var(--text);line-height:1.65}
+header{height:76px;min-height:76px;padding:0 clamp(18px,3vw,42px);background:rgba(9,15,28,.92);border-bottom:1px solid rgba(145,162,189,.15);box-shadow:0 8px 30px rgba(0,0,0,.12)}
+header>.row{display:flex;align-items:center;justify-content:flex-end;gap:9px;max-width:none!important;flex:0 1 auto}
+.brand{font-size:19px;letter-spacing:-.04em;white-space:nowrap}
+.brand:before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;background:linear-gradient(135deg,#c4b5fd,#5eead4);margin-right:10px;box-shadow:0 0 18px #a78bfa88}
+.status{max-width:210px;line-height:1.4;overflow-wrap:anywhere}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1760px;margin:0 auto;min-height:calc(100vh - 76px)}
+aside{position:sticky;top:76px;align-self:start;height:calc(100vh - 76px);overflow-y:auto;background:rgba(11,19,34,.86);border-right:1px solid rgba(145,162,189,.13);padding:22px 14px}
+.nav{gap:6px}
+.nav button{display:flex;align-items:center;min-height:43px;padding:10px 13px;border:1px solid transparent;border-radius:11px;color:#a9b8cf;font-size:13px;letter-spacing:.01em;transition:background .18s,border-color .18s,color .18s}
+.nav button.active,.nav button:hover{background:linear-gradient(100deg,rgba(167,139,250,.19),rgba(94,234,212,.06));border-color:rgba(167,139,250,.25);color:#f4f1ff}
+aside>.panel{background:rgba(20,31,51,.8);border-color:rgba(145,162,189,.14);box-shadow:none}
+aside #bookTitle{font-size:13px}
+#saveStatus{line-height:1.55}
+main{width:100%;max-width:1500px;margin:0 auto;padding:clamp(20px,3vw,42px)}
+main section{min-width:0;animation:pageIn .22s ease-out}
+@keyframes pageIn{from{opacity:.65;transform:translateY(4px)}to{opacity:1;transform:none}}
+.topline{align-items:center;gap:18px;margin-bottom:24px}
+.topline h1{font-size:clamp(25px,2.6vw,34px);line-height:1.2;letter-spacing:-.045em}
+.topline .muted{margin-top:7px;font-size:13px}
+h2{font-size:17px;letter-spacing:-.02em}
+.panel{padding:22px;background:linear-gradient(150deg,rgba(19,31,51,.98),rgba(14,24,41,.98));border:1px solid rgba(145,162,189,.15);border-radius:17px;box-shadow:0 10px 30px rgba(0,0,0,.12);margin-bottom:18px}
+button{min-height:39px;padding:9px 14px;border-radius:10px;background:#1a2942;border-color:rgba(145,162,189,.2);font-size:13px;font-weight:600}
+button:hover{border-color:rgba(167,139,250,.55);background:#22334f;transform:translateY(-1px)}
+button.primary{background:linear-gradient(115deg,#a78bfa,#8b7cf6 56%,#65d9c8);color:#111426;border:0;box-shadow:0 7px 20px rgba(139,124,246,.18)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #a78bfa;outline-offset:2px}
+input,textarea,select{background:#0b1527;border:1px solid rgba(145,162,189,.2);border-radius:10px;padding:11px 13px;color:var(--text);font-size:13px}
+input::placeholder,textarea::placeholder{color:#64748d}
+.field{gap:7px;margin:13px 0}
+.field label,.field>span{font-size:12px;font-weight:650;color:#c5d1e4}
+textarea{line-height:1.75}
+.grid{gap:18px;align-items:start}
+.grid>.panel{min-width:0}
+.output{min-height:460px!important;max-height:68vh!important;padding:20px;background:#0a1425;border:1px solid rgba(145,162,189,.19);border-radius:13px;font-size:14px;line-height:1.95}
+.output:empty:before{content:attr(data-placeholder);color:#6f8099}
+.notice{border:1px solid rgba(167,139,250,.16);background:rgba(100,80,160,.12);color:#c8c2e8;border-radius:11px;padding:12px 15px}
+.item,.collection-card,.record-card{background:#111e33;border:1px solid rgba(145,162,189,.16);border-radius:13px;padding:14px}
+.item:hover,.collection-card:hover{border-color:rgba(167,139,250,.45)}
+.empty-state{padding:34px 20px;border:1px dashed rgba(145,162,189,.25);border-radius:14px;text-align:center;color:#9aabc4;background:rgba(11,21,39,.4)}
+.empty-state strong{display:block;color:#e4ebf8;font-size:14px;margin-bottom:5px}
+.collection-grid,.project-grid{gap:14px}
+.project-card,.metric-card{border-radius:15px}
+.project-card{background:linear-gradient(145deg,#17243a,#101a2d);border:1px solid rgba(145,162,189,.18);padding:18px}
+.project-card h3{font-size:16px}
+.project-card p{line-height:1.65}
+.metric-card{background:linear-gradient(145deg,#1a2943,#111d31);padding:18px}
+.metric-card strong{font-size:25px}
+.memory-layout{gap:18px}
+.record-card{padding:15px}
+.editor-toolbar{padding:9px 0;color:#aebbd0}
+.chapter{min-height:56vh!important;background:#0b1527;border-radius:12px;padding:18px;font-size:15px;line-height:2}
+.version-panel{padding-top:14px}
+.version-panel summary{font-size:13px;padding:6px 0}
+.modal-backdrop{backdrop-filter:blur(5px)}
+.modal,dialog{background:#111b2d!important;border:1px solid #34435f!important;border-radius:18px!important;box-shadow:var(--shadow)!important}
+#page-chapters .grid{grid-template-columns:minmax(250px,.72fr) minmax(0,1.28fr)}
+#page-chapters #chapterList:empty:after{content:"还没有章节。点击右上角「新建章节」，或从 AI 创作台保存生成内容。";display:block;padding:26px 18px;text-align:center;border:1px dashed rgba(145,162,189,.24);border-radius:12px;color:#91a2bd;font-size:13px}
+#page-chapters #chapterList>.muted{display:block;padding:24px 16px;border:1px dashed rgba(145,162,189,.22);border-radius:12px;text-align:center;line-height:1.8}
+#page-archive #archiveList:empty:after{content:"这里会集中保存灵感、润色稿和剧情审查记录。完成一次创作后即可归档。";display:block;padding:30px 18px;text-align:center;border:1px dashed rgba(145,162,189,.22);border-radius:12px;color:#91a2bd}
+#page-world #worldList:empty:after,#page-characters #characterList:empty:after{content:"还没有内容。点击上方按钮添加第一条资料。";display:block;padding:28px 18px;text-align:center;border:1px dashed rgba(145,162,189,.22);border-radius:12px;color:#91a2bd}
+#page-studio .free-studio{padding:26px;background:radial-gradient(ellipse at 88% 0%,rgba(110,231,210,.1),transparent 34%),linear-gradient(125deg,#252247,#142238 62%,#102b36);border-radius:19px}
+#page-studio .free-studio h2{font-size:23px}
+#page-studio .free-fields{gap:16px}
+#page-studio .free-fields textarea{min-height:145px}
+#page-studio .free-footer{margin-top:18px}
+#page-studio .free-run{min-height:46px}
+#page-studio .task-entry-panel{margin-top:20px}
+#page-studio .taskgrid{gap:10px}
+#page-studio .task{min-height:86px}
+#page-studio .studio-actions{padding:10px 0}
+.hidden{display:none!important}
+@media(max-width:1100px){
+ .layout{grid-template-columns:220px minmax(0,1fr)}
+ #page-chapters .grid{grid-template-columns:1fr}
+ .status{max-width:160px}
+}
+@media(max-width:850px){
+ header{position:sticky;top:0;height:auto;min-height:68px;padding:10px 14px;flex-wrap:wrap;gap:10px}
+ header>.row{width:100%;justify-content:flex-start;flex-wrap:wrap}
+ .layout{grid-template-columns:minmax(0,1fr);min-height:0}
+ aside{position:relative;top:auto;height:auto;overflow:visible;padding:10px 12px;border-right:0;border-bottom:1px solid rgba(145,162,189,.13)}
+ .mobile-nav-toggle{display:block;width:100%;margin-bottom:8px}
+ .nav{display:none!important}
+ .nav.mobile-open{display:flex!important;flex-direction:row;flex-wrap:wrap;overflow:visible}
+ .nav.mobile-open button{flex:1 1 145px}
+ aside>.panel{margin:9px 0!important}
+ main{padding:16px}
+ .grid,.memory-layout,#page-chapters .grid{grid-template-columns:minmax(0,1fr)!important}
+ .project-overview{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .free-fields{grid-template-columns:1fr}
+ .free-toolbar{align-items:stretch;flex-direction:column}
+ .free-toolbar .field{width:100%;max-width:none;flex:1}
+}
+@media(max-width:520px){
+ header>.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ header>.row #apiStatus{grid-column:1/-1;max-width:none}
+ header>.row button{width:100%}
+ .brand{font-size:17px}
+ main{padding:12px}
+ .panel{padding:15px;border-radius:14px}
+ .topline{align-items:flex-start;flex-wrap:wrap}
+ .topline h1{font-size:24px}
+ .project-overview{grid-template-columns:1fr}
+ .taskgrid{grid-template-columns:1fr}
+ .free-studio{padding:17px!important}
+ .free-studio-head{flex-direction:column}
+ .free-footer{align-items:stretch;flex-direction:column}
+ .free-footer button{width:100%}
+ .output{min-height:280px!important;max-height:55vh!important}
+ .actions{display:flex;flex-wrap:wrap}
+ .actions button{flex:1 1 140px}
+ .editor-find{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
