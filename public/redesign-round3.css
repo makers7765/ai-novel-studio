@@ -96,7 +96,7 @@ input:focus,textarea:focus,select:focus{border-color:#927fe3;box-shadow:0 0 0 3p
 #page-studio #taskFields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 #page-studio #taskFields .field:has(textarea){grid-column:1/-1}
 #page-studio #taskFields .field{margin:8px 0}
-#page-studio #result{min-height:470px!important;max-height:68vh!important;padding:22px 24px!important;border:1px solid #e1e6ef!important;border-radius:11px!important;background:#fff!important;color:#26344b!important;line-height:1.95!important;font-size:14px!important;box-shadow:inset 0 1px 3px rgba(24,35,56,.025)}
+html body .layout main section#page-studio div#result.output[contenteditable="true"]{min-height:470px!important;max-height:68vh!important;padding:22px 24px!important;border:1px solid #e1e6ef!important;border-radius:11px!important;background:#fff!important;color:#26344b!important;line-height:1.95!important;font-size:14px!important;box-shadow:inset 0 1px 3px rgba(24,35,56,.025)}
 #page-studio #result:focus{border-color:#a99ae9!important;box-shadow:0 0 0 3px rgba(112,87,217,.08)}
 #page-studio .studio-progress{min-height:24px;font-size:12px}
 #page-studio .version-panel{margin-top:14px;padding-top:12px;border-top:1px solid #e9ecf2}
