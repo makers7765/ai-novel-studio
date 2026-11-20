@@ -173,4 +173,24 @@ test.describe('StoryForge V3 · 独立验收', () => {
     await expect(page.locator('#worldList img')).toHaveCount(0);
     await expect(page.locator('#worldList')).toContainText('<img src=x onerror=alert(1)>');
   });
+
+  test('常见手机、平板和桌面视口逐页无横向溢出', async ({page})=>{
+    for(const width of [320,360,390,430,768,1024,1280,1440]){
+      await page.setViewportSize({width,height:900});
+      await page.goto('/');
+      for(const name of ['home','studio','book','world','characters','chapters','memory','timeline','library','archive','quality']){
+        await page.locator('[data-page="'+name+'"]').click();
+        const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
+        expect(overflow, '横向溢出，视口宽度：'+width+'，栏目：'+name).toBe(false);
+      }
+    }
+  });
+
+  test('生成结果手动编辑后刷新仍保留', async ({page})=>{
+    await page.locator('[data-page="studio"]').click();
+    await page.locator('#result').fill('这是用户手动修改后的章节内容。');
+    await page.reload();
+    await page.locator('[data-page="studio"]').click();
+    await expect(page.locator('#result')).toHaveValue('这是用户手动修改后的章节内容。');
+  });
 });
