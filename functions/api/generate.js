@@ -44,10 +44,10 @@ export async function onRequestPost({ request, env }) {
   const hasOpenAI = Boolean(env.OPENAI_API_KEY && env.OPENAI_MODEL);
   let body;
   const declaredLength = Number(request.headers.get("content-length") || 0);
-  if (declaredLength > 160000) return Response.json({ error: "请求内容过大，请缩短创作资料后重试。" }, { status: 413 });
+  if (declaredLength > 400000) return Response.json({ error: "请求内容过大，请缩短创作资料后重试。" }, { status: 413 });
   try {
     const raw = await request.text();
-    if (raw.length > 160000) return Response.json({ error: "请求内容过大，请缩短创作资料后重试。" }, { status: 413 });
+    if (raw.length > 400000) return Response.json({ error: "请求内容过大，请缩短创作资料后重试。" }, { status: 413 });
     body = JSON.parse(raw);
   } catch { return Response.json({ error: "请求格式无效，请刷新页面后重试。" }, { status: 400 }); }
   const { task, prompt, context = "", provider, apiKey, model } = body || {};
