@@ -156,6 +156,35 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     expect(shell.overflow).toBeFalsy();
   });
 
+  test('桌面端左侧导航切换页面，主内容独立滚动且不带动整页', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    const shell = await page.evaluate(() => ({
+      bodyHeight: document.body.clientHeight,
+      bodyScroll: getComputedStyle(document.body).overflowY,
+      mainHeight: document.querySelector('main').clientHeight,
+      mainOverflow: getComputedStyle(document.querySelector('main')).overflowY,
+      documentScrollHeight: document.documentElement.scrollHeight
+    }));
+    expect(shell.bodyScroll).toBe('hidden');
+    expect(shell.mainOverflow).toBe('auto');
+    expect(shell.mainHeight).toBeGreaterThan(500);
+    expect(shell.documentScrollHeight).toBeLessThanOrEqual(901);
+
+    const main = page.locator('main');
+    await main.evaluate(el => el.scrollTo(0, el.scrollHeight));
+    await page.locator('.nav [data-page="project"]').click();
+    await expect(page.locator('#page-project')).toBeVisible();
+    await expect(page.locator('#page-project h1')).toHaveText('小说资料');
+    await expect.poll(() => main.evaluate(el => el.scrollTop)).toBe(0);
+    await expect(page.locator('#page-studio')).toBeHidden();
+
+    await page.locator('.nav [data-page="chapters"]').click();
+    await expect(page.locator('#page-chapters h1')).toBeVisible();
+    await expect(page.locator('#chapterBody')).toBeVisible();
+    await expect.poll(() => main.evaluate(el => el.scrollTop)).toBe(0);
+  });
+
   test('核心栏目切换后均显示真实标题和内容容器', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
