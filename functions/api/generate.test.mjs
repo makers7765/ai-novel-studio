@@ -27,7 +27,7 @@ test("validates prompt and context lengths before contacting providers", async (
   assert.equal(r.status, 400);
   r = await onRequestPost({ request: request({ ...base, context: "x".repeat(60001) }), env: {} });
   assert.equal(r.status, 400);
-  r = await onRequestPost({ request: request(JSON.stringify({ ...base, prompt: "x".repeat(160001) }), true), env: {} });
+  r = await onRequestPost({ request: request(JSON.stringify({ ...base, prompt: "x".repeat(400001) }), true), env: {} });
   assert.equal(r.status, 413);
 });
 
