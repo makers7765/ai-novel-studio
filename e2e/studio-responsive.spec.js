@@ -134,6 +134,8 @@ test.describe('StoryForge V3 · 独立验收', () => {
     expect(requests[1].task).toBe('续写');
     expect(requests[0].task).toBe('自由创作');
     expect(requests[0].provider).toBe('gemini');
+    const savedData=await page.evaluate(()=>localStorage.getItem('storyforge.workspace.v1')||'');
+    expect(savedData).not.toContain('test-key-123456789');
     expect(requests[0].apiKey).toBe('test-key-123456789');
     await expect(page.locator('#versionList .version-item')).toHaveCount(2);
     await page.locator('#saveResultBtn').click();
