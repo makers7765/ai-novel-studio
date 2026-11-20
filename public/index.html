@@ -515,6 +515,15 @@ function activateWorkspacePage(page,options={}) {
  if(options.scroll!==false)window.scrollTo({top:0,behavior:"instant"});
  return true;
 }
+window.activateWorkspacePage=activateWorkspacePage;
+// Re-apply after every other click listener has completed. Project modules also
+// change the active project and must not leave the content area hidden.
+document.addEventListener("click",event=>{
+ const button=event.target.closest(".nav button[data-page]");
+ if(!button)return;
+ const page=button.dataset.page;
+ setTimeout(()=>activateWorkspacePage(page),0);
+},true);
 document.querySelectorAll(".nav button[data-page]").forEach(button=>button.addEventListener("click",()=>activateWorkspacePage(button.dataset.page)));
 $("mobileNavToggle").onclick=()=>{const open=$("nav").classList.toggle("mobile-open");$("mobileNavToggle").setAttribute("aria-expanded",String(open));$("mobileNavToggle").textContent=open?"✕ 收起导航菜单":"☰ 打开导航菜单";};
 $("toggleContextPreview").onclick=()=>{const box=$("contextControls");box.classList.toggle("hidden");$("toggleContextPreview").textContent=box.classList.contains("hidden")?"展开预览":"收起预览";refreshContextPreview();};
