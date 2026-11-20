@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid var(--app-mint);outline-offset:2px}
  #freeStudio .free-footer{grid-template-columns:minmax(0,1fr)}
  #freeStudio #freeSelectionStatus,#freeStudio #useSelectedText,#freeStudio #runFreeWrite{grid-column:1;grid-row:auto}
  #freeStudio #runFreeWrite{width:100%}
- .professional-content .taskgrid{grid-template-columns:1fr 1fr}
+  .professional-content .taskgrid{grid-template-columns:minmax(0,1fr)}
  .professional-content #taskFields{grid-template-columns:minmax(0,1fr)}
  .professional-content #taskFields .field:has(textarea){grid-column:auto}
  #page-chapters .editor-find{grid-template-columns:minmax(0,1fr)}
