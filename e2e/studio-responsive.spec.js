@@ -9,9 +9,9 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
       const sidebar = getComputedStyle(document.querySelector('aside'));
       const result = getComputedStyle(document.querySelector('#result'));
       const free = document.querySelector('#freeStudio').getBoundingClientRect();
-      const work = document.querySelector('#page-studio > .grid').getBoundingClientRect();
-      const input = document.querySelector('#page-studio > .grid > .panel:first-child').getBoundingClientRect();
-      const output = document.querySelector('#page-studio > .grid > .panel:last-child').getBoundingClientRect();
+      const work = document.querySelector('#taskFields').closest('.grid').getBoundingClientRect();
+      const input = document.querySelector('#taskFields').closest('.panel').getBoundingClientRect();
+      const output = document.querySelector('#result').closest('.panel').getBoundingClientRect();
       return {
         bodyBackground: css.backgroundColor,
         sidebarBackground: sidebar.backgroundColor,
