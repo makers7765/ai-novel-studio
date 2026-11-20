@@ -264,5 +264,10 @@ test.describe('StoryForge V3 · 独立验收', () => {
     await page.locator('a[href="/terms.html"]').click();
     await expect(page).toHaveTitle(/使用条款/);
     await expect(page.locator('main')).toContainText('AI 内容与知识产权');
+    await page.setViewportSize({width:320,height:720});
+    await page.goto('/privacy.html');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.goto('/terms.html');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   });
 });
