@@ -20,7 +20,7 @@ jobs:
       - name: Install Playwright
         run: npm install --no-save @playwright/test
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
       - name: Check JavaScript syntax
         run: node --check public/app.js && node --check functions/api/generate.js && node --experimental-default-type=module --test functions/api/generate.test.mjs
       - name: Start local static preview
