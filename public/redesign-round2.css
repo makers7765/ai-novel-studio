@@ -7,7 +7,7 @@ body{background:radial-gradient(ellipse at 70% -10%,rgba(123,91,214,.19),transpa
 header{display:grid;grid-template-columns:minmax(210px,1fr) auto;gap:18px;height:72px;min-height:72px;padding:0 clamp(16px,2.5vw,34px);background:rgba(8,15,29,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(160,180,215,.15)}
 header .brand{align-self:center}
 header>.row{display:flex;align-items:center;justify-content:flex-end;gap:8px;max-width:none!important;width:auto;min-width:0}
-header .status{display:inline-flex;align-items:center;max-width:240px;white-space:normal;overflow-wrap:normal;word-break:normal;font-size:12px;line-height:1.35;padding:7px 10px;border:1px solid rgba(110,231,210,.18);background:rgba(110,231,210,.06);border-radius:10px}
+header .status{display:inline-flex;align-items:center;min-width:112px;max-width:240px;flex:0 0 auto;white-space:normal;overflow-wrap:normal;word-break:normal;font-size:12px;line-height:1.35;padding:7px 10px;border:1px solid rgba(110,231,210,.18);background:rgba(110,231,210,.06);border-radius:10px}
 header button{white-space:nowrap;min-height:38px}
 .layout{grid-template-columns:238px minmax(0,1fr);max-width:1880px;min-height:calc(100vh - 72px)}
 aside{top:72px;height:calc(100vh - 72px);padding:20px 12px;background:rgba(9,17,31,.92);border-right:1px solid rgba(160,180,215,.13)}
