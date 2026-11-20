@@ -492,6 +492,8 @@ $("saveChapter").textContent="确认保存到对应资料库";renderTaskFields(c
   const free = document.getElementById("freeStudio");
   const taskFields = document.getElementById("taskFields");
   const resultEditor = document.getElementById("result");
+  document.documentElement.dataset.uiOverhaulLoaded = "yes";
+  document.documentElement.dataset.uiOverhaulFound = [!!page,!!free,!!taskFields,!!resultEditor].join(",");
   if (!page || !free || !taskFields || !resultEditor || page.dataset.layoutRebuilt === "true") return;
   const formPanel = taskFields.closest(".panel");
   const outputPanel = resultEditor.closest(".panel");
