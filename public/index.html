@@ -498,7 +498,11 @@ function activateWorkspacePage(page,options={}) {
   if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");
  });
  document.querySelectorAll("main section[id^='page-']").forEach(section=>{
-  section.classList.toggle("hidden",section!==target);
+  const visible=section===target;
+  section.classList.toggle("hidden",!visible);
+  // Inline display is authoritative: it prevents older page handlers or
+  // stale hidden classes from blanking the entire work area.
+  section.style.setProperty("display",visible?"block":"none","important");
  });
  if(page==="world")renderWorld();
  if(page==="characters")renderCharacters();
@@ -525,6 +529,10 @@ document.addEventListener("click",event=>{
  setTimeout(()=>activateWorkspacePage(page),0);
 },true);
 document.querySelectorAll(".nav button[data-page]").forEach(button=>button.addEventListener("click",()=>activateWorkspacePage(button.dataset.page)));
+document.addEventListener("DOMContentLoaded",()=>{
+ const initial=document.querySelector(".nav button.active[data-page]")?.dataset.page||"studio";
+ activateWorkspacePage(initial,{scroll:false});
+});
 $("mobileNavToggle").onclick=()=>{const open=$("nav").classList.toggle("mobile-open");$("mobileNavToggle").setAttribute("aria-expanded",String(open));$("mobileNavToggle").textContent=open?"✕ 收起导航菜单":"☰ 打开导航菜单";};
 $("toggleContextPreview").onclick=()=>{const box=$("contextControls");box.classList.toggle("hidden");$("toggleContextPreview").textContent=box.classList.contains("hidden")?"展开预览":"收起预览";refreshContextPreview();};
 document.querySelectorAll("[data-context]").forEach(x=>x.addEventListener("change",refreshContextPreview));
