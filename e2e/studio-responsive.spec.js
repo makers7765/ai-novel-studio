@@ -110,6 +110,7 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
   test('新版创作台是左右双栏写作桌，专业任务默认收纳且可展开', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
+    console.log('OVERHAUL DEBUG', await page.locator('html').getAttribute('data-ui-overhaul-loaded'), await page.locator('html').getAttribute('data-ui-overhaul-found'));
     await expect(page.locator('.studio-workspace')).toBeVisible();
     await expect(page.locator('.studio-controls #freeStudio')).toBeVisible();
     await expect(page.locator('.studio-result #result')).toBeVisible();
