@@ -127,6 +127,35 @@ test.describe('AI 小说工作室 · 安全 UI 检查', () => {
     expect(editor.columns.split(' ').length).toBe(2);
   });
 
+  test('统一工作区：导航切换不留白，所有表单文字有足够对比度', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    for (const key of ['studio','world','characters','chapters','memory','timeline','library','quality']) {
+      await page.locator('.nav [data-page="'+key+'"]').click();
+      const section = page.locator('#page-'+key);
+      await expect(section).toBeVisible();
+      await expect(section.locator('h1').first()).toBeVisible();
+      const display = await section.evaluate(el => getComputedStyle(el).display);
+      expect(display).not.toBe('none');
+    }
+    await page.locator('.nav [data-page="studio"]').click();
+    const contrast = await page.locator('#page-studio select').first().evaluate(el => ({
+      background: getComputedStyle(el).backgroundColor,
+      color: getComputedStyle(el).color
+    }));
+    expect(contrast.background).toBe('rgb(255, 255, 255)');
+    expect(contrast.color).toBe('rgb(36, 50, 74)');
+    const shell = await page.evaluate(() => ({
+      columns: getComputedStyle(document.querySelector('.layout')).gridTemplateColumns,
+      sidebar: document.querySelector('aside').getBoundingClientRect().width,
+      main: document.querySelector('main').getBoundingClientRect().width,
+      overflow: document.documentElement.scrollWidth > innerWidth
+    }));
+    expect(shell.sidebar).toBeGreaterThan(200);
+    expect(shell.main).toBeGreaterThan(900);
+    expect(shell.overflow).toBeFalsy();
+  });
+
   test('核心栏目切换后均显示真实标题和内容容器', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
