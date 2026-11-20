@@ -2,698 +2,110 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Novel Studio · 智能小说创作平台</title>
-<style>
-:root{--bg:#10131b;--panel:#191e29;--panel2:#202737;--line:#30394b;--text:#edf1f8;--muted:#9aa6ba;--accent:#9b8cff;--accent2:#6fcbba;--danger:#ff8f9b}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
-button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 13px;border-radius:10px}button.primary{background:var(--accent);color:#151323;border:0;font-weight:700}button:disabled{opacity:.5;cursor:wait}
-header{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--line);background:#141923;position:sticky;top:0;z-index:5}
-.brand{font-weight:800;font-size:18px}.brand span{color:var(--accent)}.status{font-size:12px;color:var(--muted)}
-.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 68px)}aside{border-right:1px solid var(--line);padding:18px 12px;background:#141923}
-.nav{display:flex;flex-direction:column;gap:6px}.nav button{text-align:left;background:transparent;border-color:transparent;color:var(--muted)}.nav button.active,.nav button:hover{background:var(--panel2);color:var(--text);border-color:var(--line)}
-main{padding:26px;max-width:none;width:100%;margin:0}.topline{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}h1{font-size:25px;margin:0 0 4px}h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}.field label{font-size:13px;color:var(--muted)}input,textarea,select{width:100%;background:#111722;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;outline:none}textarea{min-height:120px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--accent)}.picker{position:relative}.picker-trigger{width:100%;text-align:left;min-height:44px;background:#111722;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px}.picker-trigger:hover,.picker.open .picker-trigger{border-color:var(--accent)}.picker-value{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}.picker-placeholder{color:#77839a}.picker-popover{position:absolute;left:0;right:0;top:calc(100% + 7px);z-index:30;background:#171d29;border:1px solid #46506a;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.45);padding:12px;display:none}.picker.open .picker-popover{display:block}.picker-search{margin-bottom:9px}.picker-options{max-height:220px;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.picker-option{display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid transparent;border-radius:8px;background:#111722;color:var(--text);cursor:pointer;font-size:13px}.picker-option:hover{border-color:var(--line);background:#202737}.picker-option input{width:auto;flex:0 0 auto;padding:0}.picker-custom{display:flex;gap:7px;margin-top:9px}.picker-custom input{min-width:0}.picker-actions{display:flex;justify-content:space-between;gap:8px;margin-top:10px}.picker-actions button{flex:1}.picker-single-note{font-size:12px;color:var(--muted);margin-top:7px}.picker-textarea{min-height:160px!important;resize:vertical}.picker-popover textarea,.picker-popover input{background:#111722}.picker.required .picker-trigger{border-color:#4b425e}@media(max-width:650px){.picker-options{grid-template-columns:1fr}}
-.studio-reference{padding:13px 16px}.studio-reference h2{font-size:15px}.studio-reference .actions button{font-size:12px;padding:7px 10px}.workflow-wrap{background:linear-gradient(135deg,#1b2231,#191e29);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin:0 0 16px}.workflow-heading{display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:13px}.workflow-steps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px}.workflow-steps button{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:9px 10px;background:#111722;border-color:var(--line);font-size:12px}.workflow-steps button b{font-size:11px;color:var(--accent2)}.workflow-steps button span{white-space:nowrap}.workflow-steps button:hover,.workflow-steps button.active{border-color:var(--accent);background:#29253d}.workflow-steps button.active b{color:var(--accent)}@media(max-width:1050px){.workflow-steps{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:520px){.workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.workflow-heading{align-items:flex-start;flex-direction:column;gap:2px}}.actions{display:flex;flex-wrap:wrap;gap:8px}.taskgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.task{padding:13px;text-align:left;min-height:72px}.task strong{display:block}.task small{color:var(--muted)}.output{white-space:pre-wrap;min-height:620px;max-height:76vh;overflow:auto;background:#111722;border:1px solid var(--line);border-radius:12px;padding:16px;line-height:1.85}
-.item{padding:12px;border:1px solid var(--line);border-radius:10px;margin:8px 0;background:#151b26}.item strong{display:block}.character-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.character-form .field{margin:4px 0}.character-form .wide{grid-column:1/-1}.character-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}@media(max-width:650px){.character-form{grid-template-columns:1fr}.character-form .wide{grid-column:auto}}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.hidden{display:none!important}.notice{padding:10px 12px;border-radius:10px;background:#28253a;color:#d8d1ff;font-size:13px}.error{color:var(--danger)}.chapter{min-height:300px}.collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}.collection-card{cursor:pointer;transition:.15s}.collection-card:hover{border-color:var(--accent);transform:translateY(-1px)}.collection-card .card-title{font-weight:700;margin-bottom:5px}.collection-card .card-preview{color:var(--muted);font-size:12px;white-space:pre-wrap;max-height:70px;overflow:hidden}.card-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}.modal-backdrop{position:fixed;inset:0;background:rgba(4,7,12,.72);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#171d29;border:1px solid #46506a;border-radius:14px;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
-@media(max-width:1100px){.grid{grid-template-columns:1fr}}
-@media(max-width:850px){.layout{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line);padding:8px}.nav{flex-direction:row;overflow:auto}.nav button{white-space:nowrap}main{padding:16px}.taskgrid{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}header{padding:0 14px}}
-
-/* AI 创作台表单优化：核心输入常驻，选项弹出，层次更清晰 */
-.task-core-field{margin:14px 0 16px}.task-core-field label{font-size:13px;color:#d5dced;font-weight:650}.task-core-field textarea{min-height:132px;line-height:1.7}.task-core-field:first-child textarea{min-height:150px}.task-core-field input{min-height:44px}.task-field-optional{color:var(--muted);font-weight:400}.task-fields-heading{font-size:13px;color:var(--muted);font-weight:650;margin:16px 0 6px;padding-top:12px;border-top:1px solid var(--line)}.custom-prompt-toggle{background:transparent;border:1px dashed #59627a;color:#c9c2ff;padding:8px 11px}.custom-prompt-wrap{margin-top:8px}.custom-prompt-wrap textarea{min-height:100px}.studio-progress{min-height:24px;margin:12px 0 0;font-size:13px}.studio-progress[data-state="error"]{color:var(--danger)}.studio-progress[data-state="success"]{color:var(--accent2)}.studio-progress[data-state="running"]{color:#d7cfff}
-@media(min-width:1101px){.grid:has(#taskFields){grid-template-columns:minmax(340px,.92fr) minmax(0,1.08fr)}}
-
-/* 窄窗口适配：避免横向溢出，保证导航、弹层和操作按钮可用 */
-html,body{max-width:100%;overflow-x:hidden}
-body{min-width:0}
-img,video,canvas,svg{max-width:100%}
-input,textarea,select,button{max-width:100%;min-width:0}
-main,.layout,aside,.panel,.grid,.row,.field,.taskgrid,.workflow-wrap,.studio-reference{min-width:0;max-width:100%}
-.workflow-steps button,.task,.nav button{min-width:0;max-width:100%}
-.workflow-steps button span{white-space:normal;overflow-wrap:anywhere}
-.output,.item,.collection-card,.notice,.muted,.panel{overflow-wrap:anywhere;word-break:break-word}
-.picker-popover{max-width:calc(100vw - 24px);max-height:min(72dvh,560px);overflow-y:auto;overscroll-behavior:contain}
-.picker-option,.picker-option span{min-width:0;overflow-wrap:anywhere;white-space:normal}
-.picker-actions{position:sticky;bottom:-12px;z-index:2;background:#171d29;padding:10px 0 2px}
-.modal-backdrop{padding:clamp(8px,2vw,20px);overflow-y:auto}
-.modal{width:min(760px,calc(100vw - 16px));max-width:100%;max-height:calc(100dvh - 16px);overflow:auto;overscroll-behavior:contain}
-.modal button{white-space:normal;overflow-wrap:anywhere}
-.actions{min-width:0;flex-wrap:wrap}
-.actions button{flex:0 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere}
-#generateBtn,#clearPrompt{flex:1 1 140px}
-@media(max-width:850px){
-  header{height:auto;min-height:60px;padding:10px 12px;gap:8px;flex-wrap:wrap}
-  header>.row{max-width:100%!important;width:100%;flex:1 1 100%;flex-wrap:wrap}
-  .layout{grid-template-columns:minmax(0,1fr);min-height:0}
-  aside{width:100%;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
-  .nav{width:100%;display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding-bottom:5px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
-  .nav button{flex:0 0 auto;white-space:nowrap}
-  aside>.panel{margin-top:8px!important}
-  main{width:100%;padding:clamp(10px,3vw,16px)}
-  .grid{grid-template-columns:minmax(0,1fr)!important}
-  .taskgrid{grid-template-columns:minmax(0,1fr)}
-  .workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .character-form{grid-template-columns:minmax(0,1fr)}
-  .character-form .wide{grid-column:auto}
-  .row{flex-wrap:wrap}
-  .row>*{flex:1 1 100%;min-width:0}
-  .topline{align-items:flex-start;flex-wrap:wrap}
-  .output{min-height:260px!important;max-height:55dvh!important}
-  .studio-reference .row>*{flex:1 1 100%}
-}
-@media(max-width:520px){
-  .brand{font-size:16px}
-  .status{flex:1 1 100%;white-space:normal}
-  h1{font-size:21px}
-  .panel{padding:13px;border-radius:13px}
-  .workflow-steps{grid-template-columns:minmax(0,1fr)}
-  .workflow-heading{align-items:flex-start;flex-direction:column;gap:3px}
-  .picker-options{grid-template-columns:minmax(0,1fr)}
-  .picker.open .picker-popover{position:fixed;left:12px;right:12px;top:50%;bottom:auto;transform:translateY(-50%);width:auto;max-width:520px;max-height:78dvh;margin:0 auto;overflow-y:auto;z-index:120}
-  .picker-actions{position:sticky;bottom:-12px}
-  .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
-  .actions button{width:100%;min-height:42px}
-  #generateBtn,#clearPrompt{grid-column:span 1;min-width:0}
-  .modal-backdrop{align-items:flex-start}
-  .modal{padding:13px}
-}
-@media(max-width:360px){
-  .actions{grid-template-columns:minmax(0,1fr)}
-  #generateBtn,#clearPrompt{grid-column:auto}
-  .workflow-steps{grid-template-columns:minmax(0,1fr)}
-}
-
-
-/* 本轮升级：窄屏导航、上下文选择、版本与备份 */
-.mobile-nav-toggle{display:none;width:100%;text-align:left;margin-bottom:8px}
-.task-entry-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.task-entry-heading h2{margin:0}.task-step{display:block;color:var(--accent2)!important;font-size:11px;margin-bottom:3px}.task{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px}.task strong{font-size:14px}.task small:not(.task-step){font-size:12px}
-.context-controls{margin-top:12px}.context-controls label{display:inline-flex;align-items:center;gap:6px;margin:0 14px 8px 0;font-size:13px}.context-controls input{width:auto}.context-preview{white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto;background:#111722;border:1px solid var(--line);border-radius:10px;padding:12px;font:12px/1.6 inherit;color:var(--muted)}
-.version-panel{border-top:1px solid var(--line);padding-top:10px;margin-top:12px}.version-panel summary{cursor:pointer;color:#d8d1ff;font-weight:650}.version-list{display:grid;gap:8px;margin-top:10px}.version-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px;background:#111722;border:1px solid var(--line);border-radius:9px}.version-entry span{font-size:12px;color:var(--muted)}.studio-actions{position:relative}.save-indicator{font-size:12px;color:var(--accent2)}
-@media(max-width:850px){.mobile-nav-toggle{display:block}.nav{display:none!important}.nav.mobile-open{display:flex!important;flex-wrap:wrap;overflow:visible;padding:4px 0}.nav.mobile-open button{flex:1 1 130px;white-space:normal}.taskgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.studio-actions{position:sticky;bottom:8px;z-index:20;background:rgba(25,30,41,.96);border:1px solid var(--line);padding:9px;border-radius:12px;box-shadow:0 6px 24px #0008}.context-controls label{display:flex;margin-right:0}.task-entry-heading{align-items:flex-start;flex-direction:column}}
-@media(max-width:520px){.taskgrid{grid-template-columns:minmax(0,1fr)}.studio-actions{grid-template-columns:1fr 1fr}.version-entry{align-items:flex-start;flex-direction:column}.context-preview{max-height:35dvh}}
-</style><link rel="stylesheet" href="/experience.css"><style id="unified-visual-v3">
-/* AI Novel Studio — unified visual system v3 */
-:root{
-  --bg:#f3f5fa;--panel:#ffffff;--panel2:#f7f8fc;--line:#e3e7f0;
-  --text:#182338;--muted:#68758c;--accent:#7057d9;--accent2:#168f83;--danger:#c84d62;
-  --shadow:0 8px 28px rgba(28,42,68,.055);
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;max-width:100%;background:var(--bg);color:var(--text);font:14px/1.6 Inter,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;overflow-x:hidden}
-body{background:linear-gradient(180deg,#f8f9fc 0,#f2f4f9 100%)}
-button,input,textarea,select{font:inherit}
-button{min-height:38px;padding:8px 13px;border:1px solid #dce2ed;border-radius:9px;background:#fff;color:#27344b;font-weight:600;cursor:pointer;transition:background .16s,border-color .16s,box-shadow .16s,transform .16s}
-button:hover{background:#f6f4ff;border-color:#b9adee;transform:translateY(-1px)}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(112,87,217,.18);outline-offset:1px}
-button.primary{background:#7057d9;color:#fff;border-color:#7057d9;box-shadow:0 4px 12px rgba(112,87,217,.18)}
-button.primary:hover{background:#6148c8;border-color:#6148c8}
-header{height:68px;min-height:68px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 28px;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-bottom:1px solid #e7eaf1;box-shadow:0 2px 10px rgba(24,35,56,.025)}
-.brand{font-size:18px;font-weight:800;letter-spacing:-.035em;color:#182338;white-space:nowrap}
-.brand:before{width:8px;height:8px;margin-right:10px;border-radius:3px;background:linear-gradient(135deg,#8065e8,#39b9a6);box-shadow:none}
-.brand span{color:#7057d9}
-header>.row{display:flex;align-items:center;justify-content:flex-end;gap:8px;max-width:none!important;width:auto;min-width:0}
-header .status{display:inline-flex;align-items:center;min-width:145px;max-width:240px;flex:0 1 220px;padding:7px 10px;border:1px solid #dcefe9;border-radius:9px;background:#f1faf7;color:#287c6f;font-size:12px;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
-header button{white-space:nowrap}
-.layout{display:grid;grid-template-columns:236px minmax(0,1fr);max-width:1920px;min-height:calc(100vh - 68px);margin:0 auto}
-aside{position:sticky;top:68px;align-self:start;height:calc(100vh - 68px);overflow-y:auto;padding:22px 13px;background:#172238;border-right:1px solid #27344d;color:#d8e0ef}
-aside .panel{background:#202e47!important;border:1px solid #31415d!important;box-shadow:none!important;color:#e8eef9}
-aside .muted,#saveStatus{color:#aab8d0!important}
-aside input{background:#111c30!important;border-color:#34445f!important;color:#fff!important}
-.nav{display:flex;flex-direction:column;gap:5px}
-.nav button{display:flex;align-items:center;min-height:43px;width:100%;padding:10px 12px;text-align:left;border:1px solid transparent;border-radius:9px;background:transparent;color:#b9c6da;font-size:13px;font-weight:550}
-.nav button:hover{transform:none;background:#22324d;border-color:#354762;color:#fff}
-.nav button.active{background:linear-gradient(100deg,rgba(137,111,231,.26),rgba(74,181,164,.09));border-color:rgba(174,155,255,.25);box-shadow:inset 3px 0 #a993ff;color:#fff}
-.mobile-nav-toggle{display:none}
-main{width:100%;max-width:1560px;min-width:0;margin:0 auto;padding:30px clamp(20px,3vw,44px) 56px}
-main>section:not(.hidden){display:block;min-height:0}
-.topline{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 24px;padding:0 0 18px;border-bottom:1px solid #e3e7ef}
-.topline h1{margin:0 0 4px;color:#17243a;font-size:27px;font-weight:780;letter-spacing:-.045em;line-height:1.25}
-.topline .muted{font-size:13px;color:#7a879c}
-h2{margin:0 0 12px;color:#24324a;font-size:16px;font-weight:730;letter-spacing:-.02em}
-h3{color:#26344b}
-.muted{color:#758198}
-.panel{min-width:0;margin:0 0 16px;padding:20px 22px;border:1px solid #e5e9f1;border-radius:14px;background:#fff;box-shadow:var(--shadow)}
-.field{display:flex;flex-direction:column;gap:7px;margin:12px 0}
-.field label,.field>span{color:#48566d;font-size:12px;font-weight:680}
-input,textarea,select{width:100%;min-width:0;padding:11px 12px;border:1px solid #dfe4ed;border-radius:9px;background:#fff;color:#202d43;outline:none}
-textarea{line-height:1.75;resize:vertical}
-input::placeholder,textarea::placeholder{color:#a0aabd}
-input:focus,textarea:focus,select:focus{border-color:#927fe3;box-shadow:0 0 0 3px rgba(112,87,217,.1)}
-.grid{display:grid;grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr);gap:16px;align-items:start}
-.row{display:flex;align-items:center;gap:10px;min-width:0}
-.row>*{min-width:0}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
-.notice{padding:12px 15px;border:1px solid #e6e0ff;border-radius:10px;background:#f7f5ff;color:#64539b;font-size:12px}
-.hidden{display:none!important}
-
-/* AI writing workspace: input first, editable output second */
-#page-studio>.topline{margin-bottom:18px}
-#freeStudio{padding:24px 26px;margin-bottom:16px;border:1px solid #e4defc;border-radius:16px;background:linear-gradient(115deg,#fff 0%,#faf9ff 68%,#f2fbfa 100%);box-shadow:0 8px 26px rgba(65,53,119,.06)}
-.free-studio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
-.free-studio-head h2{margin:4px 0 5px;font-size:21px;color:#202a40}
-.free-studio-head p{max-width:680px;margin:0;color:#78849a;font-size:13px}
-.eyebrow{color:#8069d7;font-size:10px;font-weight:800;letter-spacing:.16em}
-.live-pill{flex:0 0 auto;padding:6px 11px;border:1px solid #cfece5;border-radius:20px;background:#f0faf7;color:#278477;font-size:11px}
-.live-pill i{display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:#31aa94}
-.free-toolbar{display:flex;align-items:end;gap:18px;margin:18px 0 12px}
-.free-toolbar .field{flex:0 0 230px;max-width:230px;margin:0}
-.free-mode-hint{padding-bottom:10px;color:#78849a;font-size:12px}
-.free-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.free-fields .field{margin:0}
-.free-fields .field span{color:#48566d;font-size:12px;font-weight:680}
-.free-fields .field em{margin-left:6px;color:#8c96a8;font-size:11px;font-style:normal;font-weight:400}
-.free-fields textarea{min-height:124px;background:#fff}
-.free-footer{display:flex;align-items:center;gap:12px;margin-top:16px}
-.free-footer .muted{flex:1;font-size:11px}
-.free-run{min-width:170px;min-height:44px}
-.studio-reference,.context-panel,.task-entry-panel{padding:15px 18px;border-radius:12px}
-.studio-reference .row,.context-panel .row{justify-content:space-between}
-.studio-reference .actions{margin-top:10px!important}
-.context-controls{padding-top:14px}
-.context-controls label{display:inline-flex;align-items:center;gap:6px;margin:0 14px 9px 0;color:#526078;font-size:12px}
-.context-controls input,.quality-checks input{width:auto}
-.context-preview{max-height:240px;padding:12px;border:1px solid #e4e8f0;border-radius:9px;background:#f7f8fb;color:#65728a;white-space:pre-wrap;overflow:auto}
-.advanced-task-list>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none}
-.advanced-task-list>summary::-webkit-details-marker{display:none}
-.advanced-task-list>summary:after{content:"展开 ＋";margin-left:auto;color:#7057d9;font-size:12px;font-weight:650}
-.advanced-task-list[open]>summary:after{content:"收起 −"}
-.advanced-task-list>summary h2{margin:0}
-.taskgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-.task{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:82px;padding:12px;border:1px solid #e5e8f0;border-radius:11px;background:#fafbfe;text-align:left}
-.task:hover,.task[aria-pressed="true"]{border-color:#b7a9ef;background:#f7f4ff;box-shadow:0 3px 12px rgba(112,87,217,.07);transform:translateY(-1px)}
-.task-step{color:#8975d9!important;font-size:10px;letter-spacing:.04em}
-.task strong{color:#2d3a52;font-size:13px}
-.task small:not(.task-step){color:#8490a4;font-size:11px}
-#page-studio>.grid{grid-template-columns:minmax(320px,.78fr) minmax(0,1.22fr);gap:16px;align-items:stretch}
-#page-studio>.grid>.panel{height:100%;padding:20px 22px}
-#page-studio>.grid>.panel>h2{margin-bottom:13px}
-#page-studio #taskFields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-#page-studio #taskFields .field:has(textarea){grid-column:1/-1}
-#page-studio #taskFields .field{margin:8px 0}
-html body .layout main section#page-studio div#result.output[contenteditable="true"]{min-height:470px!important;max-height:68vh!important;padding:22px 24px!important;border:1px solid #e1e6ef!important;border-radius:11px!important;background:#fff!important;color:#26344b!important;line-height:1.95!important;font-size:14px!important;box-shadow:inset 0 1px 3px rgba(24,35,56,.025)}
-#page-studio #result:focus{border-color:#a99ae9!important;box-shadow:0 0 0 3px rgba(112,87,217,.08)}
-#page-studio .studio-progress{min-height:24px;font-size:12px}
-#page-studio .version-panel{margin-top:14px;padding-top:12px;border-top:1px solid #e9ecf2}
-#page-studio .version-panel summary{color:#6251a5;font-size:12px;font-weight:680;cursor:pointer}
-#page-studio .version-entry{border-color:#e6e9f0;background:#f8f9fc}
-#page-studio .grid>.panel>.row{justify-content:space-between}
-#page-studio .grid>.panel>.row h2{margin:0}
-
-/* Chapter editor: compact chapter rail + generous manuscript surface */
-#page-chapters>.grid{grid-template-columns:minmax(220px,.30fr) minmax(0,1fr);gap:16px;align-items:stretch}
-#page-chapters>.grid>.panel{min-width:0}
-#page-chapters #chapterList{display:grid;gap:8px;align-content:start}
-#page-chapters #chapterList .item{margin:0;padding:12px;border:1px solid #e6eaf1;border-radius:10px;background:#fafbfe;color:#34425a;cursor:pointer}
-#page-chapters #chapterList .item:hover{border-color:#b7a9ef;background:#f7f4ff}
-#page-chapters #chapterTitle{height:48px;margin-bottom:8px;border:0;border-bottom:1px solid #e8ebf2;border-radius:0;background:#fff;color:#1f2d43;font-size:20px;font-weight:750}
-#page-chapters .editor-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 12px;color:#758198;font-size:11px}
-#page-chapters .editor-toolbar #chapterWordCount{margin-right:auto;color:#7057d9;font-size:12px;font-weight:750}
-#page-chapters .editor-toolbar button{min-height:32px;padding:6px 9px;font-size:11px}
-#page-chapters .editor-find{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;margin:8px 0 12px}
-#page-chapters .editor-find input{padding:8px 10px;font-size:12px}
-#page-chapters .editor-find button{font-size:11px}
-#page-chapters #chapterBody{display:block;width:100%;min-height:66vh!important;max-height:none;padding:26px 30px;border:1px solid #e6e9f0;border-radius:10px;background:#fff;color:#26344b;font-family:Georgia,"Songti SC","Noto Serif CJK SC",serif;font-size:15px;line-height:2.05;letter-spacing:.015em;box-shadow:inset 0 1px 3px rgba(24,35,56,.025)}
-#page-chapters #chapterAppend{min-height:115px!important;margin-top:12px;padding:14px;background:#fafbfe}
-#page-chapters .actions{margin-top:12px}
-#page-chapters .actions button{font-size:12px}
-#page-chapters>.grid>.panel:first-child{background:#fbfcfe}
-#page-chapters>.grid>.panel:first-child h2{padding-bottom:12px;border-bottom:1px solid #e9edf3}
-
-/* Project dashboard, lists and information pages */
-.project-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
-.metric-card{padding:17px;border:1px solid #e5e9f1;border-radius:12px;background:#fff;box-shadow:var(--shadow)}
-.metric-card strong{color:#7057d9;font-size:24px}
-.metric-card span{color:#7a879b;font-size:11px}
-.project-grid,.collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px}
-.project-card,.collection-card,.item{border:1px solid #e5e9f1;border-radius:12px;background:#fff;box-shadow:var(--shadow)}
-.project-card{padding:18px}
-.project-card h3{margin:0 0 6px;font-size:15px}
-.project-card p{color:#7a879b}
-.project-card.active-project{border-color:#9d8be9;box-shadow:0 0 0 2px rgba(112,87,217,.08)}
-.memory-layout{display:grid;grid-template-columns:minmax(260px,.78fr) minmax(0,1.22fr);gap:16px;align-items:start}
-.record-card{border:1px solid #e6eaf1;border-radius:11px;background:#fafbfe}
-.empty-state{padding:24px;border:1px dashed #dce2ed;border-radius:11px;background:#fafbfe;color:#7a879b;text-align:center}
-#page-characters .character-form{gap:12px}
-#page-quality .quality-intro{border-color:#dceeea;background:linear-gradient(110deg,#f1faf7,#f7f8ff)}
-#page-quality #qaResult{min-height:56vh!important;background:#fff}
-#page-memory .relationship-graph{background:#f8f9fc;border-color:#e5e9f1}
-#page-memory .relation-node{fill:#e9e4fb;stroke:#8d79db}
-#page-memory .relation-node-label{fill:#28364e}
-#page-memory .relation-edge-label{fill:#287f75}
-.notice,.error{overflow-wrap:anywhere}
-
-/* Responsive behavior */
-@media(max-width:1180px){
- .layout{grid-template-columns:210px minmax(0,1fr)}
- main{padding:24px 20px 42px}
- #page-studio>.grid{grid-template-columns:minmax(0,1fr)}
- #page-studio #result{min-height:340px!important;max-height:58vh!important}
- #page-chapters>.grid{grid-template-columns:minmax(0,1fr)}
- #page-chapters #chapterBody{min-height:58vh!important}
-}
-@media(max-width:850px){
- header{position:relative;height:auto;min-height:0;padding:12px 16px;align-items:flex-start;flex-direction:column;gap:10px}
- header>.row{width:100%;justify-content:flex-start;flex-wrap:wrap}
- header .status{flex:1 1 100%;max-width:none}
- .layout{display:grid;grid-template-columns:minmax(0,1fr);min-height:0}
- aside{position:relative;top:auto;height:auto;overflow:visible;padding:9px 12px;border-right:0;border-bottom:1px solid #dfe4ed}
- .mobile-nav-toggle{display:block;width:100%;margin-bottom:7px;background:#22314a;color:#fff;border-color:#34435e;text-align:left}
- .nav{display:none!important}
- .nav.mobile-open{display:flex!important;flex-direction:row;flex-wrap:wrap;gap:5px;overflow:visible}
- .nav.mobile-open button{flex:1 1 135px;min-height:38px}
- aside>.panel{margin-top:8px!important}
- main{padding:18px 15px 36px}
- .topline{align-items:flex-start}
- .free-fields{grid-template-columns:1fr}
- .free-toolbar{align-items:flex-start;flex-direction:column;gap:8px}
- .free-toolbar .field{width:100%;max-width:none;flex:1}
- #page-studio #taskFields{grid-template-columns:1fr}
- #page-studio #taskFields .field:has(textarea){grid-column:auto}
- .taskgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
- .memory-layout{grid-template-columns:1fr}
- .relation-form{grid-template-columns:1fr 1fr}
- .project-overview{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
-@media(max-width:560px){
- main{padding:14px 11px 28px}
- .topline{gap:10px;flex-wrap:wrap;margin-bottom:17px}
- .topline h1{font-size:23px}
- .panel{padding:15px;border-radius:12px}
- #freeStudio{padding:17px}
- .free-studio-head{flex-direction:column;gap:10px}
- .free-studio-head h2{font-size:19px}
- .free-footer{align-items:stretch;flex-direction:column}
- .free-footer button{width:100%}
- .taskgrid{grid-template-columns:1fr}
- #page-studio>.grid>.panel{padding:15px}
- #page-studio #result{min-height:300px!important;max-height:55vh!important;padding:15px!important}
- #page-chapters #chapterBody{min-height:54vh!important;padding:17px;line-height:1.9}
- #page-chapters .editor-find{grid-template-columns:1fr}
- #page-chapters .editor-toolbar{align-items:flex-start}
- #page-chapters .editor-toolbar #chapterWordCount{flex:1 1 100%}
- #page-chapters .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
- #page-chapters .actions button{width:100%;white-space:normal}
- .project-overview{grid-template-columns:1fr}
- .project-grid,.collection-grid{grid-template-columns:1fr}
- .relation-form{grid-template-columns:1fr}
- .quality-checks{grid-template-columns:1fr}
-}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
-html body #result{background-color:#fff!important;color:#26344b!important}
-html body #chapterBody{background-color:#fff!important;color:#26344b!important}
-
-</style></head>
+<meta name="theme-color" content="#101827"><title>StoryForge · AI 小说工作室</title>
+<link rel="stylesheet" href="/app.css">
+</head>
 <body>
-<header><div class="brand">✦ AI 小说<span>工作室</span> <small style="font-size:11px;color:#9aa6ba">V2</small></div><div class="row" style="max-width:360px"><span id="apiStatus" class="status">正在检查 AI 服务…</span><button id="openProviderSettings" type="button">免费模型设置</button><button id="exportBtn">导出备份</button><button id="importBtn" type="button">导入恢复</button><input id="importFile" type="file" accept="application/json,.json" hidden></div></header><dialog id="providerDialog" style="width:min(560px,calc(100vw - 24px));max-height:90vh;overflow:auto;background:#171d29;color:var(--text);border:1px solid #46506a;border-radius:16px;padding:20px">
-  <form id="providerForm">
-    <h2>免费 AI 模型接入</h2>
-    <p class="muted" style="font-size:13px">选择有免费额度的 API 服务。免费额度由服务商提供，可能限速或调整；API Key 只保存在当前浏览器标签页会话中，关闭标签页后清除。</p>
-    <div class="field"><label for="freeProvider">服务商</label><select id="freeProvider"><option value="gemini">Google Gemini API（免费层）</option><option value="groq">Groq（免费层）</option><option value="openrouter">OpenRouter（免费模型）</option><option value="cloudflare">Cloudflare Workers AI（由网站部署者配置）</option></select></div>
-    <div class="field" id="freeKeyField"><label for="freeApiKey">API Key</label><input id="freeApiKey" type="password" autocomplete="off" placeholder="粘贴服务商发放的 API Key"></div>
-    <div class="field" id="freeModelField"><label for="freeModel">模型 ID（可选，留空使用默认免费模型）</label><input id="freeModel" placeholder="gemini-2.5-flash"></div>
-    <div class="notice" id="providerHelp">Gemini 免费额度和可用模型以 Google AI Studio 账户页面为准。</div>
-    <p style="font-size:12px" class="muted">获取 Key：<a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Gemini AI Studio</a> · <a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq</a> · <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a></p>
-    <div class="actions" style="justify-content:flex-end;margin-top:16px"><button type="button" id="clearProviderSettings">清除配置</button><button type="button" id="closeProviderSettings">取消</button><button class="primary" type="submit">保存并使用</button></div>
-  </form>
-</dialog>
+<header class="topbar">
+  <a class="brand" href="#" aria-label="StoryForge 首页"><span class="brand-mark">S</span><span>StoryForge<small>AI 小说工作室</small></span></a>
+  <div class="top-actions"><span id="saveState" class="save-state">本机自动保存</span><button id="exportBtn" class="btn btn-quiet">导出备份</button><button id="importBtn" class="btn btn-quiet">导入</button><input id="importFile" type="file" accept="application/json" hidden></div>
+</header>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="side-caption">创作空间</div>
+    <nav id="nav" class="nav" aria-label="主导航">
+      <button data-page="home" class="nav-item active"><span>⌂</span>项目中心</button>
+      <button data-page="studio" class="nav-item"><span>✦</span>AI 创作台</button>
+      <button data-page="book" class="nav-item"><span>▤</span>小说资料</button>
+      <button data-page="world" class="nav-item"><span>◈</span>世界观设定</button>
+      <button data-page="characters" class="nav-item"><span>♙</span>人物档案</button>
+      <button data-page="chapters" class="nav-item"><span>▧</span>章节管理</button>
+      <button data-page="memory" class="nav-item"><span>⌘</span>小说记忆</button>
+      <button data-page="timeline" class="nav-item"><span>◷</span>剧情时间线</button>
+      <button data-page="library" class="nav-item"><span>▦</span>素材库</button>
+      <button data-page="archive" class="nav-item"><span>▣</span>创作归档</button>
+      <button data-page="quality" class="nav-item"><span>✓</span>质量检测</button>
+    </nav>
+    <div class="sidebar-bottom"><span class="live-dot"></span><span>数据保存在当前设备</span></div>
+  </aside>
+  <main id="main" class="main" tabindex="-1">
+    <section id="page-home" class="page active-page">
+      <div class="page-heading"><div><div class="eyebrow">YOUR WRITING DESK</div><h1>项目中心</h1><p>管理作品，继续你的故事。</p></div><button id="newProject" class="btn btn-primary">＋ 新建小说</button></div>
+      <div class="welcome-card"><div><span class="welcome-kicker">STORYFORGE STUDIO</span><h2>让每一个故事，都有自己的宇宙。</h2><p>从灵感、大纲到章节正文，把创作过程放在一个连贯的工作空间。</p><button class="btn btn-light" data-go="studio">开始创作 <span>→</span></button></div><div class="welcome-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="book-shape">✦</div></div></div>
+      <div class="section-heading"><div><h2>我的作品</h2><p>每部小说独立保存设定、人物与章节</p></div><span id="projectCount" class="count-pill">0 部作品</span></div>
+      <div id="projectList" class="project-grid"></div>
+    </section>
 
-<div class="layout"><aside><button type="button" id="mobileNavToggle" class="mobile-nav-toggle" aria-expanded="false">☰ 打开导航菜单</button><div class="nav" id="nav">
-<button data-page="projects">▦ 项目中心</button><button data-page="project">⚙ 小说资料</button><button class="active" data-page="studio">✦ AI 创作台</button><button data-page="world">◈ 世界观设定</button><button data-page="characters">♙ 人物档案</button><button data-page="chapters">▤ 章节管理</button><button data-page="archive">▣ 创作归档</button><button data-page="memory">🧠 小说记忆</button><button data-page="timeline">◷ 剧情时间线</button><button data-page="library">▤ 素材库</button><button data-page="quality">✓ 质量检测</button>
-</div><div class="panel" style="margin-top:20px;padding:12px"><div class="muted" style="font-size:12px">当前作品</div><input id="bookTitle" placeholder="给小说起个名字" style="margin-top:7px"></div><div class="muted" id="saveStatus" style="font-size:12px;padding:8px">资料保存在本机浏览器 · 自动保存就绪</div></aside>
-<main>
-<section id="page-studio">
-<div class="topline"><div><h1>AI 创作台</h1><div class="muted">从灵感构思到章节完稿，让 AI 成为你的持续创作搭档。</div></div></div>
-<div class="free-studio panel" id="freeStudio">
-  <div class="free-studio-head">
-    <div><div class="eyebrow">AI WRITING SPACE</div><h2>自由创作工作区</h2><p class="muted">只需写下想法或要求，资料可以留空。生成后可直接编辑，再继续让 AI 修改。</p></div>
-    <span class="live-pill"><i></i> 连续创作模式</span>
-  </div>
-  <div class="free-toolbar">
-    <label class="field"><span>创作方式</span><select id="freeMode"><option value="自由创作">自由创作</option><option value="扩写">扩写</option><option value="续写">续写</option><option value="重写">重写</option><option value="润色">润色</option><option value="缩写">缩写</option><option value="自定义">自定义要求</option></select></label>
-    <div class="free-mode-hint" id="freeModeHint">从一个想法开始，AI 会结合当前小说资料补全合理细节。</div>
-  </div>
-  <div class="free-fields">
-    <label class="field"><span>参考文字 / 原文 <em>选填</em></span><textarea id="freeReference" rows="5" placeholder="可以粘贴剧情梗概、章节片段、人物设定或需要修改的文字；也可以留空。"></textarea></label>
-    <label class="field"><span>告诉 AI 你希望怎么写 <em>选填</em></span><textarea id="freeInstruction" rows="4" placeholder="例如：把这段扩写成一章小说，增加悬疑气氛、环境描写和人物心理，不要改变原本剧情。"></textarea></label>
-  </div>
-  <div class="free-footer">
-    <button type="button" id="useSelectedText">↳ 使用结果区选中文字</button>
-    <span class="muted" id="freeSelectionStatus">可先在下方结果中选中一段文字，再指定 AI 修改。</span>
-    <button type="button" class="primary free-run" id="runFreeWrite">✦ 开始 AI 创作</button>
-  </div>
+    <section id="page-studio" class="page">
+      <div class="page-heading"><div><div class="eyebrow">AI WRITING DESK</div><h1>AI 创作台</h1><p>给一个想法，或提供原文，AI 帮你完成下一步。</p></div><button id="providerBtn" class="btn btn-quiet">⚙ 模型设置</button></div>
+      <div class="studio-layout">
+        <div class="studio-input">
+          <div class="panel-title"><span class="step-number">01</span><div><h2>创作任务</h2><p>选择任务类型，其他资料可按需填写</p></div></div>
+          <div id="taskList" class="task-list">
+            <button class="task-chip selected" data-task="自由创作">自由创作</button><button class="task-chip" data-task="故事大纲">故事大纲</button><button class="task-chip" data-task="章节创作">章节创作</button><button class="task-chip" data-task="续写">续写</button><button class="task-chip" data-task="人物设定">人物设定</button><button class="task-chip" data-task="世界观设定">世界观</button><button class="task-chip" data-task="润色改写">润色改写</button><button class="task-chip" data-task="剧情审查">剧情审查</button><button class="task-chip" data-task="灵感生成">灵感生成</button>
+          </div>
+          <label class="field-label" for="prompt">你想让 AI 做什么？</label><textarea id="prompt" class="prompt-box" placeholder="例如：写一个雨夜开场，主角收到一封来自十年前的信……"></textarea>
+          <label class="field-label" for="sourceText">参考原文 <span>选填</span></label><textarea id="sourceText" class="source-box" placeholder="续写、润色或改写时，可粘贴需要处理的原文"></textarea>
+          <div class="two-fields"><div><label class="field-label" for="tone">文风</label><select id="tone"><option value="">自动匹配</option><option>细腻文学</option><option>轻松幽默</option><option>热血爽文</option><option>悬疑紧张</option><option>古风典雅</option><option>简洁克制</option><option>电影感</option></select></div><div><label class="field-label" for="length">篇幅</label><select id="length"><option value="适中">适中</option><option value="短篇">短篇</option><option value="约1000字">约1000字</option><option value="约2000字">约2000字</option><option value="约3000字">约3000字</option></select></div></div>
+          <details class="context-details"><summary>使用小说资料作为上下文 <span>可选</span></summary><div class="context-options"><label><input type="checkbox" id="ctxBook" checked> 小说简介与大纲</label><label><input type="checkbox" id="ctxWorld" checked> 世界观设定</label><label><input type="checkbox" id="ctxCharacters" checked> 人物档案</label><label><input type="checkbox" id="ctxMemory" checked> 小说记忆</label><label><input type="checkbox" id="ctxChapters"> 已有章节</label></div></details>
+          <div class="generate-row"><button id="generateBtn" class="btn btn-primary btn-generate">✦ 开始生成</button><button id="clearBtn" class="btn btn-quiet">清空输入</button></div>
+          <p id="generationStatus" class="inline-status">输入创作要求即可开始。生成结果可继续编辑。</p>
+        </div>
+        <div class="studio-output">
+          <div class="output-head"><div><span class="step-number">02</span><div><h2>创作结果</h2><p>结果可直接编辑，修改会自动保存</p></div></div><span id="wordCount" class="count-pill">0 字</span></div>
+          <textarea id="result" class="result-editor" placeholder="AI 生成的内容会显示在这里，你也可以直接写作或修改……"></textarea>
+          <div class="output-toolbar"><button id="copyBtn" class="btn btn-quiet">复制正文</button><button id="saveResultBtn" class="btn btn-primary">保存到作品</button></div>
+          <div class="history-head"><h3>最近版本</h3><button id="restoreLast" class="text-button">恢复上一版</button></div><div id="versionList" class="version-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-book" class="page">
+      <div class="page-heading"><div><div class="eyebrow">BOOK PROFILE</div><h1>小说资料</h1><p>定义作品定位，让 AI 理解你正在写什么。</p></div><button id="saveBook" class="btn btn-primary">保存资料</button></div>
+      <div class="form-card"><div class="form-grid"><div class="field"><label for="bookTitle">小说名称</label><input id="bookTitle" placeholder="给你的小说起个名字"></div><div class="field"><label for="genre">题材类型</label><select id="genre"><option>玄幻</option><option>都市</option><option>仙侠</option><option>科幻</option><option>悬疑</option><option>历史</option><option>言情</option><option>奇幻</option><option>现实</option><option>其他</option></select></div><div class="field"><label for="audience">目标读者</label><input id="audience" placeholder="例如：喜欢强剧情的成年读者"></div><div class="field"><label for="viewpoint">叙事视角</label><select id="viewpoint"><option>第三人称</option><option>第一人称</option><option>多视角</option></select></div><div class="field full"><label for="synopsis">故事简介</label><textarea id="synopsis" placeholder="用几句话介绍这部小说的核心故事"></textarea></div><div class="field full"><label for="outline">故事大纲</label><textarea id="outline" placeholder="主要剧情、关键转折、高潮与结局方向"></textarea></div><div class="field full"><label for="styleGuide">写作风格与禁忌</label><textarea id="styleGuide" placeholder="希望保持的风格、必须遵守的设定、避免出现的内容"></textarea></div></div></div>
+    </section>
+
+    <section id="page-world" class="page">
+      <div class="page-heading"><div><div class="eyebrow">WORLD BUILDING</div><h1>世界观设定</h1><p>整理世界规则、势力、地理、历史与力量体系。</p></div><button id="addWorld" class="btn btn-primary">＋ 添加设定</button></div>
+      <div class="split-layout"><div class="form-card"><h2 id="worldFormTitle">新增世界观条目</h2><input id="worldTitle" placeholder="条目名称，例如：力量体系"><textarea id="worldContent" placeholder="详细描述这条设定……"></textarea><button id="saveWorld" class="btn btn-primary">保存条目</button></div><div id="worldList" class="record-list"></div></div>
+    </section>
+
+    <section id="page-characters" class="page">
+      <div class="page-heading"><div><div class="eyebrow">CHARACTER BIBLE</div><h1>人物档案</h1><p>记录角色的身份、性格、目标与人物关系。</p></div><button id="addCharacter" class="btn btn-primary">＋ 新增人物</button></div>
+      <div class="split-layout"><div class="form-card"><h2 id="characterFormTitle">人物资料</h2><input id="charName" placeholder="人物姓名 / 称谓"><div class="two-fields"><input id="charRole" placeholder="身份 / 角色"><input id="charAge" placeholder="年龄"></div><input id="charGoal" placeholder="核心目标"><textarea id="charPersonality" placeholder="性格、外貌、背景、能力、秘密、成长弧光……"></textarea><button id="saveCharacter" class="btn btn-primary">保存人物</button></div><div id="characterList" class="record-list"></div></div>
+    </section>
+
+    <section id="page-chapters" class="page">
+      <div class="page-heading"><div><div class="eyebrow">MANUSCRIPT</div><h1>章节管理</h1><p>集中管理章节正文，支持自动保存与 AI 续写。</p></div><button id="newChapter" class="btn btn-primary">＋ 新建章节</button></div>
+      <div class="chapter-layout"><div class="chapter-list-panel"><div class="list-heading">章节目录 <span id="chapterCount">0</span></div><div id="chapterList" class="chapter-list"></div></div><div class="editor-panel"><input id="chapterTitle" class="chapter-title" placeholder="章节标题"><div class="editor-meta"><span id="chapterWords">0 字</span><span id="chapterSaveState">自动保存就绪</span></div><textarea id="chapterBody" class="chapter-editor" placeholder="在这里写下章节正文……"></textarea><div class="editor-actions"><button id="saveChapter" class="btn btn-primary">保存章节</button><button id="continueChapter" class="btn btn-quiet">AI 续写本章</button><button id="deleteChapter" class="btn btn-danger">删除章节</button></div></div></div>
+    </section>
+
+    <section id="page-memory" class="page">
+      <div class="page-heading"><div><div class="eyebrow">STORY MEMORY</div><h1>小说记忆</h1><p>记录不能遗忘的事实、伏笔、约束和已发生事件。</p></div></div>
+      <div class="split-layout"><div class="form-card"><h2>添加记忆</h2><input id="memoryTitle" placeholder="记忆标题"><textarea id="memoryContent" placeholder="需要 AI 始终记住的内容"></textarea><button id="saveMemory" class="btn btn-primary">保存记忆</button></div><div id="memoryList" class="record-list"></div></div>
+    </section>
+
+    <section id="page-timeline" class="page">
+      <div class="page-heading"><div><div class="eyebrow">STORY TIMELINE</div><h1>剧情时间线</h1><p>按故事时间梳理事件，避免前后矛盾。</p></div></div>
+      <div class="split-layout"><div class="form-card"><h2>添加事件</h2><input id="eventTime" placeholder="故事时间，例如：第三年冬季"><input id="eventTitle" placeholder="事件名称"><textarea id="eventContent" placeholder="事件经过与影响"></textarea><button id="saveEvent" class="btn btn-primary">保存事件</button></div><div id="timelineList" class="record-list"></div></div>
+    </section>
+
+    <section id="page-library" class="page">
+      <div class="page-heading"><div><div class="eyebrow">REFERENCE LIBRARY</div><h1>素材库</h1><p>保存灵感、资料片段、地点、道具与参考文本。</p></div></div>
+      <div class="split-layout"><div class="form-card"><h2>添加素材</h2><input id="materialTitle" placeholder="素材名称"><select id="materialType"><option>灵感</option><option>地点</option><option>道具</option><option>参考资料</option><option>其他</option></select><textarea id="materialContent" placeholder="素材内容"></textarea><button id="saveMaterial" class="btn btn-primary">保存素材</button></div><div id="materialList" class="record-list"></div></div>
+    </section>
+
+    <section id="page-archive" class="page">
+      <div class="page-heading"><div><div class="eyebrow">CREATION ARCHIVE</div><h1>创作归档</h1><p>集中查看 AI 生成、灵感、修改稿与审查记录。</p></div></div><div id="archiveList" class="record-list archive-list"></div>
+    </section>
+
+    <section id="page-quality" class="page">
+      <div class="page-heading"><div><div class="eyebrow">QUALITY CONTROL</div><h1>质量检测</h1><p>检查剧情逻辑、人物动机、时间线与设定一致性。</p></div></div>
+      <div class="form-card quality-card"><label class="field-label" for="qualityInput">粘贴需要检查的内容</label><textarea id="qualityInput" placeholder="粘贴章节、大纲或剧情片段……"></textarea><label class="field-label" for="qualityFocus">重点检查方向</label><select id="qualityFocus"><option>全面检查</option><option>逻辑漏洞</option><option>人物动机</option><option>时间线冲突</option><option>世界观设定冲突</option><option>节奏与可读性</option></select><button id="runQuality" class="btn btn-primary">开始检测</button><textarea id="qualityResult" class="quality-result" placeholder="检测报告会显示在这里"></textarea><button id="saveQuality" class="btn btn-quiet">保存检测报告</button></div>
+    </section>
+  </main>
 </div>
-
-<button type="button" data-workflow-task="灵感生成"><b>01</b><span>构思灵感</span></button>
-<button type="button" data-workflow-task="世界观设定"><b>02</b><span>世界设定</span></button>
-<button type="button" data-workflow-task="人物设定"><b>03</b><span>人物设计</span></button>
-<button type="button" data-workflow-task="故事大纲"><b>04</b><span>故事大纲</span></button>
-<button type="button" data-workflow-task="章节创作"><b>05</b><span>分章创作</span></button>
-<button type="button" data-workflow-task="续写"><b>06</b><span>续写修改</span></button>
-<button type="button" data-workflow-task="润色改写"><b>07</b><span>润色优化</span></button>
-<button type="button" data-workflow-task="剧情审查"><b>08</b><span>剧情检查</span></button>
-</div></div>
-<div class="studio-reference panel"><div class="row"><div><h2 style="margin:0">写作资料速览</h2><small class="muted">创作时随时查看已保存设定，不必离开创作台</small></div><span class="muted" style="font-size:12px">自动带入 AI 上下文</span></div><div class="actions" style="margin-top:10px"><button type="button" id="quickSynopsis">小说资料 / 大纲</button><button type="button" id="quickWorld">世界观资料</button><button type="button" id="quickPeople">人物档案</button><button type="button" id="quickChapters">最近章节</button></div></div>
-<div class="panel context-panel"><div class="row"><div><h2 style="margin:0">本次 AI 上下文</h2><small class="muted">生成前选择要带入的资料，避免引用不相关或过时内容。</small></div><button type="button" id="toggleContextPreview">展开预览</button></div><div id="contextControls" class="context-controls hidden"><label><input type="checkbox" data-context="synopsis" checked> 小说简介 / 大纲</label><label><input type="checkbox" data-context="world" checked> 世界观设定</label><label><input type="checkbox" data-context="characters" checked> 人物档案</label><label><input type="checkbox" data-context="chapters" checked> 最近章节</label><label><input type="checkbox" data-context="notes" checked> 时间线、伏笔及补充资料</label><label><input type="checkbox" data-context="memory" checked> 小说记忆库</label><label><input type="checkbox" data-context="timeline" checked> 剧情时间线</label><label><input type="checkbox" data-context="materials"> 素材库</label><pre id="contextPreview" class="context-preview"></pre></div></div><div class="panel task-entry-panel"><details class="advanced-task-list"><summary class="task-entry-heading"><h2>更多专业任务</h2><span class="muted">八项专业任务 · 点击展开</span></summary><div class="taskgrid" id="tasks">
-<button class="task" data-task="灵感生成"><small class="task-step">01 · 构思</small><strong>💡 灵感生成</strong><small>从一句话扩展故事</small></button>
-<button class="task" data-task="世界观设定"><small class="task-step">02 · 架构</small><strong>🌌 世界观设定</strong><small>规则、地理、历史</small></button>
-<button class="task" data-task="人物设定"><small class="task-step">03 · 角色</small><strong>♙ 人物设定</strong><small>背景、动机、弧光</small></button>
-<button class="task" data-task="故事大纲"><small class="task-step">04 · 规划</small><strong>🧭 故事大纲</strong><small>搭建主线与章节结构</small></button>
-<button class="task" data-task="章节创作"><small class="task-step">05 · 创作</small><strong>✍️ 章节创作</strong><small>生成完整小说正文</small></button>
-<button class="task" data-task="续写"><small class="task-step">06 · 延展</small><strong>⤴️ 智能续写</strong><small>承接已有章节继续写</small></button>
-<button class="task" data-task="润色改写"><small class="task-step">07 · 优化</small><strong>✧ 润色改写</strong><small>优化文风与节奏</small></button>
-<button class="task" data-task="剧情审查"><small class="task-step">08 · 校验</small><strong>🔎 剧情审查</strong><small>查找伏笔与逻辑问题</small></button>
-</div></div>
-<div class="grid"><div class="panel"><h2>创作要求</h2><div class="muted" id="draftStatus" style="font-size:12px;margin:-5px 0 8px">当前任务草稿自动保存</div><div class="field"><label>当前创作任务</label><input id="taskName" value="灵感生成" readonly aria-readonly="true" title="由上方所选任务自动决定"></div><div id="taskFields"></div><button type="button" id="toggleCustomPrompt" class="custom-prompt-toggle">＋ 自定义要求（选填）</button><div id="customPromptWrap" class="field custom-prompt-wrap hidden"><label for="prompt">自定义要求</label><textarea id="prompt" placeholder="补充风格、限制条件或其他特别要求；不填写也可以生成。"></textarea></div><div class="actions studio-actions" style="margin-top:16px"><button class="primary" id="generateBtn">✦ 立即生成</button><button id="clearPrompt">清空当前任务输入</button></div><p class="muted studio-progress" id="progress" data-state="idle">资料均可选填。写下创作方向即可开始，AI 会结合已有小说设定补全。</p></div>
-<div class="panel"><div class="row"><h2>AI 生成结果</h2><button id="copyBtn" style="flex:0 0 auto">复制结果</button></div><div id="result" class="output" contenteditable="true" role="textbox" aria-label="AI生成结果，可直接编辑" aria-multiline="true" spellcheck="true" style="min-height:420px;max-height:70vh;overflow:auto;white-space:pre-wrap;outline:none;cursor:text" data-placeholder="AI生成内容会显示在这里。你可以直接点击文本修改、补充或删除内容，再确认保存。">生成内容会显示在这里。你可以直接点击这里修改、补充或删除内容。</div><p class="muted" style="font-size:12px">提示：生成结果可直接编辑。保存、复制或作为下一轮上下文时，都会使用你修改后的内容。</p><details class="version-panel"><summary>版本历史（自动保留生成版本）</summary><div id="versionList" class="version-list"><span class="muted">还没有历史版本。</span></div></details><div class="actions" style="margin-top:12px"><button id="saveChapter" class="primary">确认保存到对应资料库</button><button id="replacePrompt">将结果作为下一轮上下文</button></div></div></div>
-<div class="notice">提示：AI 会优先参考“小说资料”中填写的设定。长篇创作建议按大纲分章生成，并把已确定的剧情摘要放入上下文，保持连续性。</div>
-</section>
-<section id="page-chapters" class="hidden"><div class="topline"><div><h1>章节管理</h1><div class="muted">编辑、保存和管理小说正文。</div></div><button class="primary" id="newChapter">＋ 新建章节</button></div><div class="grid"><div class="panel"><h2>章节列表</h2><div id="chapterList"></div></div><div class="panel"><h2>章节编辑器</h2><input id="chapterTitle" placeholder="章节标题"><div class="editor-toolbar"><span id="chapterWordCount">0 字</span><span id="chapterSaveState" class="muted">编辑器已就绪</span><button type="button" id="focusEditor">沉浸写作</button><button type="button" id="exportCurrentChapter">导出本章 TXT</button><button type="button" id="exportAllChapters">导出全书 TXT</button></div><div class="editor-find"><input id="chapterFind" placeholder="查找文字"><input id="chapterReplace" placeholder="替换为"><button type="button" id="replaceChapterText">替换全部</button></div><textarea id="chapterBody" class="chapter" placeholder="在这里写作，或从 AI 创作台保存生成内容。"></textarea><textarea id="chapterAppend" style="min-height:120px;margin-top:10px" placeholder="追加内容：可以自己写，也可以点击“AI生成追加”自动生成；生成后可修改，再追加到本章。"></textarea><div class="actions"><button class="primary" id="saveChapterEdit">保存章节</button><button id="appendChapter">追加到本章</button><button id="aiAppendChapter" class="primary">AI生成追加</button><button id="deleteChapter">删除章节</button><button id="sendChapter">发送到 AI 创作台</button></div></div></div></section>
-<section id="page-characters" class="hidden"><div class="topline"><div><h1>人物档案</h1><div class="muted">一次填写完整人物资料，保存后 AI 创作会自动参考。</div></div><button class="primary" id="addCharacter">＋ 添加人物</button></div>
-<div class="panel hidden" id="characterFormPanel"><h2 id="characterFormTitle">新增人物</h2><form id="characterForm"><div class="character-form">
-<div class="field"><label for="charName">人物姓名 *</label><input id="charName" name="name" required placeholder="例如：林凡"></div>
-<div class="field"><label for="charAge">年龄</label><input id="charAge" name="age" placeholder="例如：17岁"></div>
-<div class="field"><label for="charGender">性别</label><input id="charGender" name="gender" placeholder="例如：男"></div>
-<div class="field"><label for="charRole">身份 / 职业</label><input id="charRole" name="role" placeholder="例如：被家族放逐的少年"></div>
-<div class="field wide"><label for="charAppearance">外貌特征</label><textarea id="charAppearance" name="appearance" placeholder="身高、发色、衣着、显著特征等" style="min-height:75px"></textarea></div>
-<div class="field wide"><label for="charPersonality">性格特点</label><textarea id="charPersonality" name="personality" placeholder="性格、优点、缺点、习惯、说话方式等" style="min-height:75px"></textarea></div>
-<div class="field wide"><label for="charBackground">身世 / 背景故事</label><textarea id="charBackground" name="background" placeholder="出身、经历、重要过往等" style="min-height:85px"></textarea></div>
-<div class="field wide"><label for="charAbility">能力 / 特长</label><textarea id="charAbility" name="ability" placeholder="特殊能力、技能、限制或弱点" style="min-height:75px"></textarea></div>
-<div class="field wide"><label for="charGoal">目标 / 动机</label><textarea id="charGoal" name="goal" placeholder="最想得到什么？为什么？" style="min-height:75px"></textarea></div>
-<div class="field wide"><label for="charSecret">秘密 / 隐藏信息</label><textarea id="charSecret" name="secret" placeholder="不为人知的秘密、隐瞒的真相等" style="min-height:75px"></textarea></div>
-<div class="field wide"><label for="charRelations">人物关系</label><textarea id="charRelations" name="relations" placeholder="与主角、家人、朋友、敌人的关系" style="min-height:75px"></textarea></div>
-<div class="field wide"><label for="charArc">成长路线 / 人物弧光</label><textarea id="charArc" name="arc" placeholder="人物从故事开始到结尾会发生什么变化" style="min-height:85px"></textarea></div>
-</div><div class="character-actions"><button class="primary" type="submit">保存人物</button><button type="button" id="cancelCharacter">取消</button></div><p class="muted" style="font-size:12px;margin-bottom:0">带 * 的姓名必填，其余资料可按需要填写。所有信息一次提交。</p></form></div>
-<div class="panel"><h2>人物列表</h2><div id="characterList"></div></div></section>
-<section id="page-world" class="hidden"><div class="topline"><div><h1>世界观设定</h1><div class="muted">可保存多个世界观条目。点击条目弹出查看、编辑或继续补充。</div></div><button class="primary" id="addWorld">＋ 新建世界观</button></div><div class="panel"><div id="worldList"></div></div><div class="panel hidden" id="worldFormPanel"><h2 id="worldFormTitle">新建世界观</h2><div class="field"><label>标题</label><input id="worldTitle" placeholder="例如：力量体系、帝国历史、北境地图"></div><div class="field"><label>内容</label><textarea id="worldText" style="min-height:300px" placeholder="写下世界规则、时代背景、地理、力量体系、势力关系、历史事件等。"></textarea></div><div class="actions"><button class="primary" id="saveWorld">保存世界观</button><button id="cancelWorld">取消</button></div></div></section>
-<section id="page-projects" class="hidden">
-<div class="topline"><div><h1>小说项目中心</h1><div class="muted">每本小说独立管理，切换项目不会混淆章节、人物和设定。</div></div><button class="primary" id="createNovelProject">＋ 新建小说</button></div>
-<div class="project-overview" id="projectOverview"></div><div class="project-grid" id="novelProjectList"></div>
-</section>
-<section id="page-project" class="hidden"><div class="topline"><div><h1>小说资料</h1><div class="muted">把既有资料整理在这里，AI 创作时会自动带入。</div></div></div><div class="panel"><div class="field"><label>小说简介 / 核心设定</label><textarea id="synopsis" style="min-height:180px" placeholder="题材、主题、核心冲突、主角目标、故事终点……"></textarea></div><div class="field"><label>人物关系、势力地图、伏笔清单、剧情摘要等补充资料</label><textarea id="notes" style="min-height:260px" placeholder="把你已有的设定、人物关系、时间线、伏笔记录在这里。"></textarea></div><button class="primary" id="saveProject">保存小说资料</button></div><div class="notice">原有 WorkBuddy 分享链接暂时不会自动读取内容。请把分享页面中的资料复制到对应栏目，后续可继续扩展导入功能。</div></section>
-<section id="page-memory" class="hidden">
-<div class="topline"><div><h1>小说记忆库</h1><div class="muted">整理不可遗忘的设定、人物状态、关系、伏笔与创作约束；可选择带入 AI 上下文。</div></div></div>
-<div class="memory-layout">
-<div class="panel"><h2>添加记忆条目</h2><div class="field"><label for="memoryType">记忆类别</label><select id="memoryType"><option>人物状态</option><option>人物关系</option><option>世界规则</option><option>剧情事实</option><option>伏笔</option><option>创作约束</option><option>其他</option></select></div><div class="field"><label for="memoryTitle">标题</label><input id="memoryTitle" placeholder="例如：主角右手受伤，短期内无法使用剑"></div><div class="field"><label for="memoryContent">详细内容</label><textarea id="memoryContent" rows="5" placeholder="写下需要 AI 长期遵守的事实、状态或规则。"></textarea></div><button class="primary" id="saveMemory">保存到记忆库</button></div>
-<div class="panel"><div class="panel-heading"><h2>已保存的小说记忆</h2><span class="muted" id="memoryCount">0 条</span></div><div id="memoryList"></div></div>
-</div>
-<div class="panel relation-panel"><div class="panel-heading"><h2>人物关系图</h2><span class="muted">从人物档案生成关系网络</span></div><div class="relation-form"><select id="relationFrom" aria-label="关系人物一"></select><select id="relationType" aria-label="关系类型"><option>朋友</option><option>敌对</option><option>亲属</option><option>恋人</option><option>师徒</option><option>上下级</option><option>盟友</option><option>其他</option></select><select id="relationTo" aria-label="关系人物二"></select><input id="relationNote" placeholder="关系补充说明（选填）"><button class="primary" id="saveRelationship">添加关系</button></div><div id="relationshipGraph" class="relationship-graph"></div><div id="relationshipList" class="relationship-list"></div></div>
-</section>
-<section id="page-timeline" class="hidden">
-<div class="topline"><div><h1>剧情时间线</h1><div class="muted">按故事发生顺序记录关键事件，帮助检查时间先后和人物状态变化。</div></div></div>
-<div class="memory-layout"><div class="panel"><h2>添加剧情事件</h2><div class="field"><label for="eventDate">故事时间 / 顺序</label><input id="eventDate" placeholder="例如：帝历 302 年春，或第 12 天"></div><div class="field"><label for="eventTitle">事件名称</label><input id="eventTitle" placeholder="例如：主角第一次进入北境"></div><div class="field"><label for="eventContent">事件详情</label><textarea id="eventContent" rows="4" placeholder="参与人物、地点、结果、对后续剧情的影响。"></textarea></div><button class="primary" id="saveTimelineEvent">添加事件</button></div><div class="panel"><div class="panel-heading"><h2>故事事件</h2><span class="muted" id="timelineCount">0 个事件</span></div><div id="timelineList"></div></div></div>
-</section>
-<section id="page-library" class="hidden">
-<div class="topline"><div><h1>小说素材库</h1><div class="muted">收藏灵感、对白、地点、参考资料和情节素材，写作时随时调用。</div></div></div>
-<div class="memory-layout"><div class="panel"><h2>添加素材</h2><div class="field"><label for="materialCategory">素材分类</label><select id="materialCategory"><option>灵感</option><option>人物</option><option>地点</option><option>情节</option><option>对白</option><option>描写</option><option>参考资料</option><option>其他</option></select></div><div class="field"><label for="materialTitle">素材名称</label><input id="materialTitle" placeholder="例如：雾中废弃车站"></div><div class="field"><label for="materialContent">素材内容</label><textarea id="materialContent" rows="5" placeholder="记录可复用的内容、链接说明或灵感。"></textarea></div><div class="field"><label for="materialTags">标签（逗号分隔）</label><input id="materialTags" placeholder="悬疑、场景、开篇"></div><button class="primary" id="saveMaterial">保存素材</button></div><div class="panel"><div class="panel-heading"><h2>我的素材</h2><span class="muted" id="materialCount">0 条</span></div><input id="materialSearch" placeholder="搜索名称、分类、内容或标签"><div id="materialList"></div></div></div>
-</section>
-<section id="page-quality" class="hidden">
-<div class="topline"><div><h1>小说质量检测</h1><div class="muted">让 AI 检查剧情逻辑、人物一致性、时间线、世界观和文字质量，并给出可执行的修改建议。</div></div></div>
-<div class="panel quality-intro"><div class="eyebrow">STORY QUALITY REVIEW</div><h2>让整本小说经得起推敲</h2><p class="muted">可粘贴指定章节，也可以留空，自动使用当前项目的小说资料与章节正文。AI 只提供审查报告，不会擅自修改原文。</p></div>
-<div class="memory-layout"><div class="panel"><h2>选择检测项目</h2><div class="quality-checks"><label><input type="checkbox" value="剧情逻辑与因果" checked> 剧情逻辑与因果</label><label><input type="checkbox" value="人物性格与状态一致性" checked> 人物一致性</label><label><input type="checkbox" value="时间线与事件顺序" checked> 时间线</label><label><input type="checkbox" value="世界观规则一致性" checked> 世界观规则</label><label><input type="checkbox" value="伏笔埋设与回收"> 伏笔管理</label><label><input type="checkbox" value="文字质量与节奏" checked> 文字质量与节奏</label></div><div class="field"><label for="qaInput">指定审查内容（选填）</label><textarea id="qaInput" rows="10" placeholder="留空则自动检查当前项目已有的小说资料和章节；也可以粘贴需要审查的正文。"></textarea></div><button class="primary" id="runQualityCheck">✦ 开始 AI 质量检测</button><div class="muted" id="qaStatus" style="font-size:12px;margin-top:10px">检测结果仅供参考，所有修改由你决定。</div></div>
-<div class="panel"><div class="panel-heading"><h2>检测报告</h2><button id="saveQualityReport">保存到创作归档</button></div><textarea id="qaResult" rows="22" placeholder="AI 检测报告会显示在这里，你可以直接修改后再保存。" style="min-height:420px;line-height:1.8"></textarea></div></div>
-</section>
-<section id="page-archive" class="hidden"><div class="topline"><div><h1>创作归档</h1><div class="muted">集中查看 AI 生成的灵感、润色稿和剧情审查记录。人物、世界观、章节和大纲会进入各自专属栏目。</div></div></div><div class="panel"><div id="archiveList"></div></div></section>
-</main></div>
-<script>
-const $=id=>document.getElementById(id);
-const defaultData={title:"",synopsis:"",notes:"",world:"",worldEntries:[],chapters:[],characters:[],archive:[]};
-let data={...defaultData};
-try{
- const saved=JSON.parse(localStorage.getItem("novelStudioV2")||"null");
- if(saved&&typeof saved==="object")data={...defaultData,...saved};
- else{
-  const projects=JSON.parse(localStorage.getItem("novelStudioV2Projects")||"{}");
-  const first=Object.values(projects)[0];
-  if(first)data={...defaultData,...first};
- }
-}catch{}
-data.archive=Array.isArray(data.archive)?data.archive:[];data.characters=Array.isArray(data.characters)?data.characters:[];data.chapters=Array.isArray(data.chapters)?data.chapters:[];data.worldEntries=Array.isArray(data.worldEntries)?data.worldEntries:(data.world?[{id:"w0",title:"世界观总设定",content:data.world}]:[]);
-let activeChapter=null,lastResult="",currentTask="灵感生成",generationSeq=0;const taskJobs={};
-let versionHistory={};try{versionHistory=JSON.parse(localStorage.getItem("novelStudioV2Versions")||"{}")||{};}catch{versionHistory={};}
-function versionKey(){return (data.title||"未命名作品")+"::"+currentTask;}
-function saveResultVersion(content,source="AI生成"){if(!String(content||"").trim())return;const key=versionKey();const list=versionHistory[key]||(versionHistory[key]=[]);const last=list[list.length-1];if(last&&last.content===content)return;list.push({id:"v-"+Date.now(),content,source,createdAt:new Date().toLocaleString()});if(list.length>30)list.splice(0,list.length-30);try{localStorage.setItem("novelStudioV2Versions",JSON.stringify(versionHistory));}catch{}renderVersions();}
-function renderVersions(){const box=$("versionList");if(!box)return;const list=versionHistory[versionKey()]||[];box.innerHTML="";if(!list.length){box.textContent="还没有历史版本。";return;}[...list].reverse().forEach(v=>{const row=document.createElement("div");row.className="version-entry";const meta=document.createElement("span");meta.textContent=v.createdAt+" · "+v.source+" · "+v.content.length+" 字";const btn=document.createElement("button");btn.type="button";btn.textContent="恢复到结果区";btn.onclick=()=>{if(!confirm("将此版本载入结果编辑区？不会覆盖已保存的章节或资料。"))return;$("result").textContent=v.content;syncEditedResult();};row.append(meta,btn);box.appendChild(row);});}
-
-function persist(){try{localStorage.setItem("novelStudioV2",JSON.stringify(data));const st=$("saveStatus");if(st)st.textContent="资料已自动保存到本机浏览器 · "+new Date().toLocaleTimeString();}catch(e){const st=$("saveStatus");if(st)st.textContent="本机存储空间不足，请立即导出备份。";}}
-
-function load(){$("bookTitle").value=data.title||"";$("synopsis").value=data.synopsis||"";$("notes").value=data.notes||"";renderChapters();renderCharacters();renderWorld();renderArchive();setupStudioQuickRefs();}
-function contextParts(){const people=data.characters.map(c=>`${c.name||"未命名人物"}：${c.info||Object.entries(c).filter(([k,v])=>k!=="name"&&v).map(([k,v])=>`${k}：${v}`).join("；")}`).join("\n")||"暂无";return {synopsis:"作品简介 / 大纲：\n"+(data.synopsis||"暂无"),world:"世界观设定：\n"+(data.worldEntries?.map(w=>w.title+"："+w.content).join("\n")||data.world||"暂无"),characters:"人物档案：\n"+people,chapters:"最近章节：\n"+(data.chapters.slice(-3).map(c=>c.title+"\n"+c.body.slice(0,2500)).join("\n\n")||"暂无"),notes:"时间线、伏笔及补充资料：\n"+(data.notes||"暂无")};}
-function contextText(){const parts=contextParts();const selected=[...document.querySelectorAll("[data-context]:checked")].map(x=>x.dataset.context);return "作品名："+(data.title||"未命名")+"\n"+selected.map(k=>parts[k]).join("\n\n");}
-function refreshContextPreview(){const el=$("contextPreview");if(!el)return;el.textContent=contextText();}
-function renderChapters(){const box=$("chapterList");box.innerHTML="";if(!data.chapters.length){box.innerHTML='<p class="muted">还没有章节，点击“新建章节”或从 AI 创作台保存。</p>';return;}data.chapters.forEach((c,i)=>{const el=document.createElement("div");el.className="item";el.innerHTML=`<strong>${i+1}. ${esc(c.title)}</strong><span class="muted">${c.body.length} 字</span>`;el.onclick=()=>{activeChapter=i;$("chapterTitle").value=c.title;$("chapterBody").value=c.body;$("chapterAppend").value="";};box.appendChild(el);});}
-function renderCharacters(){const box=$("characterList");box.innerHTML="";if(!data.characters.length){box.innerHTML='<p class="muted">暂无人物档案，点击右上角“添加人物”创建。</p>';return;}const grid=document.createElement("div");grid.className="collection-grid";data.characters.forEach((c,i)=>{const el=document.createElement("div");el.className="item collection-card";const details=c.info||Object.entries(c).filter(([k,v])=>k!=="name"&&v).map(([k,v])=>k+"："+v).join("\n");el.title="点击查看此人物";el.innerHTML=`<div class="card-title">${esc(c.name)}</div><div class="card-preview">${esc((details||"尚未填写详细资料").slice(0,120))}</div><div class="card-actions"><button type="button" class="viewChar">点击查看</button><button type="button" class="editChar">编辑</button><button type="button" class="deleteChar">删除</button></div>`;el.onclick=e=>{if(e.target.tagName!=="BUTTON")showCollectionModal("人物档案："+c.name,details||"暂无详细资料")};el.querySelector(".viewChar").onclick=()=>showCollectionModal("人物档案："+c.name,details||"暂无详细资料");el.querySelector(".editChar").onclick=()=>openCharacterForm(i);el.querySelector(".deleteChar").onclick=()=>{if(confirm(`确定删除人物“${c.name}”？`)){data.characters.splice(i,1);persist();renderCharacters();}};grid.appendChild(el);});box.appendChild(grid);}
-function renderWorld(){const box=$("worldList");if(!box)return;box.innerHTML="";if(!data.worldEntries.length){box.innerHTML='<p class="muted">暂无世界观条目，点击“新建世界观”。</p>';return;}const grid=document.createElement("div");grid.className="collection-grid";data.worldEntries.forEach((w,i)=>{const el=document.createElement("div");el.className="item collection-card";el.title="点击查看此世界观";el.innerHTML=`<div class="card-title">${esc(w.title||"未命名世界观")}</div><div class="card-preview">${esc((w.content||"暂无内容").slice(0,120))}</div><div class="card-actions"><button type="button" class="viewWorld">点击查看</button><button type="button" class="editWorld">编辑</button><button type="button" class="deleteWorld">删除</button></div>`;el.onclick=e=>{if(e.target.tagName!=="BUTTON")showCollectionModal("世界观："+(w.title||"未命名"),w.content||"暂无内容")};el.querySelector(".viewWorld").onclick=()=>showCollectionModal("世界观："+(w.title||"未命名"),w.content||"暂无内容");el.querySelector(".editWorld").onclick=()=>openWorldForm(i);el.querySelector(".deleteWorld").onclick=()=>{if(confirm("确定删除这个世界观条目？")){data.worldEntries.splice(i,1);persist();renderWorld();}};grid.appendChild(el);});box.appendChild(grid);}
-function setupStudioQuickRefs(){
- const bind=(id,fn)=>{const el=$(id);if(el)el.onclick=fn;};
- bind("quickSynopsis",()=>showCollectionModal("小说资料 / 故事大纲", "作品："+(data.title||"未命名")+
- "\n\n简介 / 大纲：\n"+(data.synopsis||"暂无")+
- "\n\n补充资料：\n"+(data.notes||"暂无")));
- bind("quickWorld",()=>showCollectionModal("世界观资料",data.worldEntries?.map(w=>"【"+w.title+"】\n"+w.content).join("\n\n")||data.world||"暂无世界观资料"));
- bind("quickPeople",()=>showCollectionModal("人物档案",data.characters.map(p=>"【"+(p.name||"未命名人物")+"】\n"+(p.info||Object.entries(p).filter(([k,v])=>k!=="name"&&v).map(([k,v])=>k+"："+v).join("\n"))).join("\n\n")||"暂无人物档案"));
- bind("quickChapters",()=>showCollectionModal("最近章节",data.chapters.slice(-3).map((ch,i)=>"【"+ch.title+"】\n"+ch.body.slice(0,2200)).join("\n\n")||"暂无章节"));
-}
-function showCollectionModal(title,content){const back=document.createElement("div");back.className="modal-backdrop";back.innerHTML=`<div class="modal"><h2>${esc(title)}</h2><div style="white-space:pre-wrap;line-height:1.8">${esc(content)}</div><div class="actions" style="margin-top:14px"><button class="primary">关闭</button></div></div>`;back.querySelector("button").onclick=()=>back.remove();back.onclick=e=>{if(e.target===back)back.remove();};document.body.appendChild(back);}
-function openWorldForm(index=null){const w=index===null?{}:data.worldEntries[index];$("worldFormPanel").classList.remove("hidden");$("worldFormTitle").textContent=index===null?"新建世界观":"编辑世界观";$("worldTitle").value=w.title||"";$("worldText").value=w.content||"";$("worldFormPanel").dataset.index=index===null?"":String(index);$("worldTitle").focus();}
-
-function renderArchive(){const box=$("archiveList");if(!box)return;box.innerHTML="";if(!data.archive.length){box.innerHTML='<p class="muted">暂时没有通用归档。灵感、润色稿和剧情审查结果确认保存后会出现在这里。</p>';return;}[...data.archive].reverse().forEach((a,revIndex)=>{const i=data.archive.length-1-revIndex;const el=document.createElement("div");el.className="item";el.innerHTML=`<div class="row"><div><strong>${esc(a.title||a.category||"创作记录")}</strong><span class="muted">${esc(a.category||"归档")} · ${esc(a.createdAt||"")}</span></div><div class="actions" style="justify-content:flex-end"><button type="button" class="viewArchive">查看</button><button type="button" class="deleteArchive">删除</button></div></div><div class="archiveBody hidden" style="white-space:pre-wrap;margin-top:10px">${esc(a.content||"")}</div>`;el.querySelector(".viewArchive").onclick=()=>el.querySelector(".archiveBody").classList.toggle("hidden");el.querySelector(".deleteArchive").onclick=()=>{if(confirm("确定删除这条归档记录？")){data.archive.splice(i,1);persist();renderArchive();}};box.appendChild(el);});}
-function archiveRecord(category,title,content){data.archive.push({category,title,content,createdAt:new Date().toLocaleString()});}
-function resultTitle(fallback){const first=(lastResult||"").split(/\r?\n/).map(x=>x.replace(/^#+\s*/,"").replace(/[【】*_]/g,"").trim()).find(x=>x.length>1);return (first||fallback).slice(0,70);}
-function appendText(oldText,addition){return oldText?oldText+"\n\n"+addition:addition;}
-function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-$("bookTitle").onchange=()=>{data.title=$("bookTitle").value;persist();};
-document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));$("page-"+b.dataset.page).classList.remove("hidden");$("nav").classList.remove("mobile-open");$("mobileNavToggle").setAttribute("aria-expanded","false");$("mobileNavToggle").textContent="☰ 打开导航菜单";});
-$("mobileNavToggle").onclick=()=>{const open=$("nav").classList.toggle("mobile-open");$("mobileNavToggle").setAttribute("aria-expanded",String(open));$("mobileNavToggle").textContent=open?"✕ 收起导航菜单":"☰ 打开导航菜单";};
-$("toggleContextPreview").onclick=()=>{const box=$("contextControls");box.classList.toggle("hidden");$("toggleContextPreview").textContent=box.classList.contains("hidden")?"展开预览":"收起预览";refreshContextPreview();};
-document.querySelectorAll("[data-context]").forEach(x=>x.addEventListener("change",refreshContextPreview));
-const taskFields={
-"灵感生成":[
-["seed","一句话创意 / 灵感种子","textarea","例如：一个失去记忆的守夜人，每晚都收到来自未来的信件"],
-["genre","题材与类型","choice","玄幻|东方玄幻|高武|仙侠|修仙|武侠|都市|都市异能|现代言情|古代言情|豪门总裁|校园青春|悬疑|推理|刑侦|惊悚|恐怖|科幻|末日|赛博朋克|历史|架空历史|穿越|重生|系统流|无限流|游戏异界|西方奇幻|轻小说|现实题材"],
-["hook","希望突出什么吸引点","choice","爽点密集|反转不断|悬念拉满|情感张力|极致虐心|甜宠治愈|复仇逆袭|身份反转|扮猪吃虎|智斗博弈|升级成长|热血战斗|群像刻画|世界探索|烧脑解谜|强设定|脑洞新奇|轻松搞笑|黑暗压抑|电影感画面"],
-["tone","整体基调（可选）","choice","热血燃向|轻松幽默|温馨治愈|悬疑烧脑|黑暗严肃|史诗宏大|浪漫唯美|现实沉稳|荒诞讽刺|紧张刺激"]],
-"故事大纲":[
-["premise","故事核心梗概","textarea","主角是谁？想要什么？最大的阻碍是什么？"],
-["structure","结构方式","choice","三幕式|起承转合|五幕式|英雄之旅|升级流|复仇流|悬疑解谜|单元剧|群像多线|双线叙事|倒叙结构|环形结构|公路冒险|副本闯关"],
-["ending","结局方向","choice","圆满大团圆|开放式|悲剧|反转结局|成长型结局|留有悬念|阶段性胜利|牺牲式结局|暂不确定"],
-["pace","整体节奏（可选）","choice","快节奏高密度|张弛有度|慢热铺垫|层层递进|前期悬疑后期爆发|单元故事推进"],
-["volume","篇幅规划（可选）","choice","短篇|中篇|长篇|超长篇|多卷系列"]],
-"章节创作":[
-["chapterNo","章节序号与标题","text","例如：第 1 章·雨夜来客"],
-["chapterGoal","本章剧情目标","textarea","本章要发生什么？推动哪条主线？"],
-["beats","关键情节点","textarea","按顺序写出本章必须出现的事件、冲突或转折"],
-["chapterType","章节重点（可选）","choice","开篇引入|日常铺垫|人物出场|冲突爆发|战斗对决|感情推进|线索发现|悬念揭晓|剧情反转|高潮章节|过渡章节|收尾钩子"],
-["pov","叙事视角（可选）","choice","第三人称有限视角|第三人称全知视角|第一人称|多视角切换|主角单视角"],
-["endingHook","章末效果（可选）","choice","强悬念|意外反转|危机降临|情感爆发|重要发现|留下谜团|自然收束"]],
-"续写":[
-["sourceText","需要续写的原文（选填）","textarea","粘贴章节末尾或需要接续的正文"],
-["continuity","续写要求","textarea","人物状态、视角、情绪和未完成事件"],
-["direction","后续剧情方向","choice","自然推进|制造冲突|埋下伏笔|出现反转|危机升级|揭开部分真相|人物关系推进|战斗升级|情感升温|暂不指定"],
-["pov","叙事视角（可选）","choice","沿用原文视角|第一人称|第三人称有限视角|第三人称全知视角|多视角切换"],
-["pace","续写节奏（可选）","choice","紧接上文快节奏|张弛有度|慢节奏细腻描写|逐步升温|快速进入冲突"]],
-"人物设定":[
-["personName","人物姓名 / 暂定名","text","例如：沈夜"],
-["personRole","身份与故事定位","choice","主角|男主角|女主角|反派|最终反派|导师|师父|盟友|伙伴|宿敌|竞争对手|配角|关键配角|群像人物|神秘人"],
-["personSeed","人物初始构想","textarea","身世、性格、能力、缺陷、欲望、秘密、关系和成长变化"],
-["personType","人物性格类型（可选）","choice","冷静理智|外冷内热|温柔坚定|腹黑狡猾|阳光开朗|毒舌傲娇|沉默寡言|疯批偏执|正直热血|玩世不恭|敏感细腻|野心勃勃|表面懦弱内心坚韧"],
-["arc","人物成长方向（可选）","choice","弱者成长为强者|黑化复仇|救赎自我|从自私到担当|从理想到幻灭|寻找身份真相|学会信任|守护与牺牲|保持初心"]],
-"世界观设定":[
-["worldType","世界类型 / 时代背景","choice","架空王朝|东方玄幻|仙侠修真|武侠江湖|高武世界|现代都市|都市异能|末日废土|星际文明|赛博朋克|西方奇幻|蒸汽朋克|克苏鲁世界|校园现实|历史架空"],
-["worldScope","本次设定范围","choice","整体世界|地理与区域|力量 / 技术体系|历史与时间线|社会制度|势力与组织|种族与文明|宗教与信仰|经济与资源|文化与习俗|法律与秩序"],
-["worldSeed","已有设定与限制","textarea","写明必须遵守的规则、已有设定及不能改变的内容"],
-["powerSystem","力量体系（可选）","choice","修仙境界|武道境界|魔法体系|异能等级|科技树|基因进化|游戏等级|无超自然力量|尚未确定"],
-["worldMood","世界氛围（可选）","choice","宏大史诗|黑暗残酷|仙气飘渺|市井江湖|末日压抑|科技未来|神秘诡谲|轻松日常"]],
-"润色改写":[
-["sourceText","需要润色 / 改写的原文（选填）","textarea","粘贴要处理的正文"],
-["polishGoal","修改目标","choice","基础语言润色|增强画面感|强化情绪感染力|优化节奏|精简冗余|深度改写|增强人物对话|增强环境描写|提升文学性|增强爽感|增强悬疑感|改善逻辑衔接|降低 AI 味|保持原风格微调"],
-["keepRules","必须保留的内容","textarea","人物设定、剧情事实、叙述视角、专有名词等"],
-["style","目标文风（可选）","choice","简洁有力|细腻唯美|电影感|热血燃向|幽默风趣|冷峻克制|悬疑压迫|古风典雅|口语自然|史诗厚重|现实主义|轻小说风"]],
-"剧情审查":[
-["reviewText","需要审查的剧情 / 正文（选填）","textarea","粘贴待审查章节、剧情梗概或大纲"],
-["reviewScope","审查重点","choice","全面审查|因果逻辑|人物动机|人物行为一致性|时间线|空间与距离|世界观一致性|力量体系漏洞|伏笔与线索|信息差与误会|情节节奏|冲突合理性|情感发展|设定前后矛盾|读者爽点与吸引力"],
-["reviewRules","已确定且不可违反的设定","textarea","列出人物已知信息、世界规则、时间地点和前文事实"],
-["severity","问题严重程度（可选）","choice","只指出严重硬伤|严重与中等问题|全面检查（含细节）"],
-["feedback","审查风格（可选）","choice","严格编辑|客观中立|温和建议|商业网文标准|逻辑优先|读者体验优先"]]
-};
-let taskDrafts={};try{taskDrafts=JSON.parse(localStorage.getItem("novelStudioV2TaskDrafts")||"{}")||{};}catch{taskDrafts={};}
-function renderTaskFields(task){
- const host=$("taskFields");host.innerHTML="";
- const fields=taskFields[task]||[];
- const saved=taskDrafts[task]||{};
- const requiredKeys=[];
- const choiceFields=[];
- fields.forEach(([key,label,type,placeholder])=>{
-  const required=requiredKeys.includes(key);
-  if(type==="choice"){
-   choiceFields.push([key,label,placeholder]);
-   return;
-  }
-  const wrap=document.createElement("div");wrap.className="field task-core-field";wrap.dataset.fieldKey=key;
-  const lab=document.createElement("label");lab.textContent=label+(required?" *":(label.includes("可选")||label.includes("选填")?"":"（选填）"));wrap.appendChild(lab);
-  const editor=type==="textarea"?document.createElement("textarea"):document.createElement("input");
-  if(type==="textarea"){editor.rows=key==="seed"||key==="premise"||key==="chapterGoal"||key==="personSeed"||key==="worldSeed"?5:4;}
-  else editor.type="text";
-  editor.placeholder=placeholder||"点击填写";
-  editor.value=saved[key]||"";
-  editor.dataset.fieldKey=key;
-  editor.setAttribute("aria-label",label);
-  if(required)editor.setAttribute("aria-required","true");
-  editor.oninput=()=>{saved[key]=editor.value;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));$("draftStatus").textContent="草稿已自动保存 · "+new Date().toLocaleTimeString();$("saveStatus").textContent="任务草稿已保存到本机浏览器";}catch{$("draftStatus").textContent="自动保存失败，请导出备份。";}};
-  wrap.appendChild(editor);host.appendChild(wrap);
- });
- if(choiceFields.length){
-  const heading=document.createElement("div");heading.className="task-fields-heading";heading.textContent="更多选项（全部选填，可弹出选择或手动填写）";host.appendChild(heading);
- }
- choiceFields.forEach(([key,label,optionsText])=>{
-  const wrap=document.createElement("div");wrap.className="field picker";wrap.dataset.fieldKey=key;
-  const lab=document.createElement("label");lab.textContent=label+"（选填）";wrap.appendChild(lab);
-  const trigger=document.createElement("button");trigger.type="button";trigger.className="picker-trigger";
-  const valueSpan=document.createElement("span");valueSpan.className="picker-value";trigger.appendChild(valueSpan);wrap.appendChild(trigger);
-  const pop=document.createElement("div");pop.className="picker-popover";
-  const closeOthers=()=>document.querySelectorAll("#taskFields .picker.open").forEach(x=>{if(x!==wrap)x.classList.remove("open");});
-  trigger.onclick=e=>{e.stopPropagation();closeOthers();wrap.classList.toggle("open");};
-  const setValue=v=>{saved[key]=v;taskDrafts[task]=saved;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{};valueSpan.textContent=v||"选择选项（也可自定义）";valueSpan.className=v?"picker-value":"picker-value picker-placeholder";};
-  const selected=()=>String(saved[key]||"").split("、").map(x=>x.trim()).filter(Boolean);
-  const options=optionsText.split("|").filter(Boolean);
-  const search=document.createElement("input");search.className="picker-search";search.placeholder="搜索热门选项…";pop.appendChild(search);
-  const optBox=document.createElement("div");optBox.className="picker-options";
-  options.forEach(v=>{
-   const row=document.createElement("label");row.className="picker-option";row.dataset.option=v;
-   const cb=document.createElement("input");cb.type="checkbox";cb.value=v;cb.checked=selected().includes(v);
-   const text=document.createElement("span");text.textContent=v;row.append(cb,text);optBox.appendChild(row);
-   cb.onchange=()=>{const vals=[...optBox.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);setValue(vals.join("、"));};
-  });
-  pop.appendChild(optBox);
-  search.oninput=()=>{const q=search.value.trim().toLowerCase();optBox.querySelectorAll(".picker-option").forEach(x=>x.style.display=(!q||x.dataset.option.toLowerCase().includes(q))?"flex":"none");};
-  const custom=document.createElement("div");custom.className="picker-custom";
-  const customInput=document.createElement("input");customInput.placeholder="输入自定义内容，回车添加";
-  const add=document.createElement("button");add.type="button";add.textContent="添加";
-  const addCustom=()=>{const v=customInput.value.trim();if(!v)return;const vals=selected();if(!vals.includes(v))vals.push(v);setValue(vals.join("、"));customInput.value="";};
-  add.onclick=addCustom;customInput.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addCustom();}};
-  custom.append(customInput,add);pop.appendChild(custom);
-  const actions=document.createElement("div");actions.className="picker-actions";
-  const clear=document.createElement("button");clear.type="button";clear.textContent="清空选择";clear.onclick=()=>{optBox.querySelectorAll('input[type="checkbox"]').forEach(x=>x.checked=false);setValue("");};
-  const done=document.createElement("button");done.type="button";done.className="primary";done.textContent="完成";done.onclick=()=>wrap.classList.remove("open");
-  actions.append(clear,done);pop.appendChild(actions);
-  const note=document.createElement("div");note.className="picker-single-note";note.textContent="可多选热门选项，也可输入自定义内容；不需要的可以留空。";pop.appendChild(note);
-  setValue(saved[key]||"");wrap.appendChild(pop);host.appendChild(wrap);
- });
-}
-document.addEventListener("click",e=>{if(!e.target.closest("#taskFields .picker"))document.querySelectorAll("#taskFields .picker.open").forEach(x=>x.classList.remove("open"));});
-function taskInputText(task){const vals={...(taskDrafts[task]||{})};delete vals._custom;document.querySelectorAll("#taskFields [data-field-key]").forEach(el=>{const key=el.dataset.fieldKey;if(key)vals[key]=String(vals[key]??"").trim();});taskDrafts[task]=vals;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}return Object.entries(vals).map(([k,v])=>v?k+"："+v:"").filter(Boolean).join("\n");}
-function taskInstruction(task){
- return {
- "灵感生成":"你是创意策划。请提供至少5个彼此有明显差异的故事灵感，每个包含核心设定、主角目标、主要冲突、独特卖点和可持续发展的悬念。不要直接写章节正文。",
- "故事大纲":"你是长篇小说总编剧。输出作品定位、主题、核心冲突、主线与支线、主要人物弧光、分卷/分幕结构、关键转折、高潮和结局。按可执行的章节规划组织，不要写成正文。",
- "章节创作":"你是职业小说作家。依据本章目标和情节点写出完整章节正文，重视场景、动作、对话、冲突和章末钩子。不要输出大纲或分析。",
- "续写":"你是原作者的续写助手。必须从提供的原文最后一句之后自然接续，不得重复原文，不得擅自改变人物、视角、事实和既定设定，直接输出续写正文。",
- "人物设定":"你是角色设计师。输出结构化人物档案：姓名、身份、外貌、性格优缺点、背景、能力及限制、核心欲望、恐惧、秘密、人际关系、说话方式、人物弧光。资料不足处可提出合理方案并标注待确认。",
- "世界观设定":"你是世界观架构师。按所选范围输出结构化设定，说明规则、边界、运行机制、历史来源、社会影响及与剧情的关联；检查与已有设定是否冲突，不擅自覆盖已确认规则。",
- "润色改写":"你是资深文学编辑。按指定目标处理原文，保留剧情事实、人物关系、叙述视角和专有名词。先给出改写后的完整文本，再简要列出主要修改点；不要续写新剧情。",
- "剧情审查":"你是严谨的小说逻辑编辑。只审查所提供的内容，按严重程度列出问题位置、问题类型、具体原因、对剧情的影响和可执行修复方案；分别检查因果、人物动机、信息差、时间线、世界规则和伏笔回收。没有证据的问题不要臆测，不要把审查写成故事大纲。"
- }[task]||"严格执行指定任务。";
-}
-function saveCurrentTaskDraft(){taskDrafts[currentTask]=taskDrafts[currentTask]||{};taskDrafts[currentTask]._custom=$("prompt").value;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));$("draftStatus").textContent="草稿已自动保存 · "+new Date().toLocaleTimeString();}catch{$("draftStatus").textContent="自动保存失败，请导出备份。";}}
-$("prompt").addEventListener("input",saveCurrentTaskDraft);
-$("toggleCustomPrompt").onclick=()=>{const wrap=$("customPromptWrap");const opening=wrap.classList.contains("hidden");wrap.classList.toggle("hidden");$("toggleCustomPrompt").textContent=opening?"− 收起自定义要求":"＋ 自定义要求（选填）";if(opening)$("prompt").focus();};
-document.querySelectorAll(".task").forEach(b=>b.onclick=()=>{
- saveCurrentTaskDraft();
- currentTask=b.dataset.task;$("taskName").value=currentTask;renderTaskFields(currentTask);
- $("prompt").value=(taskDrafts[currentTask]||{})._custom||"";
- $("customPromptWrap").classList.toggle("hidden",!$("prompt").value);
- $("toggleCustomPrompt").textContent=$("prompt").value?"− 收起自定义要求":"＋ 自定义要求（选填）";
- $("saveChapter").textContent=(currentTask==="章节创作"||currentTask==="续写")?"确认保存为新章节":"确认保存到对应资料库";
- lastResult=taskJobs[currentTask]?.result||"";renderVersions();refreshContextPreview();const running=taskJobs[currentTask]?.status==="running";$("generateBtn").disabled=running;$("generateBtn").textContent=running?"后台生成中…":"✦ 立即生成";
- $("result").textContent=lastResult||("已切换到【"+currentTask+"】专属工作区。请填写核心内容后生成。");
- $("progress").textContent=running?"该任务正在生成，请稍候。":"填写当前任务的核心内容后，即可开始生成；其他选项均可留空。";$("progress").dataset.state=running?"running":"idle";
- document.querySelectorAll(".task").forEach(x=>{x.style.borderColor=x===b?"var(--accent)":"var(--line)";x.setAttribute("aria-pressed",x===b?"true":"false");});
-});
-document.querySelectorAll("[data-workflow-task]").forEach(b=>b.onclick=()=>{
- const task=b.dataset.workflowTask;
- const taskButton=document.querySelector('.task[data-task="'+task+'"]');
- if(taskButton)taskButton.click();
- document.querySelectorAll("[data-workflow-task]").forEach(x=>x.classList.toggle("active",x===b));
-});
-document.querySelectorAll(".task").forEach(b=>b.addEventListener("click",()=>{
- document.querySelectorAll("[data-workflow-task]").forEach(x=>x.classList.toggle("active",x.dataset.workflowTask===b.dataset.task));
-}));
-const FREE_PROVIDER_DEFAULTS={gemini:"gemini-2.5-flash",groq:"openai/gpt-oss-120b",openrouter:"openrouter/free"};
-const FREE_PROVIDER_HELP={
- gemini:"Gemini API 有免费层；具体模型、每日请求量和数据使用条款以 AI Studio 为准。",
- groq:"Groq 提供按模型区分的免费速率限制；额度耗尽后请稍后重试或切换服务商。",
- openrouter:"仅选择模型 ID 以 :free 结尾的免费模型；openrouter/free 会自动路由到可用免费模型。",
- cloudflare:"使用网站部署者配置的 Cloudflare Workers AI，无需填写个人 API Key。"
-};
-function readProviderConfig(){try{return JSON.parse(sessionStorage.getItem("novelStudioFreeProvider")||"null");}catch{return null;}}
-function updateProviderDialog(){
- const p=$("freeProvider").value,local=p!=="cloudflare";
- $("freeKeyField").classList.toggle("hidden",!local);$("freeModelField").classList.toggle("hidden",!local);
- $("providerHelp").textContent=FREE_PROVIDER_HELP[p]||"";
- const cfg=readProviderConfig();$("freeApiKey").value=cfg?.provider===p?(cfg.apiKey||""):"";
- $("freeModel").value=cfg?.provider===p?(cfg.model||""):(FREE_PROVIDER_DEFAULTS[p]||"");
-}
-$("openProviderSettings").onclick=()=>{$("freeProvider").value=readProviderConfig()?.provider||"gemini";updateProviderDialog();$("providerDialog").showModal();};
-$("freeProvider").onchange=updateProviderDialog;
-$("closeProviderSettings").onclick=()=> $("providerDialog").close();
-$("clearProviderSettings").onclick=()=>{sessionStorage.removeItem("novelStudioFreeProvider");$("freeApiKey").value="";$("freeModel").value="";$("providerDialog").close();$("apiStatus").textContent="已清除个人免费模型配置";};
-$("providerForm").onsubmit=e=>{
- e.preventDefault();const provider=$("freeProvider").value;
- if(provider==="cloudflare"){sessionStorage.setItem("novelStudioFreeProvider",JSON.stringify({provider}));}
- else {const apiKey=$("freeApiKey").value.trim();if(apiKey.length<8){alert("请先填写有效的 API Key。");return;}
- const model=$("freeModel").value.trim();if(provider==="openrouter"&&model&&model!=="openrouter/free"&&!model.endsWith(":free")){alert("OpenRouter 请填写免费模型 ID（通常以 :free 结尾），或留空使用自动免费路由。");return;}
- sessionStorage.setItem("novelStudioFreeProvider",JSON.stringify({provider,apiKey,model}));}
- $("providerDialog").close();$("apiStatus").textContent="已选择免费模型："+provider;$("apiStatus").style.color="var(--accent2)";
-};
-$("generateBtn").onclick=async()=>{
- const taskAtStart=currentTask;const prompt=$("prompt").value.trim();const specific=taskInputText(taskAtStart);
- // All task fields are optional; the task instruction and existing novel context provide a useful starting point.
- const seq=++generationSeq,btn=$("generateBtn");taskJobs[taskAtStart]={status:"running",result:"",seq};btn.disabled=true;btn.textContent="正在生成…";$("progress").textContent="正在生成【"+taskAtStart+"】。请稍候，生成期间可以切换其他任务。";$("progress").dataset.state="running";$("result").textContent="AI 正在执行【"+taskAtStart+"】，请稍候…";
- const fullPrompt="【任务类型】"+taskAtStart+"\n【任务专属要求】\n"+taskInstruction(taskAtStart)+"\n\n【专属输入】\n"+specific+"\n\n【补充要求】"+prompt+"\n\n只执行当前任务，不得改做其他任务。";
- try{
-  const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:taskAtStart,prompt:fullPrompt,context:contextText(),...(readProviderConfig()||{})})});
-  let j;try{j=await r.json();}catch{throw new Error("服务器返回内容无法识别（HTTP "+r.status+"），请稍后重试。");}
-  if(!r.ok)throw new Error(j.error||("服务器请求失败（HTTP "+r.status+"）"));
-  if(taskJobs[taskAtStart]?.seq===seq){
-   taskJobs[taskAtStart]={status:"done",result:j.text||"",seq};saveResultVersion(j.text||"","AI生成");
-   if(taskAtStart===currentTask){lastResult=j.text||"";$("result").textContent=lastResult||"接口已响应，但没有返回正文，请检查模型响应。";$("progress").textContent="【"+taskAtStart+"】生成完成，请检查结果，满意后再确认保存。";$("progress").dataset.state="success";}
-  }
- }catch(e){
-  const raw=String(e&&e.message||e);
-  const friendly=/Failed to fetch|NetworkError|Load failed/i.test(raw)?"网页没有成功收到生成接口的响应（网络请求失败）。请确认当前网页是最新部署版本，并检查网络后重试。":raw;
-  if(taskJobs[taskAtStart]?.seq===seq){
-   taskJobs[taskAtStart]={status:"error",result:"",error:friendly,seq};
-   if(taskAtStart===currentTask){$("result").textContent="生成失败："+friendly;$("progress").textContent="本次生成未完成；你的输入和其他任务草稿不会被清除。";$("progress").dataset.state="error";}
-  }
- }finally{
-  if(taskAtStart===currentTask&&taskJobs[taskAtStart]?.seq===seq){btn.disabled=false;btn.textContent="✦ 立即生成";}
- }
-};
-$("result").addEventListener("input",()=>{lastResult=$("result").innerText??$("result").textContent;const job=taskJobs[currentTask]||{};taskJobs[currentTask]={...job,result:lastResult};});$("result").addEventListener("blur",()=>{const edited=$("result").innerText??$("result").textContent;if(edited.trim())saveResultVersion(edited,"手动编辑");});
-function syncEditedResult(){lastResult=$("result").innerText??$("result").textContent;const job=taskJobs[currentTask]||{};taskJobs[currentTask]={...job,result:lastResult};return lastResult;}
-$("copyBtn").onclick=()=>{const edited=syncEditedResult();if(edited)navigator.clipboard.writeText(edited);};
-$("saveChapter").onclick=()=>{syncEditedResult();if(!lastResult.trim())return alert("当前没有可保存的生成结果");const title=resultTitle(currentTask);let destination="创作归档";if(currentTask==="章节创作"||currentTask==="续写"){data.chapters.push({title:`第${data.chapters.length+1}章 · ${title}`,body:lastResult});renderChapters();destination="章节管理";}else if(currentTask==="人物设定"){const nameMatch=lastResult.match(/(?:姓名|人物姓名|角色名)\s*[：:]\s*([^\n，,。]+)/);const name=(nameMatch&&nameMatch[1].trim())||title||`AI人物${data.characters.length+1}`;data.characters.push({name,role:"AI生成档案",info:lastResult});renderCharacters();destination="人物档案";}else if(currentTask==="世界观设定"){data.worldEntries.push({id:"w-"+Date.now(),title:resultTitle("AI世界观设定"),content:lastResult});data.world=data.worldEntries.map(w=>w.title+"："+w.content).join("\n\n");destination="世界观设定";renderWorld();}else if(currentTask==="故事大纲"){data.synopsis=appendText(data.synopsis,lastResult);$("synopsis").value=data.synopsis;destination="小说资料（核心设定/大纲）";}else if(currentTask==="灵感生成"){archiveRecord("灵感生成",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="润色改写"){archiveRecord("润色改写",title,lastResult);renderArchive();destination="创作归档";}else if(currentTask==="剧情审查"){archiveRecord("剧情审查",title,lastResult);renderArchive();destination="创作归档";}else{archiveRecord(currentTask,title,lastResult);renderArchive();}persist();alert(`已确认保存到：${destination}`);};
-$("replacePrompt").onclick=()=>{if(!lastResult)return alert("当前没有生成结果");const key=currentTask==="续写"?"sourceText":currentTask==="润色改写"?"sourceText":currentTask==="剧情审查"?"reviewText":currentTask==="人物设定"?"personSeed":currentTask==="世界观设定"?"worldSeed":currentTask==="故事大纲"?"premise":currentTask==="章节创作"?"chapterGoal":"seed";taskDrafts[currentTask]=taskDrafts[currentTask]||{};taskDrafts[currentTask][key]=lastResult;try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}renderTaskFields(currentTask);alert("已放入当前任务对应输入框。");};
-$("clearPrompt").onclick=()=>{if(!confirm("只清空当前任务的输入和自定义要求，其他任务及小说资料不会改变。确定继续？"))return;taskDrafts[currentTask]={};try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}$("prompt").value="";$("customPromptWrap").classList.add("hidden");$("toggleCustomPrompt").textContent="＋ 自定义要求（选填）";renderTaskFields(currentTask);$("progress").textContent="当前任务输入已清空，其他任务和已保存的小说资料均保留。";$("progress").dataset.state="idle";};
-$("newChapter").onclick=()=>{activeChapter=null;$("chapterTitle").value=`第${data.chapters.length+1}章`;$("chapterBody").value="";$("chapterAppend").value="";};
-$("saveChapterEdit").onclick=()=>{const c={title:$("chapterTitle").value||"未命名章节",body:$("chapterBody").value};if(activeChapter===null)data.chapters.push(c);else data.chapters[activeChapter]=c;persist();renderChapters();alert("章节已保存");};$("appendChapter").onclick=()=>{if(activeChapter===null)return alert("请先选择已有章节");const add=$("chapterAppend").value.trim();if(!add)return alert("请填写要追加的内容");data.chapters[activeChapter].body=appendText(data.chapters[activeChapter].body,add);$("chapterBody").value=data.chapters[activeChapter].body;$("chapterAppend").value="";persist();renderChapters();alert("内容已追加到本章末尾");};
-$("aiAppendChapter").onclick=async()=>{if(activeChapter===null)return alert("请先选择已有章节");const base=$("chapterBody").value.trim();if(!base)return alert("当前章节还没有正文");const req=prompt("告诉 AI 这次要追加什么内容，例如：\n“让主角发现门后的秘密，并自然衔接下一段”","继续本章剧情，自然衔接当前情节");if(!req)return;const btn=$("aiAppendChapter");btn.disabled=true;btn.textContent="AI生成中…";$("progress")&&($("progress").textContent="AI 正在为当前章节生成追加内容…");try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:"续写",prompt:req+"\n\n请只输出可以直接接在下面章节正文末尾的小说正文，不要解释，不要标题。\n\n当前章节：\n"+base,context:contextText()})});const j=await r.json();if(!r.ok)throw new Error(j.error||"请求失败");$("chapterAppend").value=j.text||"";$("progress")&&($("progress").textContent="AI 追加内容已生成，可先修改，再点击“追加到本章”。");$("chapterAppend").focus();}catch(e){alert("AI生成追加失败："+e.message);}finally{btn.disabled=false;btn.textContent="AI生成追加";}};
-$("deleteChapter").onclick=()=>{if(activeChapter===null)return;if(confirm("确定删除当前章节？")){data.chapters.splice(activeChapter,1);activeChapter=null;persist();renderChapters();$("chapterTitle").value="";$("chapterBody").value="";}};
-$("sendChapter").onclick=()=>{
- const body=$("chapterBody").value.trim();if(!body)return alert("请先选择或填写章节正文");
- const target=prompt("发送章节正文到哪个任务？输入 1、2 或 3：\n1 润色改写\n2 剧情审查\n3 智能续写","1");const map={"1":"润色改写","2":"剧情审查","3":"续写"};const task=map[target];if(!task)return;
- taskDrafts[task]=taskDrafts[task]||{};if(task==="剧情审查")taskDrafts[task].reviewText=body;else taskDrafts[task].sourceText=body;
- try{localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(taskDrafts));}catch{}
- document.querySelector('[data-page="studio"]').click();const card=document.querySelector('[data-task="'+task+'"]');if(card)card.click();$("progress").textContent="章节正文已发送到【"+task+"】的专属原文输入框。";
-};
-let editingCharacter=null;
-const characterFields=["name","age","gender","role","appearance","personality","background","ability","goal","secret","relations","arc"];
-function openCharacterForm(index=null){editingCharacter=index;const form=$("characterForm");form.reset();const c=index===null?{}:data.characters[index];characterFields.forEach(k=>{const el=$("char"+k.charAt(0).toUpperCase()+k.slice(1));if(el)el.value=c[k]||"";});if(c.info&&!c.background&&!c.personality){$("charBackground").value=c.info;}$("characterFormTitle").textContent=index===null?"新增人物":"编辑人物资料";$("characterFormPanel").classList.remove("hidden");$("charName").focus();}
-function closeCharacterForm(){$("characterFormPanel").classList.add("hidden");$("characterForm").reset();editingCharacter=null;}
-$("addCharacter").onclick=()=>openCharacterForm();
-$("cancelCharacter").onclick=closeCharacterForm;
-$("characterForm").onsubmit=e=>{e.preventDefault();const c={};characterFields.forEach(k=>{const el=$("char"+k.charAt(0).toUpperCase()+k.slice(1));c[k]=el?el.value.trim():"";});if(!c.name)return alert("请填写人物姓名");if(editingCharacter===null)data.characters.push(c);else data.characters[editingCharacter]=c;persist();renderCharacters();closeCharacterForm();};
-$("addWorld").onclick=()=>openWorldForm();$("cancelWorld").onclick=()=>{$("worldFormPanel").classList.add("hidden");};$("saveWorld").onclick=()=>{const title=$("worldTitle").value.trim()||"未命名世界观";const content=$("worldText").value.trim();if(!content)return alert("请填写世界观内容");const idx=$("worldFormPanel").dataset.index;if(idx==="")data.worldEntries.push({id:"w-"+Date.now(),title,content});else data.worldEntries[Number(idx)]={...data.worldEntries[Number(idx)],title,content};data.world=data.worldEntries.map(w=>w.title+"："+w.content).join("\n\n");persist();renderWorld();$("worldFormPanel").classList.add("hidden");alert("世界观已保存");};
-$("saveProject").onclick=()=>{data.synopsis=$("synopsis").value;data.notes=$("notes").value;persist();alert("小说资料已保存");};
-$("exportBtn").onclick=()=>{const backup={format:"ai-novel-studio-backup",version:2,exportedAt:new Date().toISOString(),project:data,taskDrafts:JSON.parse(localStorage.getItem("novelStudioV2TaskDrafts")||"{}"),versions:versionHistory,workspace:typeof window.exportWorkspaceSnapshot==="function"?window.exportWorkspaceSnapshot():null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="AI小说工作室完整备份-"+new Date().toISOString().slice(0,10)+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$("importBtn").onclick=()=>$("importFile").click();
-$("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const parsed=JSON.parse(await file.text());const incoming=parsed.project&&parsed.format==="ai-novel-studio-backup"?parsed.project:parsed;if(!incoming||typeof incoming!=="object"||(!Array.isArray(incoming.chapters)&&!Array.isArray(incoming.characters)&&typeof incoming.title!=="string"))throw new Error("文件格式不符合小说工作室备份格式。");if(!confirm("导入将替换当前作品资料。建议先点击“导出备份”。确定继续？"))return;data={...defaultData,...incoming};if(parsed.workspace&&typeof window.restoreWorkspaceSnapshot==="function")window.restoreWorkspaceSnapshot(parsed.workspace);if(parsed.taskDrafts)localStorage.setItem("novelStudioV2TaskDrafts",JSON.stringify(parsed.taskDrafts));if(parsed.versions){versionHistory=parsed.versions;localStorage.setItem("novelStudioV2Versions",JSON.stringify(versionHistory));}persist();load();renderTaskFields(currentTask);renderVersions();refreshContextPreview();alert("备份恢复成功。");}catch(err){alert("导入失败："+err.message);}finally{e.target.value="";}};
-async function check(){const personal=readProviderConfig();if(personal){$("apiStatus").textContent="● 已选择免费模型："+personal.provider;$("apiStatus").style.color="var(--accent2)";return;}try{const r=await fetch("/api/health");const j=await r.json();if(j.configured){$("apiStatus").textContent=`● AI 服务已配置 · ${j.model}`;$("apiStatus").style.color="var(--accent2)";}else if(!j.keyConfigured){$("apiStatus").textContent="● 服务已启动，等待配置 API Key";$("apiStatus").style.color="#f0c477";}else{$("apiStatus").textContent="● API Key 已配置，等待配置模型名称";$("apiStatus").style.color="#f0c477";}}catch{$("apiStatus").textContent="● 尚未连接后端服务";$("apiStatus").style.color="var(--danger)";}}
-$("saveChapter").textContent="确认保存到对应资料库";renderTaskFields(currentTask);document.querySelector('[data-task="灵感生成"]').style.borderColor="var(--accent)";document.querySelector('[data-task="灵感生成"]').setAttribute("aria-pressed","true");load();renderVersions();refreshContextPreview();check();
-</script><script src="/experience.js" defer></script><script src="/product-modules.js" defer></script></body></html>
+<dialog id="providerDialog" class="dialog"><form method="dialog" id="providerForm"><div class="dialog-head"><div><div class="eyebrow">AI PROVIDER</div><h2>模型连接设置</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div><p class="dialog-note">选择你自己的 API 服务商。API Key 只保存在当前浏览器会话中，不会写入作品备份。</p><label class="field-label" for="provider">服务商</label><select id="provider"><option value="gemini">Google Gemini API</option><option value="groq">Groq</option><option value="openrouter">OpenRouter 免费模型</option><option value="cloudflare">网站部署者配置的 Cloudflare AI</option></select><div id="keyFields"><label class="field-label" for="apiKey">API Key</label><input id="apiKey" type="password" autocomplete="off" placeholder="粘贴 API Key"><label class="field-label" for="model">模型 ID（可选）</label><input id="model" placeholder="留空使用默认模型"></div><p id="providerHelp" class="dialog-note"></p><div class="dialog-actions"><button id="clearProvider" type="button" class="btn btn-quiet">清除本机配置</button><button value="cancel" class="btn btn-quiet">取消</button><button id="saveProvider" value="default" class="btn btn-primary">保存设置</button></div></form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/app.js" defer></script>
+</body></html>
