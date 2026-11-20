@@ -1,6 +1,44 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('AI 小说工作室 · 安全 UI 检查', () => {
+  test('第三轮视觉系统：浅色编辑界面、深色导航与创作区比例正确', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 960 });
+    await page.goto('/');
+    const studio = await page.evaluate(() => {
+      const css = getComputedStyle(document.body);
+      const sidebar = getComputedStyle(document.querySelector('aside'));
+      const result = getComputedStyle(document.querySelector('#result'));
+      const free = document.querySelector('#freeStudio').getBoundingClientRect();
+      const work = document.querySelector('#page-studio > .grid').getBoundingClientRect();
+      const input = document.querySelector('#page-studio > .grid > .panel:first-child').getBoundingClientRect();
+      const output = document.querySelector('#page-studio > .grid > .panel:last-child').getBoundingClientRect();
+      return {
+        bodyBackground: css.backgroundColor,
+        sidebarBackground: sidebar.backgroundColor,
+        resultBackground: result.backgroundColor,
+        freeWidth: free.width,
+        inputWidth: input.width,
+        outputWidth: output.width,
+        workWidth: work.width,
+        overflow: document.documentElement.scrollWidth > innerWidth
+      };
+    });
+    expect(studio.overflow).toBeFalsy();
+    expect(studio.freeWidth).toBeGreaterThan(900);
+    expect(studio.outputWidth).toBeGreaterThan(studio.inputWidth);
+    expect(studio.outputWidth).toBeGreaterThan(500);
+    expect(studio.resultBackground).toBe('rgb(255, 255, 255)');
+    await page.locator('[data-page="chapters"]').click();
+    const chapter = await page.locator('#chapterBody').evaluate(el => ({
+      background: getComputedStyle(el).backgroundColor,
+      width: el.getBoundingClientRect().width,
+      height: el.getBoundingClientRect().height
+    }));
+    expect(chapter.background).toBe('rgb(255, 255, 255)');
+    expect(chapter.width).toBeGreaterThan(700);
+    expect(chapter.height).toBeGreaterThan(500);
+  });
+
   test('桌面端页面加载、八项任务入口和上下文预览存在', async ({ page }) => {
     await page.setViewportSize({ width: 1365, height: 900 });
     const pageErrors = [];
