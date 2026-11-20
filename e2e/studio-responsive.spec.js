@@ -258,6 +258,11 @@ test.describe('StoryForge V3 · 独立验收', () => {
       const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
       expect(audit.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})),name+' 页面无障碍违规').toEqual([]);
     }
+    for(const route of ['/privacy.html','/terms.html']){
+      await page.goto(route);
+      const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+      expect(audit.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})),route+' 页面无障碍违规').toEqual([]);
+    }
   });
 
   test('隐私说明和使用条款可从主界面打开', async ({page})=>{
