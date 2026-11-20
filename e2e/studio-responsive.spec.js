@@ -248,4 +248,15 @@ test.describe('StoryForge V3 · 独立验收', () => {
       expect(audit.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})),name+' 页面无障碍违规').toEqual([]);
     }
   });
+
+  test('隐私说明和使用条款可从主界面打开', async ({page})=>{
+    await expect(page.locator('a[href="/privacy.html"]')).toBeVisible();
+    await page.locator('a[href="/privacy.html"]').click();
+    await expect(page).toHaveTitle(/隐私说明/);
+    await expect(page.locator('main')).toContainText('第三方 AI 服务');
+    await page.goto('/');
+    await page.locator('a[href="/terms.html"]').click();
+    await expect(page).toHaveTitle(/使用条款/);
+    await expect(page.locator('main')).toContainText('AI 内容与知识产权');
+  });
 });
