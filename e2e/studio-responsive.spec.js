@@ -4,6 +4,11 @@ const AxeBuilder = require('@axe-core/playwright').default;
 
 test.describe('StoryForge V3 · 独立验收', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__storyforgeErrors = [];
+      window.addEventListener('error', event => window.__storyforgeErrors.push(event.message));
+      window.addEventListener('unhandledrejection', event => window.__storyforgeErrors.push(String(event.reason)));
+    });
     await page.goto('/');
   });
 
@@ -17,6 +22,7 @@ test.describe('StoryForge V3 · 独立验收', () => {
       await expect(page.locator('.page.active-page')).toHaveCount(1);
     }
     expect(errors).toEqual([]);
+    expect(await page.evaluate(() => window.__storyforgeErrors)).toEqual([]);
   });
 
   test('桌面固定侧栏与右侧独立滚动，手机端导航横向可用且无横向溢出', async ({ page }) => {
